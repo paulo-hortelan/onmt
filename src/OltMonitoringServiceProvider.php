@@ -2,7 +2,6 @@
 
 namespace PauloHortelan\OltMonitoring;
 
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\AliasLoader;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
