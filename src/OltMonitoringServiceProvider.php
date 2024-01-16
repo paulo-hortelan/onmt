@@ -4,6 +4,7 @@ namespace PauloHortelan\OltMonitoring;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Illuminate\Filesystem\Filesystem;
 
 class OltMonitoringServiceProvider extends PackageServiceProvider
 {
@@ -17,6 +18,12 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         parent::boot();
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        (new Filesystem)->ensureDirectoryExists(app_path('Http/Controllers'));
+        (new Filesystem)->copyDirectory(__DIR__.'/../Http/Controllers', app_path('Http/Controllers'));     
+
+        (new Filesystem)->ensureDirectoryExists(app_path('routes'));
+        (new Filesystem)->copyDirectory(__DIR__.'/../routes', app_path('routes'));         
     }
 
     public function register()
@@ -39,6 +46,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $package
             ->name('olt-monitoring')
             ->hasConfigFile()
+            ->hasRoute('api')
             ->hasMigration('2023_01_15_100000_create_olt_table');
     }
 }
