@@ -5,6 +5,7 @@ namespace PauloHortelan\OltMonitoring;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Route;
 
 class OltMonitoringServiceProvider extends PackageServiceProvider
 {
@@ -17,14 +18,29 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
     {
         parent::boot();
 
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
-        (new Filesystem)->ensureDirectoryExists(app_path('Http/Controllers'));
-        (new Filesystem)->copyDirectory(__DIR__.'/../Http/Controllers', app_path('Http/Controllers'));     
+        // (new Filesystem)->ensureDirectoryExists(app_path('Http/Controllers'));
+        // (new Filesystem)->copyDirectory(__DIR__ . '/../Http/Controllers', app_path('Http/Controllers'));
 
-        (new Filesystem)->ensureDirectoryExists(app_path('routes'));
-        (new Filesystem)->copyDirectory(__DIR__.'/../routes', app_path('routes'));         
+        // (new Filesystem)->ensureDirectoryExists(app_path('routes'));
+        // (new Filesystem)->copyDirectory(__DIR__ . '/../routes', app_path('routes'));
     }
+
+    protected function registerRoutes()
+    {
+        Route::group($this->routeConfiguration(), function () {
+            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+        });
+    }
+
+    protected function routeConfiguration()
+    {
+        return [
+            'prefix' => config('oltmonitoring.prefix'),
+            'middleware' => config('oltmonitoring.middleware'),
+        ];
+    }    
 
     public function register()
     {
