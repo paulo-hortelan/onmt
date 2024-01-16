@@ -60,7 +60,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $package
             ->name('olt-monitoring')
             ->hasConfigFile()
-            ->hasRoute('api')
+            ->hasRoute('olt-monitoring')
             ->hasMigration('2023_01_15_100000_create_olt_table');
     }
 }
