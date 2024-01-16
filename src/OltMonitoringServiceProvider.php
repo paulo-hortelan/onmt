@@ -21,13 +21,13 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         (new Filesystem)->ensureDirectoryExists(app_path('routes'));
-        (new Filesystem)->copyDirectory(__DIR__ . '/../routes', app_path('routes'));
+        (new Filesystem)->copyDirectory(__DIR__.'/../routes', app_path('routes'));
     }
 
     protected function registerRoutes()
     {
         // Route::group($this->routeConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/olt-monitoring.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/olt-monitoring.php');
         // });
     }
 
@@ -37,8 +37,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
     //         'prefix' => config('oltmonitoring.prefix'),
     //         'middleware' => config('oltmonitoring.middleware'),
     //     ];
-    // }    
-
+    // }
 
     public function register()
     {
