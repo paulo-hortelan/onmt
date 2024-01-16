@@ -6,8 +6,6 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\AliasLoader;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Illuminate\Support\Facades\Route;
-
 
 class OltMonitoringServiceProvider extends PackageServiceProvider
 {
@@ -20,7 +18,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
     {
         parent::boot();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         (new Filesystem)->ensureDirectoryExists(app_path('routes'));
         (new Filesystem)->copyDirectory(__DIR__ . '/../routes', app_path('routes'));
@@ -40,6 +38,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
     //         'middleware' => config('oltmonitoring.middleware'),
     //     ];
     // }    
+
 
     public function register()
     {
