@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\OltController;
 use Illuminate\Support\Facades\Route;
+use PauloHortelan\OltMonitoring\Http\Controllers\OltController;
 
 /*
 |--------------------------------------------------------------------------
