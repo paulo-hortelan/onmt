@@ -2,10 +2,11 @@
 
 namespace PauloHortelan\OltMonitoring;
 
+use Illuminate\Filesystem\Filesystem;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Route;
+
 
 class OltMonitoringServiceProvider extends PackageServiceProvider
 {
