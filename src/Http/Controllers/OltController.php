@@ -1,7 +1,7 @@
 <?php
-  
+
 namespace App\Http\Controllers;
-  
+
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use PauloHortelan\OltMonitoring\Models\Olt;
@@ -17,7 +17,7 @@ class OltController extends Controller
 
         return response()->json($olts);
     }
-  
+
     /**
      * Store a newly created resource in storage.
      */
@@ -36,7 +36,7 @@ class OltController extends Controller
 
         return response()->json($olt, 201);
     }
-  
+
     /**
      * Display the specified resource.
      */
@@ -45,7 +45,7 @@ class OltController extends Controller
         // return JSON response with the olt
         return response()->json($olt);
     }
-  
+
     /**
      * Update the specified resource in storage.
      */
@@ -64,7 +64,7 @@ class OltController extends Controller
 
         return response()->json($olt, 200);
     }
-  
+
     /**
      * Remove the specified resource from storage.
      */

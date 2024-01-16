@@ -2,9 +2,9 @@
 
 namespace PauloHortelan\OltMonitoring;
 
+use Illuminate\Filesystem\Filesystem;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Illuminate\Filesystem\Filesystem;
 
 class OltMonitoringServiceProvider extends PackageServiceProvider
 {
@@ -20,10 +20,10 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         (new Filesystem)->ensureDirectoryExists(app_path('Http/Controllers'));
-        (new Filesystem)->copyDirectory(__DIR__.'/../Http/Controllers', app_path('Http/Controllers'));     
+        (new Filesystem)->copyDirectory(__DIR__.'/../Http/Controllers', app_path('Http/Controllers'));
 
         (new Filesystem)->ensureDirectoryExists(app_path('routes'));
-        (new Filesystem)->copyDirectory(__DIR__.'/../routes', app_path('routes'));         
+        (new Filesystem)->copyDirectory(__DIR__.'/../routes', app_path('routes'));
     }
 
     public function register()
