@@ -5,6 +5,16 @@ namespace PauloHortelan\OltMonitoring\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * PauloHortelan\OltMonitoring\Models\Olt
+ *
+ * @property string $name
+ * @property string $host
+ * @property string $username
+ * @property string $password
+ * @property string $brand
+ * @property string $product_model
+ */
 class Olt extends Model
 {
     use HasFactory;
@@ -22,7 +32,8 @@ class Olt extends Model
         'host',
         'username',
         'password',
-        'model',
+        'brand',
+        'product_model',
     ];
 
     /**

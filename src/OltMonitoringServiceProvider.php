@@ -2,7 +2,6 @@
 
 namespace PauloHortelan\OltMonitoring;
 
-use PauloHortelan\OltMonitoring\Commands\OltMonitoringCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -15,7 +14,19 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
      */
     public function boot()
     {
+        parent::boot();
+
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+    }
+
+    public function register()
+    {
+        parent::register();
+
+        $loader = \Illuminate\Foundation\AliasLoader::getInstance();
+        $loader->alias('OltMonitor', 'PauloHortelan\OltMonitoring\Facades');
+        $loader->alias('Zte600', 'PauloHortelan\OltMonitoring\Facades');
+        $loader->alias('Zte600', 'PauloHortelan\OltMonitoring\Facades');
     }
 
     public function configurePackage(Package $package): void
@@ -28,7 +39,6 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $package
             ->name('olt-monitoring')
             ->hasConfigFile()
-            ->hasMigration('2023_01_15_100000_create_olt_table')
-            ->hasCommand(OltMonitoringCommand::class);
+            ->hasMigration('2023_01_15_100000_create_olt_table');
     }
 }

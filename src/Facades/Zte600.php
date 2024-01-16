@@ -5,12 +5,12 @@ namespace PauloHortelan\OltMonitoring\Facades;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \PauloHortelan\OltMonitoring\OltMonitoring
+ * @see \PauloHortelan\OltMonitoring\Services\Zte300Service
  */
-class OltMonitoring extends Facade
+class Zte600 extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \PauloHortelan\OltMonitoring\OltMonitoring::class;
+        return \PauloHortelan\OltMonitoring\Services\Zte600Service::class;
     }
 }

@@ -8,7 +8,8 @@ it('can create', function () {
         'host' => '127.0.0.1',
         'username' => 'test',
         'password' => '1234',
-        'model' => 'Nokia',
+        'brand' => 'ZTE',
+        'product_model' => 'C300',
     ]);
 
     $this->assertNotNull($olt);

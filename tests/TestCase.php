@@ -41,6 +41,7 @@ class TestCase extends Orchestra
 
     protected function getEnvironmentSetUp($app)
     {
+        $app['config']->set('connections.fake', true);
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
             'driver' => 'sqlite',
@@ -52,9 +53,9 @@ class TestCase extends Orchestra
     protected function defineDatabaseMigrations()
     {
         $this->loadLaravelMigrations();
-        $this->loadMigrationsFrom(__DIR__.'/database/migrations');
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__.'/../workbench/database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../workbench/database/migrations');
         $this->artisan('migrate', ['--database' => 'testbench'])->run();
     }
 }

@@ -208,13 +208,11 @@ class TL1
      *
      * @param  string  $command Command to execute
      * @param  bool  $add_newline Default true, adds newline to the command
-     * @return string Command result
+     * @return void
      */
     public function execWithoutResponse($command, $add_newline = true)
     {
         $this->write($command, $add_newline);
-
-        return true;
     }
 
     /**
@@ -304,105 +302,10 @@ class TL1
      */
     public function login($username, $password, $host_type = 'linux')
     {
-        switch ($host_type) {
-            case 'linux': // General Linux/UNIX
-                $user_prompt = 'login:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '\$';
-                break;
+        $user_prompt = '';
+        $pass_prompt = '';
+        $prompt_reg = '';
 
-            case 'ios': // Cisco IOS, IOS-XE, IOS-XR
-                $user_prompt = 'Username:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[>#]';
-                break;
-
-            case 'junos': // Juniper Junos OS
-                $user_prompt = 'login:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[%>#]';
-                break;
-
-            case 'alaxala': // AlaxalA, HITACHI
-                $user_prompt = 'login:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[>#]';
-                break;
-
-            case 'dlink': // Dlink
-                $user_prompt = 'ame:';
-                $pass_prompt = 'ord:';
-                $prompt_reg = '[>|#]';
-                break;
-
-            case 'xos': // Xtreme routers and switches
-                $user_prompt = 'login:';
-                $pass_prompt = 'password:';
-                $prompt_reg = '\.[0-9]{1,3} > ';
-                break;
-
-            case 'bdcom': // BDcom PON switches
-                $user_prompt = 'login:';
-                $pass_prompt = 'password:';
-                $prompt_reg = '[ > ]';
-                break;
-
-            case 'nokia':
-                $user_prompt = 'login: ';
-                $pass_prompt = 'password: ';
-                $prompt_reg = '[#]';
-                break;
-
-            case 'digistar':
-                $pass_prompt = 'Password: ';
-                $prompt_reg = '[>]';
-                break;
-
-            case 'phyhome':
-                $user_prompt = 'Username(1-32 chars):';
-                $pass_prompt = 'Password(1-16 chars):';
-                $prompt_reg = '[>]';
-                break;
-        }
-
-        try {
-            // username
-            if (! empty($username)) {
-                $this->setPrompt($user_prompt);
-                $this->waitPrompt();
-                $this->write($username);
-            }
-
-            // password
-            $this->setPrompt($pass_prompt);
-            $this->waitPrompt();
-            $this->write($password);
-
-            // wait prompt
-            $this->setRegexPrompt($prompt_reg);
-            $this->waitPrompt();
-        } catch (\Exception $e) {
-            throw new \Exception('Login failed.');
-        }
-
-        return $this;
-    }
-
-    /**
-     * Attempts login to a TL1 remote host.
-     * This method is a wrapper for lower level private methods and should be
-     * modified to reflect telnet implementation details like login/password
-     * and line prompts. Defaults to standard unix non-root prompts
-     *
-     * @param  string  $username Username
-     * @param  string  $password Password
-     * @param  string  $host_type Type of destination host
-     * @return $this
-     *
-     * @throws \Exception
-     */
-    public function loginTL1($username, $password, $host_type = 'nokia')
-    {
         switch ($host_type) {
             case 'nokia':
                 $user_prompt = 'Enter Username   :';
@@ -501,7 +404,7 @@ class TL1
     /**
      * Gets character from the socket
      *
-     * @return string $c character string
+     * @return string|bool $c character string
      */
     protected function getc()
     {
@@ -573,6 +476,8 @@ class TL1
             }
 
         } while ($c != $this->NULL || $c != $this->DC1);
+
+        return false;
     }
 
     /**

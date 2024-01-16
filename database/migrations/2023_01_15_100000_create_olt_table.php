@@ -14,7 +14,8 @@ return new class extends Migration
             $table->string('host')->unique();
             $table->text('username');
             $table->text('password');
-            $table->string('model');
+            $table->string('brand');
+            $table->string('product_model');
             $table->timestamps();
         });
     }
