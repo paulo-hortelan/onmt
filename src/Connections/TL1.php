@@ -68,10 +68,10 @@ class TL1
      * Constructor. Initialises host, port and timeout parameters
      * defaults to localhost port 3337 (standard telnet port)
      *
-     * @param  string  $host Host name or IP addres
-     * @param  int  $port TCP port number
-     * @param  int  $timeout Connection timeout in seconds
-     * @param  float  $stream_timeout Stream timeout in decimal seconds
+     * @param  string  $host  Host name or IP addres
+     * @param  int  $port  TCP port number
+     * @param  int  $timeout  Connection timeout in seconds
+     * @param  float  $stream_timeout  Stream timeout in decimal seconds
      *
      * @throws \Exception
      */
@@ -190,8 +190,8 @@ class TL1
      * Executes command and returns a string with result.
      * This method is a wrapper for lower level private methods
      *
-     * @param  string  $command Command to execute
-     * @param  bool  $add_newline Default true, adds newline to the command
+     * @param  string  $command  Command to execute
+     * @param  bool  $add_newline  Default true, adds newline to the command
      * @return string Command result
      */
     public function exec($command, $add_newline = true)
@@ -206,8 +206,8 @@ class TL1
      * Executes command and doesn't treat the response
      * This method is a wrapper for lower level private methods
      *
-     * @param  string  $command Command to execute
-     * @param  bool  $add_newline Default true, adds newline to the command
+     * @param  string  $command  Command to execute
+     * @param  bool  $add_newline  Default true, adds newline to the command
      * @return void
      */
     public function execWithoutResponse($command, $add_newline = true)
@@ -293,9 +293,9 @@ class TL1
      * modified to reflect telnet implementation details like login/password
      * and line prompts. Defaults to standard unix non-root prompts
      *
-     * @param  string  $username Username
-     * @param  string  $password Password
-     * @param  string  $host_type Type of destination host
+     * @param  string  $username  Username
+     * @param  string  $password  Password
+     * @param  string  $host_type  Type of destination host
      * @return $this
      *
      * @throws \Exception
@@ -354,7 +354,7 @@ class TL1
      * Sets the string of characters to respond to.
      * This should be set to the last character of the command line prompt
      *
-     * @param  string  $str String to respond to
+     * @param  string  $str  String to respond to
      * @return $this
      */
     public function setPrompt($str)
@@ -368,7 +368,7 @@ class TL1
      * Sets a regex string to respond to.
      * This should be set to the last line of the command line prompt.
      *
-     * @param  string  $str Regex string to respond to
+     * @param  string  $str  Regex string to respond to
      * @return $this
      */
     public function setRegexPrompt($str)
@@ -393,7 +393,7 @@ class TL1
     /**
      * Set if the buffer should be stripped from the buffer after reading.
      *
-     * @param $strip boolean if the prompt should be stripped.
+     * @param  $strip  boolean if the prompt should be stripped.
      * @return void
      */
     public function stripPromptFromBuffer($strip)
@@ -483,8 +483,8 @@ class TL1
     /**
      * Write command to a socket
      *
-     * @param  string  $buffer Stuff to write to socket
-     * @param  bool  $add_newline Default true, adds newline to the command
+     * @param  string  $buffer  Stuff to write to socket
+     * @param  bool  $add_newline  Default true, adds newline to the command
      * @return bool
      *
      * @throws \Exception
