@@ -20,8 +20,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
-        (new Filesystem)->ensureDirectoryExists(app_path('routes'));
-        (new Filesystem)->copyDirectory(__DIR__.'/../routes', app_path('routes'));
+        copy(__DIR__.'/../routes/olt-monitoring.php', base_path('routes/olt-monitoring.php'));
     }
 
     protected function registerRoutes()
