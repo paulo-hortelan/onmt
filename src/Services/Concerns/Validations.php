@@ -12,7 +12,7 @@ trait Validations
     public function oltValid(Olt $olt): bool
     {
         $callingService = get_class($this);
-        $exploded = explode("\\", $callingService);
+        $exploded = explode('\\', $callingService);
         $brand = $exploded[count($exploded) - 2];
 
         return $olt->brand === $brand;
