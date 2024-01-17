@@ -25,8 +25,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
 
         copy(__DIR__.'/../routes/olt-monitoring.php', base_path('routes/olt-monitoring.php'));
 
-        /* @phpstan-ignore-next-line */
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
+        Factory::guessFactoryNamesUsing(function (string $modelName) { // @phpstan-ignore-line
             return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
     }
