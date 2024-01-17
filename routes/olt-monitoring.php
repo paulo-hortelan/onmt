@@ -14,10 +14,10 @@ use PauloHortelan\OltMonitoring\Http\Controllers\OltController;
 |
 */
 
-Route::middleware(['auth:sanctum'])->controller(OltController::class)->group(function () {
-    Route::get('/olts', 'index');
-    Route::post('/olts', 'store');
-    Route::get('/olts/{olt}', 'show');
-    Route::put('/olts/{olt}', 'update');
-    Route::delete('/olts/{olt}', 'destroy');
+Route::controller(OltController::class)->group(function () {
+    Route::get('/olts', 'index')->name('olts.index');
+    Route::post('/olts', 'store')->name('olts.store');
+    Route::get('/olts/{olt}', 'show')->name('olts.show');
+    Route::put('/olts/{olt}', 'update')->name('olts.update');
+    Route::delete('/olts/{olt}', 'destroy')->name('olts.destroy');
 });
