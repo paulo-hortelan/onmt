@@ -21,7 +21,9 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
 
         $this->registerRoutes();
 
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
+
+
+        Factory::guessFactoryNamesUsing(function (string $modelName) { // @phpstan-ignore-line
             return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
     }
