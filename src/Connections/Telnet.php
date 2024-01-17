@@ -12,53 +12,53 @@ namespace PauloHortelan\OltMonitoring\Connections;
  */
 class Telnet
 {
-    protected $host;
+    protected string $host;
 
-    protected $port;
+    protected int $port;
 
-    protected $timeout;
+    protected int $timeout;
 
-    protected $stream_timeout_sec;
+    protected mixed $stream_timeout_sec;
 
-    protected $stream_timeout_usec;
+    protected mixed $stream_timeout_usec;
 
-    protected $socket = null;
+    protected mixed $socket = null;
 
-    protected $buffer = null;
+    protected mixed $buffer = null;
 
-    protected $prompt;
+    protected string $prompt;
 
-    protected $errno;
+    protected int $errno;
 
-    protected $errstr;
+    protected string $errstr;
 
-    protected $strip_prompt = true;
+    protected bool $strip_prompt = true;
 
-    protected $eol = "\r\n";
+    protected string $eol = "\r\n";
 
-    protected $enableMagicControl = true;
+    protected bool $enableMagicControl = true;
 
-    protected $NULL;
+    protected string $NULL;
 
-    protected $DC1;
+    protected string $DC1;
 
-    protected $WILL;
+    protected string $WILL;
 
-    protected $WONT;
+    protected string $WONT;
 
-    protected $DO;
+    protected string $DO;
 
-    protected $DONT;
+    protected string $DONT;
 
-    protected $IAC;
+    protected string $IAC;
 
-    protected $SB;
+    protected string $SB;
 
-    protected $NAWS;
+    protected string $NAWS;
 
-    protected $SE;
+    protected string $SE;
 
-    protected $global_buffer;
+    protected \SplFileObject $global_buffer;
 
     const TELNET_ERROR = false;
 
@@ -112,7 +112,7 @@ class Telnet
         $this->buffer = null;
     }
 
-    public function connect()
+    public function connect(): self
     {
         // check if we need to convert host to IP
         if (! preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', $this->host)) {
@@ -173,13 +173,13 @@ class Telnet
         fwrite($this->socket, $this->IAC.$this->WILL.$this->NAWS);
         $c = $this->getc();
         if ($c != $this->IAC) {
-            throw new \Exception('Error: unknown control character '.ord($c));
+            throw new \Exception('Error: unknown control character '.ord(strval($c)));
         }
         $c = $this->getc();
         if ($c == $this->DONT || $c == $this->WONT) {
             throw new \Exception('Error: server refuses to use NAWS');
         } elseif ($c != $this->DO && $c != $this->WILL) {
-            throw new \Exception('Error: unknown control character '.ord($c));
+            throw new \Exception('Error: unknown control character '.ord(strval($c)));
         }
         fwrite($this->socket, $this->IAC.$this->SB.$this->NAWS. 0 .$wide. 0 .$high.$this->IAC.$this->SE);
 
@@ -209,7 +209,7 @@ class Telnet
      * @param  string  $command  Command to execute
      * @param  bool  $add_newline  Default true, adds newline to the command
      */
-    public function execWithoutResponse($command, $add_newline = true)
+    public function execWithoutResponse($command, $add_newline = true): bool
     {
         $this->write($command, $add_newline);
 
@@ -314,7 +314,8 @@ class Telnet
                 $prompt_reg = '\$';
                 break;
 
-            case 'zte300':
+            case 'ZTE-C300':
+            case 'ZTE-C600':
                 $user_prompt = 'Username:';
                 $pass_prompt = 'Password:';
                 $prompt_reg = '[>#]';
@@ -440,10 +441,10 @@ class Telnet
     /**
      * Set if the buffer should be stripped from the buffer after reading.
      *
-     * @param  $strip  boolean if the prompt should be stripped.
+     * @param    $strip  boolean if the prompt should be stripped.
      * @return void
      */
-    public function stripPromptFromBuffer($strip)
+    public function stripPromptFromBuffer(mixed $strip): void
     {
         $this->strip_prompt = $strip;
     }
@@ -457,7 +458,7 @@ class Telnet
     {
         stream_set_timeout($this->socket, $this->stream_timeout_sec, $this->stream_timeout_usec);
         $c = fgetc($this->socket);
-        $this->global_buffer->fwrite($c);
+        $this->global_buffer->fwrite(strval($c));
 
         return $c;
     }
@@ -577,18 +578,6 @@ class Telnet
     }
 
     /**
-     * Returns the content of the global command buffer
-     *
-     * @return string Content of the global command buffer
-     */
-    public function getGlobalBuffer()
-    {
-        $this->global_buffer->rewind();
-
-        return $this->global_buffer->fpassthru();
-    }
-
-    /**
      * Telnet control character magic
      *
      * @return bool
@@ -612,7 +601,7 @@ class Telnet
                 $opt = $this->getc();
                 fwrite($this->socket, $this->IAC.$this->DONT.$opt);
             } else {
-                throw new \Exception('Error: unknown control character '.ord($c));
+                throw new \Exception('Error: unknown control character '.ord(strval($c)));
             }
         } else {
             throw new \Exception('Error: Something Wicked Happened');
@@ -624,7 +613,7 @@ class Telnet
     /**
      * Reads socket until prompt is encountered
      */
-    protected function waitPrompt()
+    protected function waitPrompt(): bool
     {
         return $this->readTo($this->prompt);
     }
