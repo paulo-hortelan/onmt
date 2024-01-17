@@ -24,11 +24,11 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $this->registerRoutes();
 
         $this->publishes([
-            __DIR__.'/../config/olt-monitoring.php' => config_path('olt-monitoring.php')
+            __DIR__.'/../config/olt-monitoring.php' => config_path('olt-monitoring.php'),
         ], 'olt-monitoring-config');
 
         $this->publishes([
-            __DIR__ . '/../database/migrations/' => database_path('migrations'),
+            __DIR__.'/../database/migrations/' => database_path('migrations'),
         ], 'olt-monitoring-migrations');
 
         // copy(__DIR__.'/../routes/olt-monitoring.php', base_path('routes/olt-monitoring.php'));
