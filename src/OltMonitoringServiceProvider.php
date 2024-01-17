@@ -7,6 +7,7 @@ use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Spatie\LaravelPackageTools\Commands\InstallCommand;
 
 class OltMonitoringServiceProvider extends PackageServiceProvider
 {
@@ -21,7 +22,11 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
 
         $this->registerRoutes();
 
-        Factory::guessFactoryNamesUsing(function (string $modelName) {
+        $this->publishes([
+            __DIR__.'/../routes/olt-monitoring.php' => base_path('routes/olt-monitoring.php')
+        ], 'olt-monitoring-routes');
+
+        Factory::guessFactoryNamesUsing(function (string $modelName) { // @phpstan-ignore-line
             return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
     }
@@ -62,6 +67,11 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
             ->name('olt-monitoring')
             ->hasConfigFile('olt-monitoring')
             ->hasMigration('create_olts_table')
-            ->runsMigrations();
+            ->hasInstallCommand(function(InstallCommand $command) {
+                $command
+                    ->publishConfigFile()
+                    ->publishMigrations()
+                    ->askToRunMigrations();
+            });
     }
 }
