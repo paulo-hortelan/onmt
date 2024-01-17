@@ -19,21 +19,9 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
     {
         parent::boot();
 
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-
         $this->registerRoutes();
 
-        $this->publishes([
-            __DIR__.'/../config/olt-monitoring.php' => config_path('olt-monitoring.php')
-        ], 'olt-monitoring-config');
-
-        $this->publishes([
-            __DIR__ . '/../database/migrations/' => database_path('migrations'),
-        ], 'olt-monitoring-migrations');
-
-        // copy(__DIR__.'/../routes/olt-monitoring.php', base_path('routes/olt-monitoring.php'));
-
-        Factory::guessFactoryNamesUsing(function (string $modelName) { // @phpstan-ignore-line
+        Factory::guessFactoryNamesUsing(function (string $modelName) {
             return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
     }
@@ -73,6 +61,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $package
             ->name('olt-monitoring')
             ->hasConfigFile('olt-monitoring')
-            ->hasMigration('2023_01_15_100000_create_olt_table');
+            ->hasMigration('create_olts_table')
+            ->runsMigrations();
     }
 }
