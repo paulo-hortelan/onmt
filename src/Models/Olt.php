@@ -4,6 +4,7 @@ namespace PauloHortelan\OltMonitoring\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use PauloHortelan\OltMonitoring\Database\Factories\OltFactory;
 
 /**
  * PauloHortelan\OltMonitoring\Models\Olt
@@ -13,11 +14,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $username
  * @property string $password
  * @property string $brand
- * @property string $product_model
+ * @property string $model
  */
 class Olt extends Model
 {
     use HasFactory;
+
+    // /** @return SomeFancyFactory */
+    // protected static function newFactory()
+    // {
+    //     return OltFactory::new();
+    // }
 
     // Disable Laravel's mass assignment protection
     protected $guarded = [];
@@ -33,7 +40,7 @@ class Olt extends Model
         'username',
         'password',
         'brand',
-        'product_model',
+        'model',
     ];
 
     /**

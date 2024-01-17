@@ -9,7 +9,7 @@ it('can create', function () {
         'username' => 'test',
         'password' => '1234',
         'brand' => 'ZTE',
-        'product_model' => 'C300',
+        'model' => 'C300',
     ]);
 
     $this->assertNotNull($olt);

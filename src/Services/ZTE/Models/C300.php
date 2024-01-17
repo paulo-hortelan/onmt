@@ -1,24 +1,22 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services;
+namespace PauloHortelan\OltMonitoring\Services\ZTE\Models;
 
 use PauloHortelan\OltMonitoring\Connections\Telnet;
-use PauloHortelan\OltMonitoring\Models\Olt;
 
-class Zte300Service
+class C300
 {
-    private Telnet $connection;
+    protected Telnet $connection;
 
-    public function connect(Olt $olt, int $timeout = 3, int $streamTimeout = 3)
+    public function __construct(Telnet $connection)
     {
-        $this->connection = new Telnet($olt->host, 23, $timeout, $streamTimeout);
-        $this->connection->stripPromptFromBuffer(true);
-        $this->connection->login($olt->username, $olt->password, 'zte300');
-
-        return $this;
+        $this->connection = $connection;
     }
 
-    public function ontOpticalPower($interface): float
+    /**
+     * Returns the ONT optical power
+     */
+    public function ontOpticalPower(string $interface): float
     {
         $response = $this->connection->exec("show pon power attenuation $interface");
 
@@ -31,13 +29,17 @@ class Zte300Service
         return $opticalPower;
     }
 
-    public function ontInterface($serial): string
+    /**
+     * Returns the ONT interface
+     */
+    public function ontInterface(string $serial): string
     {
         $response = $this->connection->exec("show gpon onu by sn $serial");
 
         if (preg_match('/gpon-onu.*/m', $response, $match)) {
             $interface = (string) $match[0];
         } else {
+            dump($response);
             throw new \Exception('Ont interface not found.');
         }
 

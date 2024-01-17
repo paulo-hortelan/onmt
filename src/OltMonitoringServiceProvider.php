@@ -2,8 +2,9 @@
 
 namespace PauloHortelan\OltMonitoring;
 
-use Illuminate\Filesystem\Filesystem;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\AliasLoader;
+use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -20,23 +21,30 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
 
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
+        $this->registerRoutes();
+
         copy(__DIR__.'/../routes/olt-monitoring.php', base_path('routes/olt-monitoring.php'));
+
+        /* @phpstan-ignore-next-line */
+        Factory::guessFactoryNamesUsing(function (string $modelName) {
+            return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
+        });
     }
 
-    protected function registerRoutes()
+    protected function registerRoutes(): void
     {
-        // Route::group($this->routeConfiguration(), function () {
-        $this->loadRoutesFrom(__DIR__.'/../routes/olt-monitoring.php');
-        // });
+        Route::group($this->routeConfiguration(), function () {
+            $this->loadRoutesFrom(__DIR__.'/../routes/olt-monitoring.php');
+        });
     }
 
-    // protected function routeConfiguration()
-    // {
-    //     return [
-    //         'prefix' => config('oltmonitoring.prefix'),
-    //         'middleware' => config('oltmonitoring.middleware'),
-    //     ];
-    // }
+    protected function routeConfiguration(): array
+    {
+        return [
+            'prefix' => config('olt-monitoring.prefix'),
+            'middleware' => config('olt-monitoring.middleware'),
+        ];
+    }
 
     public function register()
     {
@@ -57,8 +65,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('olt-monitoring')
-            ->hasConfigFile()
-            ->hasRoute('olt-monitoring')
+            ->hasConfigFile('olt-monitoring')
             ->hasMigration('2023_01_15_100000_create_olt_table');
     }
 }

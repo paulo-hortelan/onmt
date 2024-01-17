@@ -1,54 +1,54 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Facades\Zte600;
+use PauloHortelan\OltMonitoring\Facades\ZTE;
 use PauloHortelan\OltMonitoring\Models\Olt;
-use PauloHortelan\OltMonitoring\Services\Zte600Service;
+use PauloHortelan\OltMonitoring\Services\ZTE\ZTEService;
 
-uses()->group('zte600');
+uses()->group('ZTE-C300');
 
 beforeEach(function () {
     $this->correctInterface = 'gpon-onu_1/2/1:62';
     $this->wrongInterface = 'gpon-onu_1/2/1:99';
 
-    $this->correctSerial = 'ALCLB30G2BB0';
-    $this->wrongSerial = 'ALCLB40D7AC1';
+    $this->correctSerial = 'ALCLB40D2BB0';
+    $this->wrongSerial = 'ALCLB40D2CC1';
 
     $this->olt = Olt::create([
         'name' => 'olt-test1',
-        'host' => '127.0.0.4',
+        'host' => '127.0.0.3',
         'username' => 'user',
         'password' => 'pass1234',
         'brand' => 'ZTE',
-        'product_model' => 'C600',
+        'model' => 'C300',
     ]);
 });
 
 it('can connect on telnet', function () {
-    $zte = Zte600::connect($this->olt);
+    $zte = ZTE::connect($this->olt);
 
-    expect($zte)->toBeInstanceOf(Zte600Service::class);
+    expect($zte)->toBeInstanceOf(ZTEService::class);
 })->skipIfFakeConnection();
 
 it('can get ont optical power', function () {
-    $opticalPower = Zte600::connect($this->olt)->ontOpticalPower($this->correctInterface);
+    $opticalPower = ZTE::connect($this->olt)->ontOpticalPower($this->correctInterface);
 
     expect($opticalPower)->toBeFloat();
 })->skipIfFakeConnection();
 
 it('throws exception when cannot get ont optical power', function () {
 
-    Zte600::connect($this->olt)->ontOpticalPower($this->wrongInterface);
+    ZTE::connect($this->olt)->ontOpticalPower($this->wrongInterface);
 
 })->throws(Exception::class)->skipIfFakeConnection();
 
 it('can get ont interface', function () {
-    $interface = Zte600::connect($this->olt)->ontInterface($this->correctSerial);
+    $interface = ZTE::connect($this->olt)->ontInterface($this->correctSerial);
 
     expect($interface)->toStartWith('gpon-onu');
 })->skipIfFakeConnection();
 
 it('throws exception when cannot get ont interface', function () {
 
-    Zte600::connect($this->olt)->ontInterface($this->wrongSerial);
+    ZTE::connect($this->olt)->ontInterface($this->wrongSerial);
 
 })->throws(Exception::class)->skipIfFakeConnection();

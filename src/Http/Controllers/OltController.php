@@ -2,6 +2,7 @@
 
 namespace PauloHortelan\OltMonitoring\Http\Controllers;
 
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use PauloHortelan\OltMonitoring\Models\Olt;
@@ -11,7 +12,7 @@ class OltController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
         $olts = Olt::all();
 
@@ -21,7 +22,7 @@ class OltController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
             'name' => 'required|string',
@@ -29,7 +30,7 @@ class OltController extends Controller
             'username' => 'required|string',
             'password' => 'required|string',
             'brand' => 'required|string',
-            'product_model' => 'required|string',
+            'model' => 'required|string',
         ]);
 
         $olt = Olt::create($validatedData);
@@ -40,16 +41,15 @@ class OltController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Olt $olt)
+    public function show(Olt $olt): JsonResponse
     {
-        // return JSON response with the olt
         return response()->json($olt);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Olt $olt)
+    public function update(Request $request, Olt $olt): JsonResponse
     {
         $validatedData = $request->validate([
             'name' => 'required|string',
@@ -57,7 +57,7 @@ class OltController extends Controller
             'username' => 'required|string',
             'password' => 'required|string',
             'brand' => 'required|string',
-            'product_model' => 'required|string',
+            'model' => 'required|string',
         ]);
 
         $olt->update($validatedData);
@@ -68,7 +68,7 @@ class OltController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Olt $olt)
+    public function destroy(Olt $olt): JsonResponse
     {
         $olt->delete();
 
