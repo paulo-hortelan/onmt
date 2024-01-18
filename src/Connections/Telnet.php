@@ -22,15 +22,19 @@ class Telnet
 
     protected mixed $stream_timeout_usec;
 
-    protected mixed $socket = null;
+    private static $instance;
+
+    private static $server;
+
+    protected static $socket = null;
 
     protected mixed $buffer = null;
 
     protected string $prompt;
 
-    protected int $errno;
+    protected mixed $errno;
 
-    protected string $errstr;
+    protected mixed $errstr;
 
     protected bool $strip_prompt = true;
 
@@ -75,7 +79,7 @@ class Telnet
      *
      * @throws \Exception
      */
-    public function __construct($host = '127.0.0.1', $port = 23, $timeout = 10, $stream_timeout = 1.0)
+    public function __construct($host = '127.0.0.1', $port = 23, $timeout = 10, $stream_timeout = 1.0, $username = '', $password = '', $hostType = '')
     {
         $this->host = $host;
         $this->port = $port;
@@ -98,6 +102,26 @@ class Telnet
         $this->global_buffer = new \SplFileObject('php://temp', 'r+b');
 
         $this->connect();
+        $this->login($username, $password, $hostType);
+    }
+
+    /**
+     * Creates a new class instance in case it doesn't exist
+     *
+     * @return Telnet
+     */
+    public static function getInstance($server, $port, $timeout, $streamTimeout, $username, $password, $hostType)
+    {
+        if (!self::$instance || $server !== self::$server) {
+            self::$server = $server;
+            self::$instance = new self($server, $port, $timeout, $streamTimeout, $username, $password, $hostType);
+        }
+
+        return self::$instance;
+    }
+
+    private function __clone()
+    {
     }
 
     /**
@@ -107,7 +131,13 @@ class Telnet
      */
     public function __destruct()
     {
-        // clean up resources
+        $this->disconnect();
+        $this->buffer = null;
+    }
+
+    public function destroy()
+    {
+        self::$instance = NULL;
         $this->disconnect();
         $this->buffer = null;
     }
@@ -115,7 +145,7 @@ class Telnet
     public function connect(): self
     {
         // check if we need to convert host to IP
-        if (! preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', $this->host)) {
+        if (!preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', $this->host)) {
             $ip = gethostbyname($this->host);
 
             if ($this->host == $ip) {
@@ -126,13 +156,13 @@ class Telnet
         }
 
         // attempt connection - suppress warnings
-        $this->socket = @fsockopen($this->host, $this->port, $this->errno, $this->errstr, $this->timeout);
+        self::$socket = @fsockopen($this->host, $this->port, $this->errno, $this->errstr, $this->timeout);
 
-        if (! $this->socket) {
+        if (!self::$socket) {
             throw new \Exception("Cannot connect to $this->host on port $this->port");
         }
 
-        if (! empty($this->prompt)) {
+        if (!empty($this->prompt)) {
             $this->waitPrompt();
         }
 
@@ -148,42 +178,14 @@ class Telnet
      */
     public function disconnect()
     {
-        if ($this->socket) {
-            if (! fclose($this->socket)) {
+        if (self::$socket) {
+            if (!fclose(self::$socket)) {
                 throw new \Exception('Error while closing telnet socket');
             }
-            $this->socket = null;
+            self::$socket = null;
         }
 
         return $this;
-    }
-
-    /**
-     * Change window size in terminal
-     * Use its method when device respond with new line
-     *
-     * @param  int  $wide
-     * @param  int  $high
-     * @return bool
-     *
-     * @throws \Exception
-     */
-    public function setWindowSize($wide = 80, $high = 40)
-    {
-        fwrite($this->socket, $this->IAC.$this->WILL.$this->NAWS);
-        $c = $this->getc();
-        if ($c != $this->IAC) {
-            throw new \Exception('Error: unknown control character '.ord(strval($c)));
-        }
-        $c = $this->getc();
-        if ($c == $this->DONT || $c == $this->WONT) {
-            throw new \Exception('Error: server refuses to use NAWS');
-        } elseif ($c != $this->DO && $c != $this->WILL) {
-            throw new \Exception('Error: unknown control character '.ord(strval($c)));
-        }
-        fwrite($this->socket, $this->IAC.$this->SB.$this->NAWS. 0 .$wide. 0 .$high.$this->IAC.$this->SE);
-
-        return self::TELNET_OK;
     }
 
     /**
@@ -321,46 +323,16 @@ class Telnet
                 $prompt_reg = '[>#]';
                 break;
 
+            case 'Nokia-FX16':
+                $user_prompt = 'login: ';
+                $pass_prompt = 'password: ';
+                $prompt_reg = '[#]';
+                break;
+
             case 'ios': // Cisco IOS, IOS-XE, IOS-XR
                 $user_prompt = 'Username:';
                 $pass_prompt = 'Password:';
                 $prompt_reg = '[>#]';
-                break;
-
-            case 'junos': // Juniper Junos OS
-                $user_prompt = 'login:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[%>#]';
-                break;
-
-            case 'alaxala': // AlaxalA, HITACHI
-                $user_prompt = 'login:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[>#]';
-                break;
-
-            case 'dlink': // Dlink
-                $user_prompt = 'ame:';
-                $pass_prompt = 'ord:';
-                $prompt_reg = '[>|#]';
-                break;
-
-            case 'xos': // Xtreme routers and switches
-                $user_prompt = 'login:';
-                $pass_prompt = 'password:';
-                $prompt_reg = '\.[0-9]{1,3} > ';
-                break;
-
-            case 'bdcom': // BDcom PON switches
-                $user_prompt = 'login:';
-                $pass_prompt = 'password:';
-                $prompt_reg = '[ > ]';
-                break;
-
-            case 'nokia':
-                $user_prompt = 'login: ';
-                $pass_prompt = 'password: ';
-                $prompt_reg = '[#]';
                 break;
 
             case 'digistar':
@@ -377,7 +349,7 @@ class Telnet
 
         try {
             // username
-            if (! empty($username)) {
+            if (!empty($username)) {
                 $this->setPrompt($user_prompt);
                 $this->waitPrompt();
                 $this->write($username);
@@ -392,7 +364,7 @@ class Telnet
             $this->setRegexPrompt($prompt_reg);
             $this->waitPrompt();
         } catch (\Exception $e) {
-            throw new \Exception('Login failed. '.$e->getMessage());
+            throw new \Exception('Login failed. ' . $e->getMessage());
         }
 
         return $this;
@@ -455,8 +427,8 @@ class Telnet
      */
     protected function getc()
     {
-        stream_set_timeout($this->socket, $this->stream_timeout_sec, $this->stream_timeout_usec);
-        $c = fgetc($this->socket);
+        stream_set_timeout(self::$socket, $this->stream_timeout_sec, $this->stream_timeout_usec);
+        $c = fgetc(self::$socket);
         $this->global_buffer->fwrite(strval($c));
 
         return $c;
@@ -485,7 +457,7 @@ class Telnet
      */
     protected function readTo($prompt)
     {
-        if (! $this->socket) {
+        if (!self::$socket) {
             throw new \Exception('Telnet connection closed');
         }
 
@@ -504,7 +476,7 @@ class Telnet
                 if (empty($prompt)) {
                     return self::TELNET_OK;
                 }
-                throw new \Exception("Couldn't find the requested : '".$prompt."', it was not in the data returned from server: ".$this->buffer);
+                throw new \Exception("Couldn't find the requested : '" . $prompt . "', it was not in the data returned from server: " . $this->buffer);
             }
 
             // Interpreted As Command
@@ -518,7 +490,7 @@ class Telnet
             $this->buffer .= $c;
 
             // we've encountered the prompt. Break out of the loop
-            if (! empty($prompt) && preg_match("/{$prompt}$/", $this->buffer)) {
+            if (!empty($prompt) && preg_match("/{$prompt}$/", $this->buffer)) {
                 return self::TELNET_OK;
             }
         } while ($c != $this->NULL || $c != $this->DC1);
@@ -537,7 +509,7 @@ class Telnet
      */
     protected function write($buffer, $add_newline = true)
     {
-        if (! $this->socket) {
+        if (!self::$socket) {
             throw new \Exception('Telnet connection closed');
         }
 
@@ -550,9 +522,10 @@ class Telnet
 
         $this->global_buffer->fwrite($buffer);
 
-        if (! fwrite($this->socket, $buffer) < 0) {
+        if (!fwrite(self::$socket, $buffer) < 0) {
             throw new \Exception('Error writing to socket');
         }
+
 
         return self::TELNET_OK;
     }
@@ -587,7 +560,7 @@ class Telnet
      */
     protected function negotiateTelnetOptions()
     {
-        if (! $this->enableMagicControl) {
+        if (!$this->enableMagicControl) {
             return self::TELNET_OK;
         }
 
@@ -595,12 +568,12 @@ class Telnet
         if ($c != $this->IAC) {
             if (($c == $this->DO) || ($c == $this->DONT)) {
                 $opt = $this->getc();
-                fwrite($this->socket, $this->IAC.$this->WONT.$opt);
+                fwrite(self::$socket, $this->IAC . $this->WONT . $opt);
             } elseif (($c == $this->WILL) || ($c == $this->WONT)) {
                 $opt = $this->getc();
-                fwrite($this->socket, $this->IAC.$this->DONT.$opt);
+                fwrite(self::$socket, $this->IAC . $this->DONT . $opt);
             } else {
-                throw new \Exception('Error: unknown control character '.ord(strval($c)));
+                throw new \Exception('Error: unknown control character ' . ord(strval($c)));
             }
         } else {
             throw new \Exception('Error: Something Wicked Happened');
