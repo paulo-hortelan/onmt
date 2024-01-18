@@ -39,7 +39,6 @@ class C300
         if (preg_match('/gpon-onu.*/m', $response, $match)) {
             $interface = (string) $match[0];
         } else {
-            dump($response);
             throw new \Exception('Ont interface not found.');
         }
 
