@@ -46,16 +46,6 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         ];
     }
 
-    public function register()
-    {
-        parent::register();
-
-        $loader = AliasLoader::getInstance();
-        $loader->alias('OltMonitor', 'PauloHortelan\OltMonitoring\Facades');
-        $loader->alias('Zte600', 'PauloHortelan\OltMonitoring\Facades');
-        $loader->alias('Zte600', 'PauloHortelan\OltMonitoring\Facades');
-    }
-
     public function configurePackage(Package $package): void
     {
         /*
