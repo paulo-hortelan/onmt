@@ -4,11 +4,11 @@ use PauloHortelan\OltMonitoring\Facades\ZTE;
 use PauloHortelan\OltMonitoring\Models\Olt;
 use PauloHortelan\OltMonitoring\Services\ZTE\ZTEService;
 
-uses()->group('ZTEC600');
+uses()->group('ZTE-C600');
 
 beforeEach(function () {
     $this->correctInterface = 'gpon_onu-1/1/1:5';
-    $this->wrongInterface = 'gpon-onu_1/2/1:99';
+    $this->wrongInterface = 'gpon_onu-1/2/1:99';
 
     $this->correctSerial = 'CMSZ3B112D31';
     $this->wrongSerial = 'ALCLB40D7AC1';
@@ -19,7 +19,7 @@ beforeEach(function () {
         'username' => 'user',
         'password' => 'pass1234',
         'brand' => 'ZTE',
-        'model' => 'C300',
+        'model' => 'C600',
     ]);
 });
 
