@@ -1,61 +1,61 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Facades\ZTE;
+use PauloHortelan\OltMonitoring\Facades\Nokia;
 use PauloHortelan\OltMonitoring\Models\Olt;
-use PauloHortelan\OltMonitoring\Services\ZTE\ZTEService;
+use PauloHortelan\OltMonitoring\Services\Nokia\NokiaService;
 
-uses()->group('ZTE-C600');
+uses()->group('Nokia-FX16');
 
 beforeEach(function () {
-    $this->correctInterface = 'gpon_onu-1/1/1:5';
-    $this->wrongInterface = 'gpon_onu-1/2/1:99';
+    $this->correctInterface = '1/1/1/1/8';
+    $this->wrongInterface = '1/1/3/20/1';
 
-    $this->correctSerial = 'CMSZ3B112D31';
-    $this->wrongSerial = 'ALCLB40D7AC1';
+    $this->correctSerial = 'ALCLFC5A84A7';
+    $this->wrongSerial = 'ALCLB40D2CC1';
 
     $this->olt = Olt::create([
         'name' => 'olt-test1',
         'host' => '127.0.0.101',
         'username' => 'user',
         'password' => 'pass1234',
-        'brand' => 'ZTE',
-        'model' => 'C600',
+        'brand' => 'Nokia',
+        'model' => 'FX16',
     ]);
 });
 
 // Create connection
 it('can connect on telnet', function () {
-    $zte = ZTE::connect($this->olt);
+    $zte = Nokia::connect($this->olt);
 
-    expect($zte)->toBeInstanceOf(ZTEService::class);
+    expect($zte)->toBeInstanceOf(NokiaService::class);
 })->skipIfFakeConnection();
 
 // Optical power
 it('can get ont optical power', function () {
-    $opticalPower = ZTE::connect($this->olt)->ontOpticalPower($this->correctInterface);
+    $opticalPower = Nokia::connect($this->olt)->ontOpticalPower($this->correctInterface);
 
     expect($opticalPower)->toBeFloat();
 })->depends('it can connect on telnet');
 
 it('throws exception when cannot get ont optical power', function () {
-    ZTE::connect($this->olt)->ontOpticalPower($this->wrongInterface);
+    Nokia::connect($this->olt)->ontOpticalPower($this->wrongInterface);
 })->depends('it can connect on telnet')->throws(Exception::class);
 
 // Interface
 it('can get ont interface', function () {
-    $interface = ZTE::connect($this->olt)->ontInterface($this->correctSerial);
+    $interface = Nokia::connect($this->olt)->ontInterface($this->correctSerial);
 
-    expect($interface)->toStartWith('gpon-onu');
+    $this->assertNotNull($interface);
 })->depends('it can connect on telnet');
 
 it('throws exception when cannot get ont interface', function () {
-    ZTE::connect($this->olt)->ontInterface($this->wrongSerial);
+    Nokia::connect($this->olt)->ontInterface($this->wrongSerial);
 })->depends('it can connect on telnet')
     ->throws(Exception::class);
 
 // Close connection
 it('can close connection', function () {
-    $zte = ZTE::connect($this->olt)->ontOpticalPower($this->correctInterface);
+    $zte = Nokia::connect($this->olt)->ontOpticalPower($this->correctInterface);
     $zte->disconnect();
     
     $zte->ontOpticalPower($this->correctInterface);
