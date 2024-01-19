@@ -108,7 +108,7 @@ class Telnet
 
     /**
      * Creates a new class instance in case it doesn't exist
-     * 
+     *
      * @param  string  $host  Host name or IP address
      * @param  int  $port  TCP port number
      * @param  int  $timeout  Connection timeout in seconds
@@ -116,12 +116,11 @@ class Telnet
      * @param  string  $username  Login username
      * @param  string  $password  Login password
      * @param  string  $hostType  Host type
-     *
      * @return Telnet
      */
     public static function getInstance($host, $port, $timeout, $streamTimeout, $username, $password, $hostType)
     {
-        if (!isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
+        if (! isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
             self::$instance = new self($host, $port, $timeout, $streamTimeout, $username, $password, $hostType);
         }
 
@@ -145,12 +144,10 @@ class Telnet
 
     /**
      * Destroy instance, cleans up socket connection and command buffer
-     *
-     * @return void
-     */    
+     */
     public function destroy(): void
     {
-        self::$instance = NULL;
+        self::$instance = null;
         $this->disconnect();
         $this->buffer = null;
     }
@@ -158,11 +155,11 @@ class Telnet
     public function connect(): self
     {
         // check if we need to convert host to IP
-        if (!preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', self::$host)) {
+        if (! preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', self::$host)) {
             $ip = gethostbyname(self::$host);
 
             if (self::$host == $ip) {
-                throw new \Exception("Cannot resolve ".self::$host);
+                throw new \Exception('Cannot resolve '.self::$host);
             } else {
                 self::$host = $ip;
             }
@@ -171,11 +168,11 @@ class Telnet
         // attempt connection - suppress warnings
         self::$socket = @fsockopen(self::$host, self::$port, $this->errno, $this->errstr, $this->timeout);
 
-        if (!self::$socket) {
-            throw new \Exception("Cannot connect to ".self::$host."on port".self::$port);
+        if (! self::$socket) {
+            throw new \Exception('Cannot connect to '.self::$host.'on port'.self::$port);
         }
 
-        if (!empty($this->prompt)) {
+        if (! empty($this->prompt)) {
             $this->waitPrompt();
         }
 
@@ -192,7 +189,7 @@ class Telnet
     public function disconnect()
     {
         if (self::$socket) {
-            if (!fclose(self::$socket)) {
+            if (! fclose(self::$socket)) {
                 throw new \Exception('Error while closing telnet socket');
             }
             self::$socket = null;
@@ -362,7 +359,7 @@ class Telnet
 
         try {
             // username
-            if (!empty($username)) {
+            if (! empty($username)) {
                 $this->setPrompt($user_prompt);
                 $this->waitPrompt();
                 $this->write($username);
@@ -377,7 +374,7 @@ class Telnet
             $this->setRegexPrompt($prompt_reg);
             $this->waitPrompt();
         } catch (\Exception $e) {
-            throw new \Exception('Login failed. ' . $e->getMessage());
+            throw new \Exception('Login failed. '.$e->getMessage());
         }
 
         return $this;
@@ -470,7 +467,7 @@ class Telnet
      */
     protected function readTo($prompt)
     {
-        if (!self::$socket) {
+        if (! self::$socket) {
             throw new \Exception('Telnet connection closed');
         }
 
@@ -489,7 +486,7 @@ class Telnet
                 if (empty($prompt)) {
                     return self::TELNET_OK;
                 }
-                throw new \Exception("Couldn't find the requested : '" . $prompt . "', it was not in the data returned from server: " . $this->buffer);
+                throw new \Exception("Couldn't find the requested : '".$prompt."', it was not in the data returned from server: ".$this->buffer);
             }
 
             // Interpreted As Command
@@ -503,7 +500,7 @@ class Telnet
             $this->buffer .= $c;
 
             // we've encountered the prompt. Break out of the loop
-            if (!empty($prompt) && preg_match("/{$prompt}$/", $this->buffer)) {
+            if (! empty($prompt) && preg_match("/{$prompt}$/", $this->buffer)) {
                 return self::TELNET_OK;
             }
         } while ($c != $this->NULL || $c != $this->DC1);
@@ -522,7 +519,7 @@ class Telnet
      */
     protected function write($buffer, $add_newline = true)
     {
-        if (!self::$socket) {
+        if (! self::$socket) {
             throw new \Exception('Telnet connection closed');
         }
 
@@ -535,10 +532,9 @@ class Telnet
 
         $this->global_buffer->fwrite($buffer);
 
-        if (!fwrite(self::$socket, $buffer) < 0) {
+        if (! fwrite(self::$socket, $buffer) < 0) {
             throw new \Exception('Error writing to socket');
         }
-
 
         return self::TELNET_OK;
     }
@@ -573,7 +569,7 @@ class Telnet
      */
     protected function negotiateTelnetOptions()
     {
-        if (!$this->enableMagicControl) {
+        if (! $this->enableMagicControl) {
             return self::TELNET_OK;
         }
 
@@ -581,12 +577,12 @@ class Telnet
         if ($c != $this->IAC) {
             if (($c == $this->DO) || ($c == $this->DONT)) {
                 $opt = $this->getc();
-                fwrite(self::$socket, $this->IAC . $this->WONT . $opt);
+                fwrite(self::$socket, $this->IAC.$this->WONT.$opt);
             } elseif (($c == $this->WILL) || ($c == $this->WONT)) {
                 $opt = $this->getc();
-                fwrite(self::$socket, $this->IAC . $this->DONT . $opt);
+                fwrite(self::$socket, $this->IAC.$this->DONT.$opt);
             } else {
-                throw new \Exception('Error: unknown control character ' . ord(strval($c)));
+                throw new \Exception('Error: unknown control character '.ord(strval($c)));
             }
         } else {
             throw new \Exception('Error: Something Wicked Happened');

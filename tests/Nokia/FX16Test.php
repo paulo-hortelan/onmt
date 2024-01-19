@@ -57,7 +57,7 @@ it('throws exception when cannot get ont interface', function () {
 it('can close connection', function () {
     $zte = Nokia::connect($this->olt)->ontOpticalPower($this->correctInterface);
     $zte->disconnect();
-    
+
     $zte->ontOpticalPower($this->correctInterface);
 })->depends(
     'it can get ont optical power',
