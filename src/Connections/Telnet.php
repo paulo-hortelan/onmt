@@ -12,9 +12,9 @@ namespace PauloHortelan\OltMonitoring\Connections;
  */
 class Telnet
 {
-    protected string $host;
+    protected static string $host;
 
-    protected int $port;
+    protected static int $port;
 
     protected int $timeout;
 
@@ -22,11 +22,9 @@ class Telnet
 
     protected mixed $stream_timeout_usec;
 
-    private static $instance;
+    private static mixed $instance;
 
-    private static $server;
-
-    protected static $socket = null;
+    protected static mixed $socket = null;
 
     protected mixed $buffer = null;
 
@@ -72,19 +70,22 @@ class Telnet
      * Constructor. Initialises host, port and timeout parameters
      * defaults to localhost port 23 (standard telnet port)
      *
-     * @param  string  $host  Host name or IP addres
+     * @param  string  $host  Host name or IP address
      * @param  int  $port  TCP port number
      * @param  int  $timeout  Connection timeout in seconds
-     * @param  float  $stream_timeout  Stream timeout in decimal seconds
+     * @param  float  $streamTimeout  Stream timeout in decimal seconds
+     * @param  string  $username  Login username
+     * @param  string  $password  Login password
+     * @param  string  $hostType  Host type
      *
      * @throws \Exception
      */
-    public function __construct($host = '127.0.0.1', $port = 23, $timeout = 10, $stream_timeout = 1.0, $username = '', $password = '', $hostType = '')
+    public function __construct($host = '127.0.0.1', $port = 23, $timeout = 10, $streamTimeout = 1.0, $username = '', $password = '', $hostType = '')
     {
-        $this->host = $host;
-        $this->port = $port;
+        self::$host = $host;
+        self::$port = $port;
         $this->timeout = $timeout;
-        $this->setStreamTimeout($stream_timeout);
+        $this->setStreamTimeout($streamTimeout);
 
         // set some telnet special characters
         $this->NULL = chr(0);
@@ -107,14 +108,21 @@ class Telnet
 
     /**
      * Creates a new class instance in case it doesn't exist
+     * 
+     * @param  string  $host  Host name or IP address
+     * @param  int  $port  TCP port number
+     * @param  int  $timeout  Connection timeout in seconds
+     * @param  float  $streamTimeout  Stream timeout in decimal seconds
+     * @param  string  $username  Login username
+     * @param  string  $password  Login password
+     * @param  string  $hostType  Host type
      *
      * @return Telnet
      */
-    public static function getInstance($server, $port, $timeout, $streamTimeout, $username, $password, $hostType)
+    public static function getInstance($host, $port, $timeout, $streamTimeout, $username, $password, $hostType)
     {
-        if (!self::$instance || $server !== self::$server) {
-            self::$server = $server;
-            self::$instance = new self($server, $port, $timeout, $streamTimeout, $username, $password, $hostType);
+        if (!isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
+            self::$instance = new self($host, $port, $timeout, $streamTimeout, $username, $password, $hostType);
         }
 
         return self::$instance;
@@ -135,7 +143,12 @@ class Telnet
         $this->buffer = null;
     }
 
-    public function destroy()
+    /**
+     * Destroy instance, cleans up socket connection and command buffer
+     *
+     * @return void
+     */    
+    public function destroy(): void
     {
         self::$instance = NULL;
         $this->disconnect();
@@ -145,21 +158,21 @@ class Telnet
     public function connect(): self
     {
         // check if we need to convert host to IP
-        if (!preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', $this->host)) {
-            $ip = gethostbyname($this->host);
+        if (!preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', self::$host)) {
+            $ip = gethostbyname(self::$host);
 
-            if ($this->host == $ip) {
-                throw new \Exception("Cannot resolve $this->host");
+            if (self::$host == $ip) {
+                throw new \Exception("Cannot resolve ".self::$host);
             } else {
-                $this->host = $ip;
+                self::$host = $ip;
             }
         }
 
         // attempt connection - suppress warnings
-        self::$socket = @fsockopen($this->host, $this->port, $this->errno, $this->errstr, $this->timeout);
+        self::$socket = @fsockopen(self::$host, self::$port, $this->errno, $this->errstr, $this->timeout);
 
         if (!self::$socket) {
-            throw new \Exception("Cannot connect to $this->host on port $this->port");
+            throw new \Exception("Cannot connect to ".self::$host."on port".self::$port);
         }
 
         if (!empty($this->prompt)) {

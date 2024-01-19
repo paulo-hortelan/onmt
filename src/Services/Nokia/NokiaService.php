@@ -18,16 +18,24 @@ class NokiaService
 
     public function connect(Olt $olt, int $timeout = 3, int $streamTimeout = 3): mixed
     {
-        if (! $this->oltValid($olt)) {
+        if (!$this->oltValid($olt)) {
             throw new Exception('OLT brand does not match the service.');
         }
 
         $this->model = $olt->model;
-        $this->connection = Telnet::getInstance($olt->host, 23, $timeout, $streamTimeout, $olt->username, $olt->password, 'Nokia-'.$this->model);
+        $this->connection = Telnet::getInstance($olt->host, 23, $timeout, $streamTimeout, $olt->username, $olt->password, 'Nokia-' . $this->model);
         $this->connection->stripPromptFromBuffer(true);
         $this->connection->exec('environment inhibit-alarms');
 
         return $this;
+    }
+
+    public function disconnect(): void
+    {
+        if (empty($this->connection))
+            throw new Exception('No connection established.');
+
+        $this->connection->destroy();
     }
 
     /**
