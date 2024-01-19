@@ -3,7 +3,6 @@
 namespace PauloHortelan\OltMonitoring;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
@@ -26,7 +25,7 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
             __DIR__.'/../routes/olt-monitoring.php' => base_path('routes/olt-monitoring.php'),
         ], 'olt-monitoring-routes');
 
-        Factory::guessFactoryNamesUsing(function (string $modelName) { // @phpstan-ignore-line
+        Factory::guessFactoryNamesUsing(function (string $modelName) {
             return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
     }
@@ -44,16 +43,6 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
             'prefix' => config('olt-monitoring.prefix'),
             'middleware' => config('olt-monitoring.middleware'),
         ];
-    }
-
-    public function register()
-    {
-        parent::register();
-
-        $loader = AliasLoader::getInstance();
-        $loader->alias('OltMonitor', 'PauloHortelan\OltMonitoring\Facades');
-        $loader->alias('Zte600', 'PauloHortelan\OltMonitoring\Facades');
-        $loader->alias('Zte600', 'PauloHortelan\OltMonitoring\Facades');
     }
 
     public function configurePackage(Package $package): void

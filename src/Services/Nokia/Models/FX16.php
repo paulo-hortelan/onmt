@@ -1,10 +1,10 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\ZTE\Models;
+namespace PauloHortelan\OltMonitoring\Services\Nokia\Models;
 
 use PauloHortelan\OltMonitoring\Connections\Telnet;
 
-class C300
+class FX16
 {
     protected Telnet $connection;
 
@@ -18,9 +18,9 @@ class C300
      */
     public function ontOpticalPower(string $interface): float
     {
-        $response = $this->connection->exec("show pon power attenuation $interface");
+        $response = $this->connection->exec("show equipment ont optics $interface detail");
 
-        if (preg_match('/down.*Rx:(.*)\(dbm\)/m', $response, $match)) {
+        if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
             $opticalPower = (float) $match[1];
         } else {
             throw new \Exception('Ont optical power not found.');
@@ -34,10 +34,12 @@ class C300
      */
     public function ontInterface(string $serial): string
     {
-        $response = $this->connection->exec("show gpon onu by sn $serial");
+        $formattedSerial = substr_replace($serial, ':', 4, 0);
 
-        if (preg_match('/gpon-onu.*/m', $response, $match)) {
-            $interface = (string) $match[0];
+        $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
+
+        if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
+            $interface = trim((string) $match[1]);
         } else {
             throw new \Exception('Ont interface not found.');
         }
