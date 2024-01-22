@@ -12,7 +12,7 @@ it('can create', function () {
         'password' => '1234',
         'brand' => 'ZTE',
         'model' => 'C300',
-        'interface_pattern' => 'gpon-onu_1/'
+        'interface_pattern' => 'gpon-onu_1/',
     ]);
 
     $this->assertNotNull($olt);

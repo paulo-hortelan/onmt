@@ -14,7 +14,7 @@ beforeEach(function () {
         'password' => '1234',
         'brand' => 'ZTE',
         'model' => 'C300',
-        'interface_pattern' => 'gpon-onu_1/'
+        'interface_pattern' => 'gpon-onu_1/',
     ]);
 });
 
@@ -28,7 +28,7 @@ it('can create', function () {
     ]);
 
     $this->assertNotNull($dio);
-    $this->assertEquals(1, Dio::count());    
+    $this->assertEquals(1, Dio::count());
 
     $oltName = Dio::find(1)->olt->name;
 

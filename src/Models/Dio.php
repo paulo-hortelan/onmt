@@ -4,13 +4,12 @@ namespace PauloHortelan\OltMonitoring\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * PauloHortelan\OltMonitoring\Models\Dio
  *
  * @property string $name
- * @property integer $olt_id
+ * @property int $olt_id
  */
 class Dio extends Model
 {

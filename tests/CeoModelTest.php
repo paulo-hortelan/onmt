@@ -15,13 +15,13 @@ beforeEach(function () {
         'password' => '1234',
         'brand' => 'ZTE',
         'model' => 'C300',
-        'interface_pattern' => 'gpon-onu_1/'
+        'interface_pattern' => 'gpon-onu_1/',
     ]);
 
     $this->dio = Dio::create([
         'name' => 'dio-test1',
-        'olt_id' => 1
-    ]);    
+        'olt_id' => 1,
+    ]);
 });
 
 it('can create', function () {
@@ -34,7 +34,7 @@ it('can create', function () {
     ]);
 
     $this->assertNotNull($ceo);
-    $this->assertEquals(1, Ceo::count());    
+    $this->assertEquals(1, Ceo::count());
 
     $dioName = Ceo::find(1)->dio->name;
 

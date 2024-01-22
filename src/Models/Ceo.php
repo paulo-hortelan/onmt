@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * PauloHortelan\OltMonitoring\Models\Ceo
  *
  * @property string $name
- * @property integer $olt_id
+ * @property int $olt_id
  */
 class Ceo extends Model
 {

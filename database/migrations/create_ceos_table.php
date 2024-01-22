@@ -17,7 +17,7 @@ return new class extends Migration
                 indexName: 'ceos_dio_id'
             )->onUpdate('cascade')->onDelete('cascade');
 
-            $table->timestamps();            
+            $table->timestamps();
         });
 
         Schema::enableForeignKeyConstraints();
