@@ -2,6 +2,8 @@
 
 use PauloHortelan\OltMonitoring\Models\Olt;
 
+uses()->group('OLT-Model');
+
 it('can create', function () {
     $olt = Olt::create([
         'name' => 'olt-test1',
@@ -10,6 +12,7 @@ it('can create', function () {
         'password' => '1234',
         'brand' => 'ZTE',
         'model' => 'C300',
+        'interface_pattern' => 'gpon-onu_1/'
     ]);
 
     $this->assertNotNull($olt);

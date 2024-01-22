@@ -4,6 +4,7 @@ namespace PauloHortelan\OltMonitoring\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use PauloHortelan\OltMonitoring\Database\Factories\OltFactory;
 
 /**
@@ -15,6 +16,7 @@ use PauloHortelan\OltMonitoring\Database\Factories\OltFactory;
  * @property string $password
  * @property string $brand
  * @property string $model
+ * @property string $interface_pattern
  */
 class Olt extends Model
 {
@@ -41,6 +43,7 @@ class Olt extends Model
         'password',
         'brand',
         'model',
+        'interface_pattern'
     ];
 
     /**
@@ -61,4 +64,5 @@ class Olt extends Model
         'username' => 'encrypted',
         'password' => 'encrypted',
     ];
+
 }
