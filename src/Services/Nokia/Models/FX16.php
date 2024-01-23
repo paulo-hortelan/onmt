@@ -16,34 +16,50 @@ class FX16
     /**
      * Returns the ONT optical power
      */
-    public function ontOpticalPower(string $interface): float
+    public function ontOpticalPower(array $interfaces): array|float
     {
-        $response = $this->connection->exec("show equipment ont optics $interface detail");
+        $opticalPower = [];
 
-        if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
-            $opticalPower = (float) $match[1];
-        } else {
-            throw new \Exception('Ont optical power not found.');
+        foreach ($interfaces as $interface) {
+            $response = $this->connection->exec("show equipment ont optics $interface detail");
+
+            if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
+                $opticalPower[] = (float) $match[1];
+            } else {
+                throw new \Exception('Ont optical power not found.');
+            }
+        }
+
+        if (count($opticalPower) === 1) {
+            return $opticalPower[0];
         }
 
         return $opticalPower;
     }
 
     /**
-     * Returns the ONT interface
+     * Returns the ONT optical interface
      */
-    public function ontInterface(string $serial): string
+    public function ontOpticalInterface(array $serials): array|string
     {
-        $formattedSerial = substr_replace($serial, ':', 4, 0);
+        $opticalInterface = [];
 
-        $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
+        foreach ($serials as $serial) {
+            $formattedSerial = substr_replace($serial, ':', 4, 0);
 
-        if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
-            $interface = trim((string) $match[1]);
-        } else {
-            throw new \Exception('Ont interface not found.');
+            $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
+
+            if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
+                $opticalInterface[] = trim((string) $match[1]);
+            } else {
+                throw new \Exception('Ont interface not found.');
+            }
         }
 
-        return $interface;
+        if (count($opticalInterface) === 1) {
+            return $opticalInterface[0];
+        }
+
+        return $opticalInterface;
     }
 }
