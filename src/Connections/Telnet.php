@@ -423,7 +423,7 @@ class Telnet
     /**
      * Set if the buffer should be stripped from the buffer after reading.
      *
-     * @param  $strip  boolean if the prompt should be stripped.
+     * @param    $strip  boolean if the prompt should be stripped.
      */
     public function stripPromptFromBuffer(mixed $strip): void
     {

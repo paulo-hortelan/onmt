@@ -5,7 +5,6 @@ namespace PauloHortelan\OltMonitoring\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use PauloHortelan\OltMonitoring\Database\Factories\OltFactory;
 
 /**
  * PauloHortelan\OltMonitoring\Models\Olt
@@ -16,19 +15,11 @@ use PauloHortelan\OltMonitoring\Database\Factories\OltFactory;
  * @property string $password
  * @property string $brand
  * @property string $model
- * @property string $interface_pattern
  */
 class Olt extends Model
 {
     use HasFactory;
 
-    // /** @return SomeFancyFactory */
-    // protected static function newFactory()
-    // {
-    //     return OltFactory::new();
-    // }
-
-    // Disable Laravel's mass assignment protection
     protected $guarded = [];
 
     /**
@@ -43,7 +34,6 @@ class Olt extends Model
         'password',
         'brand',
         'model',
-        'interface_pattern'
     ];
 
     /**
@@ -65,4 +55,11 @@ class Olt extends Model
         'password' => 'encrypted',
     ];
 
+    /**
+     * Get the DIO's from the associated OLT
+     */
+    public function dios(): HasMany
+    {
+        return $this->hasMany(Dio::class);
+    }
 }

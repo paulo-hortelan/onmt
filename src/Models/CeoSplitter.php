@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * PauloHortelan\OltMonitoring\Models\Dio
+ * PauloHortelan\OltMonitoring\Models\CeoSplitter
  *
  * @property string $name
- * @property int $olt_id
- * @property-read Olt $olt
+ * @property string $type
+ * @property int $slot
+ * @property int $pon
+ * @property int $ceo_id
+ * @property-read Ceo $ceo
  */
-class Dio extends Model
+class CeoSplitter extends Model
 {
     use HasFactory;
 
@@ -27,22 +30,25 @@ class Dio extends Model
      */
     protected $fillable = [
         'name',
-        'olt_id',
+        'type',
+        'slot',
+        'pon',
+        'ceo_id',
     ];
 
     /**
-     * Get the OLT associated with the DIO.
+     * Get the CEO associated with the CEO Splitter.
      */
-    public function olt(): BelongsTo
+    public function ceo(): BelongsTo
     {
-        return $this->belongsTo(Olt::class);
+        return $this->belongsTo(Ceo::class);
     }
 
     /**
-     * Get the CEO's from the associated DIO
+     * Get the CTO's from the associated CEO Splitter
      */
-    public function ceos(): HasMany
+    public function ctos(): HasMany
     {
-        return $this->hasMany(Ceo::class);
+        return $this->hasMany(Cto::class);
     }
 }

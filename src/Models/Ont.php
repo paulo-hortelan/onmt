@@ -5,16 +5,17 @@ namespace PauloHortelan\OltMonitoring\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * PauloHortelan\OltMonitoring\Models\Dio
+ * PauloHortelan\OltMonitoring\Models\Ont
  *
  * @property string $name
- * @property int $olt_id
- * @property-read Olt $olt
+ * @property string $interface
+ * @property string $oid
+ * @property int $cto_id
+ * @property-read Cto $cto
  */
-class Dio extends Model
+class Ont extends Model
 {
     use HasFactory;
 
@@ -27,22 +28,15 @@ class Dio extends Model
      */
     protected $fillable = [
         'name',
-        'olt_id',
+        'interface',
+        'cto_id',
     ];
 
     /**
-     * Get the OLT associated with the DIO.
+     * Get the CTO associated with the ONT.
      */
-    public function olt(): BelongsTo
+    public function cto(): BelongsTo
     {
-        return $this->belongsTo(Olt::class);
-    }
-
-    /**
-     * Get the CEO's from the associated DIO
-     */
-    public function ceos(): HasMany
-    {
-        return $this->hasMany(Ceo::class);
+        return $this->belongsTo(Cto::class);
     }
 }

@@ -4,13 +4,15 @@ namespace PauloHortelan\OltMonitoring\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * PauloHortelan\OltMonitoring\Models\Ceo
  *
  * @property string $name
- * @property integer $olt_id
+ * @property int $dio_id
+ * @property-read Dio $dio
  */
 class Ceo extends Model
 {
@@ -31,7 +33,7 @@ class Ceo extends Model
     /**
      * Get the DIO associated with the CEO.
      */
-    public function dio()
+    public function dio(): BelongsTo
     {
         return $this->belongsTo(Dio::class);
     }
