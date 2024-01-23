@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('ceos', function (Blueprint $table) {
+        Schema::create('onts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('interface')->nullable();
+            $table->string('interface');
 
-            $table->foreignId('dio_id')->constrained(
-                table: 'dios',
-                indexName: 'ceos_dio_id'
+            $table->foreignId('cto_id')->constrained(
+                table: 'ctos',
+                indexName: 'ont_ctos_id'
             )->onUpdate('cascade')->onDelete('cascade');
 
             $table->timestamps();
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('ceos');
+        Schema::dropIfExists('onts');
     }
 };

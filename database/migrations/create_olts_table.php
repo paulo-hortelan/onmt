@@ -16,7 +16,6 @@ return new class extends Migration
             $table->text('password');
             $table->string('brand');
             $table->string('model');
-            $table->string('interface_pattern');            
             $table->timestamps();
         });
     }

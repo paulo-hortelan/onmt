@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('ceos', function (Blueprint $table) {
+        Schema::create('ctos', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('interface')->nullable();
+            $table->enum('type', ['1x8', '1x16']);
 
-            $table->foreignId('dio_id')->constrained(
-                table: 'dios',
-                indexName: 'ceos_dio_id'
+            $table->foreignId('ceo_splitter_id')->constrained(
+                table: 'ceo_splitters',
+                indexName: 'cto_ceo_splitters_id'
             )->onUpdate('cascade')->onDelete('cascade');
 
             $table->timestamps();
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('ceos');
+        Schema::dropIfExists('ctos');
     }
 };
