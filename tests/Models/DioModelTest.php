@@ -14,7 +14,6 @@ beforeEach(function () {
         'password' => '1234',
         'brand' => 'ZTE',
         'model' => 'C300',
-        'interface' => 'gpon-onu_1/',
     ]);
 });
 
