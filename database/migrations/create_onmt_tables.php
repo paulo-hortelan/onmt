@@ -57,7 +57,7 @@ return new class extends Migration
             )->onUpdate('cascade')->onDelete('cascade');
 
             $table->timestamps();
-        });        
+        });
 
         Schema::create('ctos', function (Blueprint $table) {
             $table->id();
