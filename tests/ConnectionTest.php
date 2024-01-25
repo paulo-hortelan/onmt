@@ -1,7 +1,7 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Connections\Telnet;
-use PauloHortelan\OltMonitoring\Connections\TL1;
+use PauloHortelan\Onmt\Connections\Telnet;
+use PauloHortelan\Onmt\Connections\TL1;
 
 uses()->group('connections');
 

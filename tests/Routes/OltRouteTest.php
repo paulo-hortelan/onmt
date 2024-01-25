@@ -1,6 +1,6 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Models\Olt;
 
 it('does not create an olt without required fields', function () {
     $olt = [];

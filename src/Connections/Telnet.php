@@ -1,6 +1,6 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Connections;
+namespace PauloHortelan\Onmt\Connections;
 
 /**
  * Telnet class

@@ -1,12 +1,12 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Commands;
+namespace PauloHortelan\Onmt\Commands;
 
 use Illuminate\Console\Command;
 
-class OltMonitoringCommand extends Command
+class OnmtCommand extends Command
 {
-    public $signature = 'olt-monitoring';
+    public $signature = 'onmt';
 
     public $description = 'My command';
 

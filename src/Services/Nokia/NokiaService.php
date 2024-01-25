@@ -1,12 +1,14 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\Nokia;
+namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
-use PauloHortelan\OltMonitoring\Connections\Telnet;
-use PauloHortelan\OltMonitoring\Models\Olt;
-use PauloHortelan\OltMonitoring\Services\Concerns\Validations;
-use PauloHortelan\OltMonitoring\Services\Nokia\Models\FX16;
+use Illuminate\Database\Eloquent\Collection;
+use PauloHortelan\Onmt\Connections\Telnet;
+use PauloHortelan\Onmt\Models\Olt;
+use PauloHortelan\Onmt\Models\Ont;
+use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Nokia\Models\FX16;
 
 class NokiaService
 {
@@ -15,6 +17,10 @@ class NokiaService
     private Telnet $connection;
 
     private string $model = 'FX16';
+
+    private array $interfaces = [];
+
+    private array $serials = [];
 
     public function connect(Olt $olt, int $timeout = 3, int $streamTimeout = 3): mixed
     {
@@ -39,27 +45,88 @@ class NokiaService
         $this->connection->destroy();
     }
 
-    /**
-     * Returns the ONT optical power
-     */
-    public function ontOpticalPower(string $interface): float
+    public function ont(Ont $ont): mixed
     {
-        if ($this->model === 'FX16') {
-            return (new FX16($this->connection))->ontOpticalPower($interface);
-        }
+        $this->connect($ont->cto->ceo_splitter->ceo->dio->olt);
+        $this->interfaces = [$ont->interface];
+        $this->serials = [$ont->name];
 
-        throw new \Exception('Product model not supported');
+        return $this;
     }
 
-    /**
-     * Returns the ONT interface
-     */
-    public function ontInterface(string $serial): string
+    public function onts(Collection $onts): mixed
     {
-        if ($this->model === 'FX16') {
-            return (new FX16($this->connection))->ontInterface($serial);
+        if ($onts->isEmpty()) {
+            throw new Exception('Onts collections is empty.');
         }
 
-        throw new \Exception('Product model not supported');
+        if (! ($onts->first() instanceof Ont)) {
+            throw new Exception('The given object model is not an Ont.');
+        }
+
+        $this->connect($onts->first()->cto->ceo_splitter->ceo->dio->olt);
+
+        $onts->each(function ($ont) {
+            if ($ont instanceof Ont) {
+                $this->interfaces[] = $ont->interface;
+                $this->serials[] = $ont->name;
+            }
+        });
+
+        return $this;
+    }
+
+    public function interface(string $interface): mixed
+    {
+        $this->interfaces = [$interface];
+
+        return $this;
+    }
+
+    public function interfaces(array $interfaces): mixed
+    {
+        $this->interfaces = $interfaces;
+
+        return $this;
+    }
+
+    public function serial(string $serial): mixed
+    {
+        $this->serials = [$serial];
+
+        return $this;
+    }
+
+    public function serials(array $serials): mixed
+    {
+        $this->serials = $serials;
+
+        return $this;
+    }
+
+    public function opticalPower(): float|array
+    {
+        if (empty($this->interfaces)) {
+            throw new Exception('Interface(s) not found.');
+        }
+
+        if ($this->model === 'FX16') {
+            return (new FX16($this->connection))->ontOpticalPower($this->interfaces);
+        }
+
+        throw new Exception('Model '.$this->model.' is not supported.');
+    }
+
+    public function opticalInterface(): string|array
+    {
+        if (empty($this->serials)) {
+            throw new Exception('Serial(s) not found.');
+        }
+
+        if ($this->model === 'FX16') {
+            return (new FX16($this->connection))->ontOpticalInterface($this->serials);
+        }
+
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 }

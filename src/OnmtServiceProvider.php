@@ -1,6 +1,6 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring;
+namespace PauloHortelan\Onmt;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Route;
@@ -8,7 +8,7 @@ use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class OltMonitoringServiceProvider extends PackageServiceProvider
+class OnmtServiceProvider extends PackageServiceProvider
 {
     /**
      * Perform post-registration booting of services.
@@ -22,26 +22,26 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
         $this->registerRoutes();
 
         $this->publishes([
-            __DIR__.'/../routes/olt-monitoring.php' => base_path('routes/olt-monitoring.php'),
-        ], 'olt-monitoring-routes');
+            __DIR__.'/../routes/onmt.php' => base_path('routes/onmt.php'),
+        ], 'onmt-routes');
 
         Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory';
+            return 'PauloHortelan\\Onmt\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
     }
 
     protected function registerRoutes(): void
     {
         Route::group($this->routeConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/olt-monitoring.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/onmt.php');
         });
     }
 
     protected function routeConfiguration(): array
     {
         return [
-            'prefix' => config('olt-monitoring.prefix'),
-            'middleware' => config('olt-monitoring.middleware'),
+            'prefix' => config('onmt.prefix'),
+            'middleware' => config('onmt.middleware'),
         ];
     }
 
@@ -53,8 +53,8 @@ class OltMonitoringServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('olt-monitoring')
-            ->hasConfigFile('olt-monitoring')
+            ->name('onmt')
+            ->hasConfigFile('onmt')
             ->hasMigration('create_olts_table')
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command

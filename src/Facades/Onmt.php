@@ -1,12 +1,12 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Facades;
+namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\OltMonitoring\Services\OltMonitorService;
+use PauloHortelan\Onmt\Services\OltMonitorService;
 
 /**
- * @see \PauloHortelan\OltMonitoring\OltMonitoring
+ * @see \PauloHortelan\Onmt\Onmt
  */
 class OltMonitor extends Facade
 {

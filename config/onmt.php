@@ -1,6 +1,6 @@
 <?php
 
-// config for PauloHortelan/OltMonitoring
+// config for PauloHortelan/Onmt
 return [
     'prefix' => 'api',
     'middleware' => ['api'],

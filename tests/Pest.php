@@ -1,6 +1,6 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Tests\TestCase;
+use PauloHortelan\Onmt\Tests\TestCase;
 
 function skipIfFakeConnection()
 {

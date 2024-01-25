@@ -1,13 +1,13 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Tests;
+namespace PauloHortelan\Onmt\Tests;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\Attributes\WithEnv;
 use Orchestra\Testbench\TestCase as Orchestra;
-use PauloHortelan\OltMonitoring\OltMonitoringServiceProvider;
+use PauloHortelan\Onmt\OnmtServiceProvider;
 
 #[WithEnv('DB_CONNECTION', 'testing')]
 class TestCase extends Orchestra
@@ -29,7 +29,7 @@ class TestCase extends Orchestra
         parent::setUp();
 
         // Factory::guessFactoryNamesUsing(
-        //     fn (string $modelName) => 'PauloHortelan\\OltMonitoring\\Database\\Factories\\'.class_basename($modelName).'Factory'
+        //     fn (string $modelName) => 'PauloHortelan\\Onmt\\Database\\Factories\\'.class_basename($modelName).'Factory'
         // );
     }
 
@@ -48,7 +48,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            OltMonitoringServiceProvider::class,
+            OnmtServiceProvider::class,
         ];
     }
 

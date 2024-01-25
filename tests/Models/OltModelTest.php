@@ -1,6 +1,8 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Models\Olt;
+
+uses()->group('OLT-Model');
 
 it('can create', function () {
     $olt = Olt::create([

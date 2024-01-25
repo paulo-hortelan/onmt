@@ -1,12 +1,12 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Facades;
+namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\OltMonitoring\Services\Nokia\NokiaService;
+use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 /**
- * @see \PauloHortelan\OltMonitoring\Services\ZTEService
+ * @see \PauloHortelan\Onmt\Services\ZTEService
  */
 class Nokia extends Facade
 {
