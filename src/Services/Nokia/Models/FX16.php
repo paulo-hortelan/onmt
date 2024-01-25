@@ -1,8 +1,8 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\Nokia\Models;
+namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
-use PauloHortelan\OltMonitoring\Connections\Telnet;
+use PauloHortelan\Onmt\Connections\Telnet;
 
 class FX16
 {

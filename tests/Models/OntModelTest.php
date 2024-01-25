@@ -1,12 +1,12 @@
 <?php
 
 use Illuminate\Database\QueryException;
-use PauloHortelan\OltMonitoring\Models\Ceo;
-use PauloHortelan\OltMonitoring\Models\CeoSplitter;
-use PauloHortelan\OltMonitoring\Models\Cto;
-use PauloHortelan\OltMonitoring\Models\Dio;
-use PauloHortelan\OltMonitoring\Models\Olt;
-use PauloHortelan\OltMonitoring\Models\Ont;
+use PauloHortelan\Onmt\Models\Ceo;
+use PauloHortelan\Onmt\Models\CeoSplitter;
+use PauloHortelan\Onmt\Models\Cto;
+use PauloHortelan\Onmt\Models\Dio;
+use PauloHortelan\Onmt\Models\Olt;
+use PauloHortelan\Onmt\Models\Ont;
 
 uses()->group('ONT-Model');
 

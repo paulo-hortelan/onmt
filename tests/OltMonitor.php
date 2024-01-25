@@ -1,8 +1,8 @@
 <?php
 
-use PauloHortelan\OltMonitoring\Facades\OltMonitor;
-use PauloHortelan\OltMonitoring\Models\Olt;
-use PauloHortelan\OltMonitoring\Services\OltMonitorService;
+use PauloHortelan\Onmt\Facades\OltMonitor;
+use PauloHortelan\Onmt\Models\Olt;
+use PauloHortelan\Onmt\Services\OltMonitorService;
 
 uses()->group('olt-monitor');
 
@@ -14,6 +14,7 @@ beforeEach(function () {
         'password' => 'pass1234',
         'brand' => 'ZTE',
         'model' => 'C300',
+        'interface' => 'gpon-onu_1/',
     ]);
 
     Olt::create([
@@ -23,14 +24,15 @@ beforeEach(function () {
         'password' => 'pass1234',
         'brand' => 'ZTE',
         'model' => 'C600',
+        'interface' => 'gpon_onu-1/',
     ]);
 });
 
 it('can connect on telnet', function () {
     $olt = Olt::firstWhere([['brand', 'ZTE'], ['model', 'C300']]);
-    $oltMonitoring = OltMonitor::connect($olt);
+    $Onmt = OltMonitor::connect($olt);
 
-    expect($oltMonitoring)->toBeInstanceOf(OltMonitorService::class);
+    expect($Onmt)->toBeInstanceOf(OltMonitorService::class);
 })->skipIfFakeConnection();
 
 it('can get ZTE300 ont optical power', function () {

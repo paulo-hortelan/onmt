@@ -1,6 +1,6 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\ZTE\Models;
+namespace PauloHortelan\Onmt\Services\ZTE\Models;
 
 class C600 extends C300
 {

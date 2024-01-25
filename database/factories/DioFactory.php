@@ -1,10 +1,10 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Database\Factories;
+namespace PauloHortelan\Onmt\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use PauloHortelan\OltMonitoring\Models\Dio;
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Models\Dio;
+use PauloHortelan\Onmt\Models\Olt;
 
 class DioFactory extends Factory
 {

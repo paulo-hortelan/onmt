@@ -1,17 +1,14 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Http\Controllers;
+namespace PauloHortelan\Onmt\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Models\Olt;
 
 class OltController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(): JsonResponse
     {
         $olts = Olt::all();
@@ -19,9 +16,6 @@ class OltController extends Controller
         return response()->json($olts);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request): JsonResponse
     {
         $validatedData = $request->validate([
@@ -38,17 +32,11 @@ class OltController extends Controller
         return response()->json($olt, 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Olt $olt): JsonResponse
     {
         return response()->json($olt);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Olt $olt): JsonResponse
     {
         $validatedData = $request->validate([
@@ -65,9 +53,6 @@ class OltController extends Controller
         return response()->json($olt, 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Olt $olt): JsonResponse
     {
         $olt->delete();

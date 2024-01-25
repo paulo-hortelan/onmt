@@ -1,9 +1,9 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services;
+namespace PauloHortelan\Onmt\Services;
 
-use PauloHortelan\OltMonitoring\Facades\ZTE;
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Facades\ZTE;
+use PauloHortelan\Onmt\Models\Olt;
 
 class OltMonitorService
 {

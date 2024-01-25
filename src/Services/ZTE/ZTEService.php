@@ -1,15 +1,15 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\ZTE;
+namespace PauloHortelan\Onmt\Services\ZTE;
 
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
-use PauloHortelan\OltMonitoring\Connections\Telnet;
-use PauloHortelan\OltMonitoring\Models\Olt;
-use PauloHortelan\OltMonitoring\Models\Ont;
-use PauloHortelan\OltMonitoring\Services\Concerns\Validations;
-use PauloHortelan\OltMonitoring\Services\ZTE\Models\C300;
-use PauloHortelan\OltMonitoring\Services\ZTE\Models\C600;
+use PauloHortelan\Onmt\Connections\Telnet;
+use PauloHortelan\Onmt\Models\Olt;
+use PauloHortelan\Onmt\Models\Ont;
+use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\ZTE\Models\C300;
+use PauloHortelan\Onmt\Services\ZTE\Models\C600;
 
 class ZTEService
 {

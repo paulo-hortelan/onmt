@@ -1,12 +1,12 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Facades;
+namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\OltMonitoring\Services\ZTE\ZTEService;
+use PauloHortelan\Onmt\Services\ZTE\ZTEService;
 
 /**
- * @see \PauloHortelan\OltMonitoring\Services\ZTEService
+ * @see \PauloHortelan\Onmt\Services\ZTEService
  */
 class ZTE extends Facade
 {

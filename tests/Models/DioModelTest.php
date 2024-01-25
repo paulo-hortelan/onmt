@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Database\QueryException;
-use PauloHortelan\OltMonitoring\Models\Dio;
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Models\Dio;
+use PauloHortelan\Onmt\Models\Olt;
 
 uses()->group('DIO-Model');
 

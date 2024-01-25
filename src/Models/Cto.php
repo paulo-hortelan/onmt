@@ -1,6 +1,6 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Models;
+namespace PauloHortelan\Onmt\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * PauloHortelan\OltMonitoring\Models\Cto
+ * PauloHortelan\Onmt\Models\Cto
  *
  * @property string $name
  * @property string $type

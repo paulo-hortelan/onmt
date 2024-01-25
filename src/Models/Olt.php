@@ -1,13 +1,13 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Models;
+namespace PauloHortelan\Onmt\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * PauloHortelan\OltMonitoring\Models\Olt
+ * PauloHortelan\Onmt\Models\Olt
  *
  * @property string $name
  * @property string $host

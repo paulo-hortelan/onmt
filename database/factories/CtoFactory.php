@@ -1,10 +1,10 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Database\Factories;
+namespace PauloHortelan\Onmt\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use PauloHortelan\OltMonitoring\Models\CeoSplitter;
-use PauloHortelan\OltMonitoring\Models\Cto;
+use PauloHortelan\Onmt\Models\CeoSplitter;
+use PauloHortelan\Onmt\Models\Cto;
 
 class CtoFactory extends Factory
 {

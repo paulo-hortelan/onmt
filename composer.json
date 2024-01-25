@@ -1,12 +1,12 @@
 {
-    "name": "paulo-hortelan/olt-monitoring",
-    "description": "This is my package olt-monitoring",
+    "name": "paulo-hortelan/onmt",
+    "description": "This is my package onmt",
     "keywords": [
         "paulo-hortelan",
         "laravel",
-        "olt-monitoring"
+        "onmt"
     ],
-    "homepage": "https://github.com/paulo-hortelan/olt-monitoring",
+    "homepage": "https://github.com/paulo-hortelan/onmt",
     "license": "MIT",
     "authors": [
         {
@@ -35,13 +35,13 @@
     },
     "autoload": {
         "psr-4": {
-            "PauloHortelan\\OltMonitoring\\": "src/",
-            "PauloHortelan\\OltMonitoring\\Database\\Factories\\": "database/factories/"
+            "PauloHortelan\\Onmt\\": "src/",
+            "PauloHortelan\\Onmt\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "PauloHortelan\\OltMonitoring\\Tests\\": "tests/",
+            "PauloHortelan\\Onmt\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",
             "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
@@ -85,10 +85,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "PauloHortelan\\OltMonitoring\\OltMonitoringServiceProvider"
+                "PauloHortelan\\Onmt\\OnmtServiceProvider"
             ],
             "aliases": {
-                "OltMonitoring": "PauloHortelan\\OltMonitoring\\Facades\\OltMonitoring"
+                "Onmt": "PauloHortelan\\Onmt\\Facades\\Onmt"
             }
         }
     },

@@ -1,8 +1,8 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\ZTE\Models;
+namespace PauloHortelan\Onmt\Services\ZTE\Models;
 
-use PauloHortelan\OltMonitoring\Connections\Telnet;
+use PauloHortelan\Onmt\Connections\Telnet;
 
 class C300
 {

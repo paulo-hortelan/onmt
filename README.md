@@ -1,15 +1,15 @@
-# This is my package olt-monitoring
+# This is my package onmt
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/paulo-hortelan/olt-monitoring.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/olt-monitoring)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/paulo-hortelan/olt-monitoring/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/paulo-hortelan/olt-monitoring/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/paulo-hortelan/olt-monitoring/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/paulo-hortelan/olt-monitoring/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/paulo-hortelan/olt-monitoring.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/olt-monitoring)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/paulo-hortelan/onmt.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/onmt)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/paulo-hortelan/onmt/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/paulo-hortelan/onmt/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/paulo-hortelan/onmt/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/paulo-hortelan/onmt/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/paulo-hortelan/onmt.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/onmt)
 
 This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
 
 ## Support us
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/olt-monitoring.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/olt-monitoring)
+[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/onmt.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/onmt)
 
 We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
 
@@ -20,20 +20,20 @@ We highly appreciate you sending us a postcard from your hometown, mentioning wh
 You can install the package via composer:
 
 ```bash
-composer require paulo-hortelan/olt-monitoring
+composer require paulo-hortelan/onmt
 ```
 
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="olt-monitoring-migrations"
+php artisan vendor:publish --tag="onmt-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="olt-monitoring-config"
+php artisan vendor:publish --tag="onmt-config"
 ```
 
 This is the contents of the published config file:
@@ -46,14 +46,14 @@ return [
 Optionally, you can publish the views using
 
 ```bash
-php artisan vendor:publish --tag="olt-monitoring-views"
+php artisan vendor:publish --tag="onmt-views"
 ```
 
 ## Usage
 
 ```php
-$oltMonitoring = new PauloHortelan\OltMonitoring();
-echo $oltMonitoring->echoPhrase('Hello, PauloHortelan!');
+$Onmt = new PauloHortelan\Onmt();
+echo $Onmt->echoPhrase('Hello, PauloHortelan!');
 ```
 
 ## Testing

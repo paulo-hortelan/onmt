@@ -1,8 +1,8 @@
 <?php
 
-namespace PauloHortelan\OltMonitoring\Services\Concerns;
+namespace PauloHortelan\Onmt\Services\Concerns;
 
-use PauloHortelan\OltMonitoring\Models\Olt;
+use PauloHortelan\Onmt\Models\Olt;
 
 trait Validations
 {
