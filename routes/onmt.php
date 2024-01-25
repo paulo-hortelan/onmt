@@ -6,6 +6,7 @@ use PauloHortelan\Onmt\Http\Controllers\CeoSplitterController;
 use PauloHortelan\Onmt\Http\Controllers\CtoController;
 use PauloHortelan\Onmt\Http\Controllers\DioController;
 use PauloHortelan\Onmt\Http\Controllers\OltController;
+use PauloHortelan\Onmt\Http\Controllers\OntController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,4 +53,12 @@ Route::controller(CtoController::class)->group(function () {
     Route::get('/ctos/{cto}', 'show')->name('ctos.show');
     Route::put('/ctos/{cto}', 'update')->name('ctos.update');
     Route::delete('/ctos/{cto}', 'destroy')->name('ctos.destroy');
+});
+
+Route::controller(OntController::class)->group(function () {
+    Route::get('/onts', 'index')->name('onts.index');
+    Route::post('/onts', 'store')->name('onts.store');
+    Route::get('/onts/{ont}', 'show')->name('onts.show');
+    Route::put('/onts/{ont}', 'update')->name('onts.update');
+    Route::delete('/onts/{ont}', 'destroy')->name('onts.destroy');
 });

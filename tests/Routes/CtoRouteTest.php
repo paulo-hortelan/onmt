@@ -16,7 +16,7 @@ beforeEach(function () {
     CeoSplitter::factory()->count(5)->create();
 });
 
-it('does not create an ceo without required fields', function () {
+it('does not create a cto without required fields', function () {
     $cto = [];
 
     $this->post(route('ctos.store'), $cto)->assertStatus(302);

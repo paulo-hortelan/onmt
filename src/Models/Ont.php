@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property string $name
  * @property string $interface
- * @property string $oid
  * @property int $cto_id
  * @property-read Cto $cto
  */
