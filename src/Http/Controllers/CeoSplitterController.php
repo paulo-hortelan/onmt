@@ -42,7 +42,7 @@ class CeoSplitterController extends Controller
             'name' => 'required|string',
             'type' => 'required|string',
             'slot' => 'required|int',
-            'pon' => 'required|int',            
+            'pon' => 'required|int',
             'ceo_id' => 'required|int',
         ]);
 
