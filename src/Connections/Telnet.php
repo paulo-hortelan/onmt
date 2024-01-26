@@ -132,17 +132,6 @@ class Telnet
     }
 
     /**
-     * Destructor. Cleans up socket connection and command buffer
-     *
-     * @return void
-     */
-    public function __destruct()
-    {
-        $this->disconnect();
-        $this->buffer = null;
-    }
-
-    /**
      * Destroy instance, cleans up socket connection and command buffer
      */
     public function destroy(): void
@@ -188,6 +177,7 @@ class Telnet
      */
     public function disconnect()
     {
+        dump("disconnect");
         if (self::$socket) {
             if (! fclose(self::$socket)) {
                 throw new \Exception('Error while closing telnet socket');
@@ -423,7 +413,7 @@ class Telnet
     /**
      * Set if the buffer should be stripped from the buffer after reading.
      *
-     * @param  $strip  boolean if the prompt should be stripped.
+     * @param    $strip  boolean if the prompt should be stripped.
      */
     public function stripPromptFromBuffer(mixed $strip): void
     {
@@ -518,7 +508,7 @@ class Telnet
      * @throws \Exception
      */
     protected function write($buffer, $add_newline = true)
-    {
+    {        
         if (! self::$socket) {
             throw new \Exception('Telnet connection closed');
         }

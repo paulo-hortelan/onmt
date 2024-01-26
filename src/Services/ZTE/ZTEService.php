@@ -30,7 +30,7 @@ class ZTEService
         }
 
         $this->model = $olt->model;
-        $this->connection = Telnet::getInstance($olt->host, 23, $timeout, $streamTimeout, $olt->username, $olt->password, 'ZTE-'.$this->model);
+        $this->connection = Telnet::getInstance($olt->host_connection, 23, $timeout, $streamTimeout, $olt->username, $olt->password, 'ZTE-'.$this->model);
         $this->connection->stripPromptFromBuffer(true);
         $this->connection->exec('terminal length 0');
 
@@ -105,7 +105,7 @@ class ZTEService
         return $this;
     }
 
-    public function opticalPower(): float|array
+    public function opticalPower(): float|array|null
     {
         if (empty($this->interfaces)) {
             throw new Exception('Interface(s) not found.');
@@ -122,7 +122,7 @@ class ZTEService
         throw new Exception('Model '.$this->model.' is not supported.');
     }
 
-    public function opticalInterface(): string|array
+    public function opticalInterface(): string|array|null
     {
         if ($this->model === 'C300') {
             return (new C300($this->connection))->ontInterface($this->serials);
@@ -134,36 +134,4 @@ class ZTEService
 
         throw new \Exception('Product model not supported');
     }
-
-    // /**
-    //  * Returns the ONT optical power
-    //  */
-    // public function ontOpticalPower(string $interface): float
-    // {
-    //     if ($this->model === 'C300') {
-    //         return (new C300($this->connection))->ontOpticalPower($interface);
-    //     }
-
-    //     if ($this->model === 'C600') {
-    //         return (new C600($this->connection))->ontOpticalPower($interface);
-    //     }
-
-    //     throw new \Exception('Product model not supported');
-    // }
-
-    // /**
-    //  * Returns the ONT interface
-    //  */
-    // public function ontInterface(string $serial): string
-    // {
-    //     if ($this->model === 'C300') {
-    //         return (new C300($this->connection))->ontInterface($serial);
-    //     }
-
-    //     if ($this->model === 'C600') {
-    //         return (new C600($this->connection))->ontInterface($serial);
-    //     }
-
-    //     throw new \Exception('Product model not supported');
-    // }
 }

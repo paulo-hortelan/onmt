@@ -11,7 +11,8 @@ return new class extends Migration
         Schema::create('olts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('host')->unique();
+            $table->string('host_connection');
+            $table->string('host_server')->unique();
             $table->text('username');
             $table->text('password');
             $table->string('brand');
@@ -57,7 +58,7 @@ return new class extends Migration
             )->onUpdate('cascade')->onDelete('cascade');
 
             $table->timestamps();
-        });        
+        });
 
         Schema::create('ctos', function (Blueprint $table) {
             $table->id();

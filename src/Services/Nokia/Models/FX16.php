@@ -16,7 +16,7 @@ class FX16
     /**
      * Returns the ONT optical power
      */
-    public function ontOpticalPower(array $interfaces): array|float
+    public function ontOpticalPower(array $interfaces): array|float|null
     {
         $opticalPower = [];
 
@@ -26,7 +26,7 @@ class FX16
             if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
                 $opticalPower[] = (float) $match[1];
             } else {
-                throw new \Exception('Ont optical power not found.');
+                $opticalPower[] = null;
             }
         }
 
@@ -40,7 +40,7 @@ class FX16
     /**
      * Returns the ONT optical interface
      */
-    public function ontOpticalInterface(array $serials): array|string
+    public function ontOpticalInterface(array $serials): array|string|null
     {
         $opticalInterface = [];
 
@@ -52,7 +52,7 @@ class FX16
             if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
                 $opticalInterface[] = trim((string) $match[1]);
             } else {
-                throw new \Exception('Ont interface not found.');
+                $opticalInterface[] = null;
             }
         }
 

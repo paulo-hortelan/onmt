@@ -7,7 +7,7 @@ class C600 extends C300
     /**
      * Returns the ONT interface
      */
-    public function ontInterface(array $serials): array|string
+    public function ontInterface(array $serials): array|string|null
     {
         $opticalInterface = [];
 
@@ -17,7 +17,7 @@ class C600 extends C300
             if (preg_match('/gpon_onu.*/m', $response, $match)) {
                 $opticalInterface[] = (string) $match[0];
             } else {
-                throw new \Exception('Ont interface not found.');
+                $opticalInterface[] = null;
             }
         }
 

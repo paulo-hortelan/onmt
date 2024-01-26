@@ -16,7 +16,7 @@ class C300
     /**
      * Returns the ONT optical power
      */
-    public function ontOpticalPower(array $interfaces): array|float
+    public function ontOpticalPower(array $interfaces): array|float|null
     {
         $opticalPower = [];
 
@@ -26,7 +26,7 @@ class C300
             if (preg_match('/down.*Rx:(.*)\(dbm\)/m', $response, $match)) {
                 $opticalPower[] = (float) $match[1];
             } else {
-                throw new \Exception('Ont optical power not found.');
+                $opticalPower[] = null;
             }
         }
 
@@ -40,7 +40,7 @@ class C300
     /**
      * Returns the ONT interface
      */
-    public function ontInterface(array $serials): array|string
+    public function ontInterface(array $serials): array|string|null
     {
         $opticalInterface = [];
 
@@ -50,7 +50,7 @@ class C300
             if (preg_match('/gpon-onu.*/m', $response, $match)) {
                 $opticalInterface[] = (string) $match[0];
             } else {
-                throw new \Exception('Ont interface not found.');
+                $opticalInterface[] = null;
             }
         }
 
