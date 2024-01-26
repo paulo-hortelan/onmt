@@ -28,9 +28,9 @@ class OnmtService
 
         if ($this->olt->brand === 'ZTE') {
             $this->connection = ZTE::connect($this->olt, $this->timeout, $this->streamTimeout);
-        } else if ($this->olt->brand === 'Nokia') {
+        } elseif ($this->olt->brand === 'Nokia') {
             $this->connection = Nokia::connect($this->olt, $this->timeout, $this->streamTimeout);
-        } else if ($this->olt->brand === 'Fiberhome') {
+        } elseif ($this->olt->brand === 'Fiberhome') {
             $this->connection = Fiberhome::connect($this->olt, $this->timeout, $this->streamTimeout);
         }
 
@@ -60,7 +60,7 @@ class OnmtService
         $interfaces = [];
         $serials = [];
 
-        $onts->each(function ($ont) use (&$interfaces, &$serials){
+        $onts->each(function ($ont) use (&$interfaces, &$serials) {
             if ($ont instanceof Ont) {
                 $interfaces[] = $ont->interface;
                 $serials[] = $ont->name;
@@ -71,7 +71,7 @@ class OnmtService
         $this->connection->serials($serials);
 
         return $this;
-    }    
+    }
 
     public function interface(string $interface): mixed
     {
@@ -99,7 +99,7 @@ class OnmtService
         $this->connection->serials($serials);
 
         return $this;
-    }    
+    }
 
     public function opticalPower(): array|float|null
     {
