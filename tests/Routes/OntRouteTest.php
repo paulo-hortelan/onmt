@@ -7,6 +7,8 @@ use PauloHortelan\Onmt\Models\Dio;
 use PauloHortelan\Onmt\Models\Olt;
 use PauloHortelan\Onmt\Models\Ont;
 
+uses()->group('Routes');
+
 beforeEach(function () {
     Olt::factory()->count(5)->has(
         Dio::factory()->count(5)->has(

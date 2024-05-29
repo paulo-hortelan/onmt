@@ -20,7 +20,8 @@ beforeEach(function () {
 
     $this->olt = Olt::create([
         'name' => 'olt-test1',
-        'host' => '127.0.1.200',
+        'host_connection' => '127.0.1.100',
+        'host_server' => '127.0.1.100',
         'username' => 'user',
         'password' => 'pass1234',
         'brand' => 'ZTE',
@@ -122,9 +123,11 @@ describe('optical-power', function () {
         expect($opticalPower[2])->toBeFloat();
     });
 
-    it('throws exception when cannot get ont optical power', function () {
-        ZTE::connect($this->olt)->interface($this->wrongInterface)->opticalPower();
-    })->throws(Exception::class);
+    it('returns null when cannot get ont optical power', function () {
+        $opticalPower = ZTE::connect($this->olt)->interface($this->wrongInterface)->opticalPower();
+
+        expect($opticalPower)->toBeNull();
+    });
 })->skipIfFakeConnection();
 
 describe('optical-interface', function () {
@@ -174,20 +177,9 @@ describe('optical-interface', function () {
         expect($opticalPower[2])->toBeString();
     });
 
-    it('throws exception when cannot get ont interface', function () {
-        ZTE::connect($this->olt)->serial($this->wrongSerial)->opticalInterface();
-    })->throws(Exception::class);
+    it('returns null when cannot get ont interface', function () {
+        $opticalInterface = ZTE::connect($this->olt)->serial($this->wrongSerial)->opticalInterface();
 
-    it('can get multiple ont interfaces with olt + serials', function () {
-        $opticalPower = ZTE::connect($this->olt)->interfaces([
-            'gpon-onu_1/2/1:32',
-            'gpon-onu_1/2/1:50',
-            'gpon-onu_1/2/1:60',
-        ])->opticalPower();
-
-        expect($opticalPower)->toBeArray()->toHaveCount(3);
-        expect($opticalPower[0])->toBeFloat();
-        expect($opticalPower[1])->toBeFloat();
-        expect($opticalPower[2])->toBeFloat();
+        expect($opticalInterface)->toBeNull();
     });
 })->skipIfFakeConnection();

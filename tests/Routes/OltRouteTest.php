@@ -2,6 +2,8 @@
 
 use PauloHortelan\Onmt\Models\Olt;
 
+uses()->group('Routes');
+
 it('does not create an olt without required fields', function () {
     $olt = [];
 

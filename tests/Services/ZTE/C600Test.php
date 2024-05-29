@@ -20,7 +20,8 @@ beforeEach(function () {
 
     $this->olt = Olt::create([
         'name' => 'olt-test1',
-        'host' => '127.0.1.101',
+        'host_connection' => '127.0.1.100',
+        'host_server' => '127.0.1.100',
         'username' => 'user',
         'password' => 'pass1234',
         'brand' => 'ZTE',
