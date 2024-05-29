@@ -1,15 +1,12 @@
 <?php
 
-use PauloHortelan\Onmt\Facades\OltMonitor;
 use PauloHortelan\Onmt\Facades\Onmt;
-use PauloHortelan\Onmt\Facades\ZTE;
 use PauloHortelan\Onmt\Models\Ceo;
 use PauloHortelan\Onmt\Models\CeoSplitter;
 use PauloHortelan\Onmt\Models\Cto;
 use PauloHortelan\Onmt\Models\Dio;
 use PauloHortelan\Onmt\Models\Olt;
 use PauloHortelan\Onmt\Models\Ont;
-use PauloHortelan\Onmt\Services\OltMonitorService;
 use PauloHortelan\Onmt\Services\OnmtService;
 
 uses()->group('olt-monitor');
@@ -77,7 +74,7 @@ beforeEach(function () {
         'name' => 'SP01',
         'type' => '1x8',
         'ceo_splitter_id' => 1,
-    ]);    
+    ]);
 });
 
 describe('connection', function () {
@@ -167,7 +164,7 @@ describe('optical power with onts', function () {
             'interface' => 'gpon-onu_1/2/1:66',
             'cto_id' => 1,
         ]);
-        
+
         Ont::create([
             'name' => 'ALCLFC578DBE',
             'interface' => 'gpon-onu_1/2/1:48',
@@ -195,12 +192,12 @@ describe('optical power with onts', function () {
             'name' => 'dio-test2',
             'olt_id' => 2,
         ]);
-    
+
         Ceo::create([
             'name' => 'BB01-CX01',
             'dio_id' => 2,
         ]);
-    
+
         CeoSplitter::create([
             'name' => 'FTTH-101',
             'type' => '1x8',
@@ -208,19 +205,19 @@ describe('optical power with onts', function () {
             'pon' => 1,
             'ceo_id' => 2,
         ]);
-    
+
         Cto::create([
             'name' => 'SP01',
             'type' => '1x8',
             'ceo_splitter_id' => 2,
-        ]);  
+        ]);
 
         Ont::create([
             'name' => 'CMSZ3B112D31',
             'interface' => 'gpon_onu-1/1/1:5',
             'cto_id' => 2,
         ]);
-        
+
         Ont::create([
             'name' => 'CMSZ3B112C41',
             'interface' => 'gpon_onu-1/1/1:4',
@@ -248,12 +245,12 @@ describe('optical power with onts', function () {
             'name' => 'dio-test3',
             'olt_id' => 3,
         ]);
-    
+
         Ceo::create([
             'name' => 'BB01-CX01',
             'dio_id' => 2,
         ]);
-    
+
         CeoSplitter::create([
             'name' => 'FTTH-101',
             'type' => '1x8',
@@ -261,19 +258,19 @@ describe('optical power with onts', function () {
             'pon' => 1,
             'ceo_id' => 2,
         ]);
-    
+
         Cto::create([
             'name' => 'SP01',
             'type' => '1x8',
             'ceo_splitter_id' => 2,
-        ]);  
+        ]);
 
         Ont::create([
             'name' => 'ALCLFC5A84A7',
             'interface' => '1/1/1/1/8',
             'cto_id' => 2,
         ]);
-        
+
         Ont::create([
             'name' => 'ALCLFC5ABE9F',
             'interface' => '1/1/1/1/9',
@@ -301,12 +298,12 @@ describe('optical power with onts', function () {
             'name' => 'dio-test2',
             'olt_id' => 4,
         ]);
-    
+
         Ceo::create([
             'name' => 'BB01-CX01',
             'dio_id' => 2,
         ]);
-    
+
         CeoSplitter::create([
             'name' => 'FTTH-101',
             'type' => '1x8',
@@ -314,19 +311,19 @@ describe('optical power with onts', function () {
             'pon' => 1,
             'ceo_id' => 2,
         ]);
-    
+
         Cto::create([
             'name' => 'SP01',
             'type' => '1x8',
             'ceo_splitter_id' => 2,
-        ]);  
+        ]);
 
         Ont::create([
             'name' => 'CMSZ3B1128B1',
             'interface' => 'NA-NA-12-1',
             'cto_id' => 2,
         ]);
-        
+
         Ont::create([
             'name' => 'CMSZ3B0BBCA2',
             'interface' => 'NA-NA-12-1',
