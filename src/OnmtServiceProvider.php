@@ -25,6 +25,10 @@ class OnmtServiceProvider extends PackageServiceProvider
             __DIR__.'/../routes/onmt.php' => base_path('routes/onmt.php'),
         ], 'onmt-routes');
 
+        $this->publishes([
+            __DIR__ . '/../database/migrations/' => database_path('migrations/onmt'),
+        ], 'onmt-migrations');        
+
         Factory::guessFactoryNamesUsing(function (string $modelName) {
             return 'PauloHortelan\\Onmt\\Database\\Factories\\'.class_basename($modelName).'Factory';
         });
