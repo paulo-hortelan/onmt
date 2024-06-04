@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * PauloHortelan\Onmt\Models\Olt
  *
  * @property string $name
- * @property string $host
+ * @property string $host_server
+ * @property string $host_connection
  * @property string $username
  * @property string $password
  * @property string $brand
@@ -29,7 +30,8 @@ class Olt extends Model
      */
     protected $fillable = [
         'name',
-        'host',
+        'host_server',
+        'host_connection',
         'username',
         'password',
         'brand',

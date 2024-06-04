@@ -8,12 +8,13 @@ use PauloHortelan\Onmt\Models\Dio;
 use PauloHortelan\Onmt\Models\Olt;
 use PauloHortelan\Onmt\Models\Ont;
 
-uses()->group('ONT-Model');
+uses()->group('Models');
 
 beforeEach(function () {
     Olt::create([
         'name' => 'olt-test1',
-        'host' => '127.0.0.1',
+        'host_connection' => '127.0.0.1',
+        'host_server' => '127.0.0.1',
         'username' => 'test',
         'password' => '1234',
         'brand' => 'ZTE',

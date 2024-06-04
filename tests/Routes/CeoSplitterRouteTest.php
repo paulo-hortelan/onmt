@@ -5,6 +5,8 @@ use PauloHortelan\Onmt\Models\CeoSplitter;
 use PauloHortelan\Onmt\Models\Dio;
 use PauloHortelan\Onmt\Models\Olt;
 
+uses()->group('Routes');
+
 beforeEach(function () {
     Olt::factory()->count(5)->has(
         Dio::factory()->count(5)->has(

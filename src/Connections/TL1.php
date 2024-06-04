@@ -12,6 +12,8 @@ namespace PauloHortelan\Onmt\Connections;
  */
 class TL1 extends Telnet
 {
+    private static mixed $instance;
+
     /**
      * Attempts login to remote host.
      * This method is a wrapper for lower level private methods and should be
@@ -43,7 +45,7 @@ class TL1 extends Telnet
                 $this->waitPrompt();
                 $this->write('T');
                 break;
-            case 'fiberhome':
+            case 'Fiberhome-AN551604':
                 $this->setPrompt(';');
                 $this->write("LOGIN:::CTAG::UN=$username,PWD=$password;");
                 $prompt_reg = ';';
@@ -52,20 +54,18 @@ class TL1 extends Telnet
 
         try {
             if (! empty($user_prompt)) {
-                // username
                 if (! empty($username)) {
                     $this->setPrompt($user_prompt);
                     $this->waitPrompt();
                     $this->write($username);
                 }
 
-                // password
                 $this->setPrompt($pass_prompt);
                 $this->waitPrompt();
                 $this->write($password);
             }
 
-            // wait prompt
+            // Wait prompt
             $this->setRegexPrompt($prompt_reg);
             $this->waitPrompt();
         } catch (\Exception $e) {
@@ -73,5 +73,26 @@ class TL1 extends Telnet
         }
 
         return $this;
+    }
+
+    /**
+     * Creates a new class instance in case it doesn't exist
+     *
+     * @param  string  $host  Host name or IP address
+     * @param  int  $port  TCP port number
+     * @param  int  $timeout  Connection timeout in seconds
+     * @param  float  $streamTimeout  Stream timeout in decimal seconds
+     * @param  string  $username  Login username
+     * @param  string  $password  Login password
+     * @param  string  $hostType  Host type
+     * @return TL1
+     */
+    public static function getInstance($host, $port, $timeout, $streamTimeout, $username, $password, $hostType)
+    {
+        if (! isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
+            self::$instance = new self($host, $port, $timeout, $streamTimeout, $username, $password, $hostType);
+        }
+
+        return self::$instance;
     }
 }

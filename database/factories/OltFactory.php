@@ -13,7 +13,8 @@ class OltFactory extends Factory
     {
         return [
             'name' => $this->faker->word(),
-            'host' => $this->faker->ipv4(),
+            'host_connection' => $this->faker->ipv4(),
+            'host_server' => $this->faker->ipv4(),
             'username' => $this->faker->userName(),
             'password' => $this->faker->password(),
             'brand' => $this->faker->word(),

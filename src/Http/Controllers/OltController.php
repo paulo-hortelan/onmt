@@ -20,7 +20,8 @@ class OltController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string',
-            'host' => 'required|string',
+            'host_server' => 'required|string',
+            'host_connection' => 'required|string',
             'username' => 'required|string',
             'password' => 'required|string',
             'brand' => 'required|string',
@@ -41,7 +42,8 @@ class OltController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string',
-            'host' => 'required|string',
+            'host_connection' => 'required|string',
+            'host_server' => 'required|string',
             'username' => 'required|string',
             'password' => 'required|string',
             'brand' => 'required|string',

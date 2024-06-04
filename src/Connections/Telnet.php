@@ -132,17 +132,6 @@ class Telnet
     }
 
     /**
-     * Destructor. Cleans up socket connection and command buffer
-     *
-     * @return void
-     */
-    public function __destruct()
-    {
-        $this->disconnect();
-        $this->buffer = null;
-    }
-
-    /**
      * Destroy instance, cleans up socket connection and command buffer
      */
     public function destroy(): void
@@ -188,6 +177,7 @@ class Telnet
      */
     public function disconnect()
     {
+        dump('disconnect');
         if (self::$socket) {
             if (! fclose(self::$socket)) {
                 throw new \Exception('Error while closing telnet socket');

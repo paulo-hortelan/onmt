@@ -9,7 +9,7 @@ use PauloHortelan\Onmt\Models\Olt;
 use PauloHortelan\Onmt\Models\Ont;
 use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
-uses()->group('Nokia-FX16');
+uses()->group('Nokia');
 
 beforeEach(function () {
     $this->correctInterface = '1/1/1/1/8';
@@ -20,7 +20,8 @@ beforeEach(function () {
 
     $this->olt = Olt::create([
         'name' => 'olt-test1',
-        'host' => '127.0.1.100',
+        'host_connection' => '127.0.1.100',
+        'host_server' => '127.0.1.100',
         'username' => 'user',
         'password' => 'pass1234',
         'brand' => 'Nokia',
@@ -122,9 +123,11 @@ describe('optical-power', function () {
         expect($opticalPower[2])->toBeFloat();
     });
 
-    it('throws exception when cannot get ont optical power', function () {
-        Nokia::connect($this->olt)->interface($this->wrongInterface)->opticalPower();
-    })->throws(Exception::class);
+    it('returns null when cannot get ont optical power', function () {
+        $opticalPower = Nokia::connect($this->olt)->interface($this->wrongInterface)->opticalPower();
+
+        expect($opticalPower)->toBeNull();
+    });
 })->skipIfFakeConnection();
 
 describe('optical-interface', function () {
@@ -174,20 +177,9 @@ describe('optical-interface', function () {
         expect($opticalPower[2])->toBeString();
     });
 
-    it('throws exception when cannot get ont interface', function () {
-        Nokia::connect($this->olt)->serial($this->wrongSerial)->opticalInterface();
-    })->throws(Exception::class);
+    it('returns null when cannot get ont interface', function () {
+        $opticalInterface = Nokia::connect($this->olt)->serial($this->wrongSerial)->opticalInterface();
 
-    it('can get multiple ont interfaces with olt + serials', function () {
-        $opticalPower = Nokia::connect($this->olt)->interfaces([
-            '1/1/1/1/8',
-            '1/1/1/1/7',
-            '1/1/1/1/4',
-        ])->opticalPower();
-
-        expect($opticalPower)->toBeArray()->toHaveCount(3);
-        expect($opticalPower[0])->toBeFloat();
-        expect($opticalPower[1])->toBeFloat();
-        expect($opticalPower[2])->toBeFloat();
+        expect($opticalInterface)->toBeNull();
     });
 })->skipIfFakeConnection();

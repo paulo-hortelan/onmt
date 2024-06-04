@@ -3,15 +3,15 @@
 namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\Onmt\Services\OltMonitorService;
+use PauloHortelan\Onmt\Services\OnmtService;
 
 /**
- * @see \PauloHortelan\Onmt\Onmt
+ * @see \PauloHortelan\Onmt\OnmtService
  */
-class OltMonitor extends Facade
+class Onmt extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return OltMonitorService::class;
+        return OnmtService::class;
     }
 }
