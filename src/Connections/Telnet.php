@@ -127,9 +127,7 @@ class Telnet
         return self::$instance;
     }
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     /**
      * Destroy instance, cleans up socket connection and command buffer
