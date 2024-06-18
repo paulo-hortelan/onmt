@@ -27,6 +27,7 @@ class Dio extends Model
      */
     protected $fillable = [
         'name',
+        'type',
         'olt_id',
     ];
 

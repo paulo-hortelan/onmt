@@ -18,6 +18,7 @@ return new class extends Migration
                 indexName: 'ont_ctos_id'
             )->onUpdate('cascade')->onDelete('cascade');
 
+            $table->integer('port');
             $table->timestamps();
         });
 

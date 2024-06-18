@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('dios', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('type', ['6', '12', '24', '36', '48', '64', '72', '96', '144']);
 
             $table->foreignId('olt_id')->constrained(
                 table: 'olts',

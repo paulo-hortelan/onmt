@@ -28,6 +28,7 @@ class Ont extends Model
     protected $fillable = [
         'name',
         'interface',
+        'port',
         'cto_id',
     ];
 
