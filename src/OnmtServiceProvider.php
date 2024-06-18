@@ -22,26 +22,26 @@ class OnmtServiceProvider extends PackageServiceProvider
         $this->registerRoutes();
 
         $this->publishes([
-            __DIR__.'/../routes/onmt.php' => base_path('routes/onmt.php'),
+            __DIR__ . '/../routes/onmt.php' => base_path('routes/onmt.php'),
         ], 'onmt-routes');
 
         $this->publishes([
             __DIR__ . '/../database/migrations/' => database_path('migrations/onmt'),
-        ], 'onmt-migrations');      
+        ], 'onmt-migrations');
 
         $this->publishes([
             __DIR__ . '/../database/migrations/' => database_path('migrations/onmt'),
-        ], 'onmt-models');        
+        ], 'onmt-models');
 
         Factory::guessFactoryNamesUsing(function (string $modelName) {
-            return 'PauloHortelan\\Onmt\\Database\\Factories\\'.class_basename($modelName).'Factory';
+            return 'PauloHortelan\\Onmt\\Database\\Factories\\' . class_basename($modelName) . 'Factory';
         });
     }
 
     protected function registerRoutes(): void
     {
         Route::group($this->routeConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/onmt.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/onmt.php');
         });
     }
 
