@@ -128,7 +128,6 @@ class NokiaService
         if (empty($this->serials))
             throw new Exception('Serial(s) not found.');
 
-
         foreach ($this->serials as $serial) {
             $interfaceResponse = $this->opticalInterfaces([$serial])[0];
 

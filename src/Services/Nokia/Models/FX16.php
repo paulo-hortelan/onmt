@@ -14,52 +14,149 @@ class FX16
     }
 
     /**
-     * Returns the ONT optical power
+     * Returns the ONT optical details
      */
-    public function ontOpticalPower(array $interfaces): array|float|null
+    public function ontOpticalDetails(array $interfaces): array|float|null
     {
-        $opticalPower = [];
+        $opticalDetails = [];
 
         foreach ($interfaces as $interface) {
-            $response = $this->connection->exec("show equipment ont optics $interface detail");
+            $success = false;
 
-            if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
-                $opticalPower[] = (float) $match[1];
-            } else {
-                $opticalPower[] = null;
+            try {
+                $response = $this->connection->exec("show equipment ont optics $interface detail");
+
+                if (preg_match('/tx-signal-level.*:(.*\s)/m', $response, $match)) {
+                    $success = true;
+                    $txSignalLevel = (float) $match[1];
+                }
+
+                if (preg_match('/ont-voltage.*:(.*\s)/m', $response, $match)) {
+                    $ontVoltage = (float) $match[1];
+                }
+
+                if (preg_match('/olt-rx-sig-level.*:(.*\s)/m', $response, $match)) {
+                    $oltRxSigLevel = (float) $match[1];
+                }
+
+                if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
+                    $rxSignalLevel = (float) $match[1];
+                }
+
+                if (preg_match('/ont-temperature.*:(.*\s)/m', $response, $match)) {
+                    $ontTemperature = (float) $match[1];
+                }
+
+                if (preg_match('/laser-bias-curr.*:(.*\s)/m', $response, $match)) {
+                    $laserBiasCurr = (float) $match[1];
+                }
+
+                if (!$success)
+                    $errorInfo = $response;
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            $opticalDetails[] = [
+                "success" => $success,
+                "errorInfo" => $errorInfo ?? NULL,
+                "result" => [
+                    "interface" => $interface,
+                    "txSignalLevel" => $txSignalLevel ?? NULL,
+                    "ontVoltage" => $ontVoltage ?? NULL,
+                    "oltRxSigLevel" => $oltRxSigLevel ?? NULL,
+                    "rxSignalLevel" => $rxSignalLevel ?? NULL,
+                    "ontTemperature" => $ontTemperature ?? NULL,
+                    "laserBiasCurr" => $laserBiasCurr ?? NULL,
+                ]
+            ];
         }
 
-        if (count($opticalPower) === 1) {
-            return $opticalPower[0];
-        }
-
-        return $opticalPower;
+        return $opticalDetails;
     }
 
     /**
-     * Returns the ONT optical interface
+     * Returns the ONT optical interfaces
      */
-    public function ontOpticalInterface(array $serials): array|string|null
+    public function ontOpticalInterfaces(array $serials): array|string|null
     {
-        $opticalInterface = [];
+        $opticalInterfaces = [];
 
         foreach ($serials as $serial) {
+            $success = false;
             $formattedSerial = substr_replace($serial, ':', 4, 0);
 
-            $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
+            try {
+                $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
 
-            if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
-                $opticalInterface[] = trim((string) $match[1]);
-            } else {
-                $opticalInterface[] = null;
+                if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
+                    $success = true;
+                    $interface = trim($match[1]);
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            if (!$success)
+                $errorInfo = "Interface not found on OLT";
+
+            $opticalInterfaces[] = [
+                "success" => $success,
+                "errorInfo" => $errorInfo ?? NULL,
+                "result" => [
+                    "serial" => $serial,
+                    "interface" => $interface ?? NULL,
+                ]
+            ];
         }
 
-        if (count($opticalInterface) === 1) {
-            return $opticalInterface[0];
+        return $opticalInterfaces;
+    }
+
+    /**
+     * Returns the ONT port details
+     */
+    public function ontPortDetails(array $interfaces): array|string|null
+    {
+        $portDetails = [];
+
+        foreach ($interfaces as $interface) {
+            $success = false;
+
+            try {
+                $response = $this->connection->exec("show interface port ont:$interface detail");
+
+                if (preg_match('/opr-status.*?:(.*?[^\s]+)/m', $response, $match)) {
+                    $success = true;
+                    $oprStatus = trim($match[1]);
+                }
+
+                if (preg_match('/admin-status.*?:(.*?[^\s]+)/m', $response, $match)) {
+                    $adminStatus = trim($match[1]);
+                }
+
+                if (preg_match('/last-chg-opr-stat.*?:(.*?[^\s]+)/m', $response, $match)) {
+                    $lastChgOprStat = trim($match[1]);
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+            }
+
+            if (!$success)
+                $errorInfo = "Interface not found on OLT";
+
+            $portDetails[] = [
+                "success" => $success,
+                "errorInfo" => $errorInfo ?? NULL,
+                "result" => [
+                    "interface" => $interface,
+                    "oprStatus" => $oprStatus ?? NULL,
+                    "adminStatus" => $adminStatus ?? NULL,
+                    "lastChgOprStat" => $lastChgOprStat ?? NULL
+                ]
+            ];
         }
 
-        return $opticalInterface;
+        return $portDetails;
     }
 }

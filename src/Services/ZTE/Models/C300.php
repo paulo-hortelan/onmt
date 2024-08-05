@@ -14,50 +14,81 @@ class C300
     }
 
     /**
-     * Returns the ONT optical power
+     * Returns the ONT optical powers
      */
-    public function ontOpticalPower(array $interfaces): array|float|null
+    public function ontOpticalPowers(array $interfaces): array|float|null
     {
-        $opticalPower = [];
+        $opticalPowers = [];
 
         foreach ($interfaces as $interface) {
-            $response = $this->connection->exec("show pon power attenuation $interface");
+            $success = false;
 
-            if (preg_match('/down.*Rx:(.*)\(dbm\)/m', $response, $match)) {
-                $opticalPower[] = (float) $match[1];
-            } else {
-                $opticalPower[] = null;
+            try {
+                $response = $this->connection->exec("show pon power attenuation $interface");
+
+                if (preg_match('/down.*?:(.*?[^(]+)/m', $response, $match)) {
+                    $success = true;
+                    $downTxPower = (float) $match[1];
+                }
+
+                if (preg_match('/down.*:(.*?[^(]+)/m', $response, $match)) {
+                    $downRxPower = (float) $match[1];
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            if (!$success)
+                $errorInfo = "Interface not found on OLT";
+
+            $opticalPowers[] = [
+                "success" => $success,
+                "errorInfo" => $errorInfo ?? NULL,
+                "result" => [
+                    "interface" => $interface,
+                    "downRxPower" => $downRxPower ?? NULL,
+                    "downTxPower" => $downTxPower ?? NULL,
+                ]
+            ];
         }
 
-        if (count($opticalPower) === 1) {
-            return $opticalPower[0];
-        }
-
-        return $opticalPower;
+        return $opticalPowers;
     }
 
     /**
-     * Returns the ONT interface
+     * Returns the ONT optical interfaces
      */
-    public function ontInterface(array $serials): array|string|null
+    public function ontOpticalInterfaces(array $serials): array|null
     {
-        $opticalInterface = [];
+        $opticalInterfaces = [];
 
         foreach ($serials as $serial) {
-            $response = $this->connection->exec("show gpon onu by sn $serial");
+            $success = false;
 
-            if (preg_match('/gpon-onu.*/m', $response, $match)) {
-                $opticalInterface[] = (string) $match[0];
-            } else {
-                $opticalInterface[] = null;
+            try {
+                $response = $this->connection->exec("show gpon onu by sn $serial");
+
+                if (preg_match('/gpon-onu.*/m', $response, $match)) {
+                    $success = true;
+                    $interface = trim($match[0]);
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            if (!$success)
+                $errorInfo = "Interface not found on OLT";
+
+            $opticalInterfaces[] = [
+                "success" => $success,
+                "errorInfo" => $errorInfo ?? NULL,
+                "result" => [
+                    "serial" => $serial,
+                    "interface" => $interface ?? NULL,
+                ]
+            ];
         }
 
-        if (count($opticalInterface) === 1) {
-            return $opticalInterface[0];
-        }
-
-        return $opticalInterface;
+        return $opticalInterfaces;
     }
 }

@@ -76,33 +76,67 @@ class ZTEService
         return $this;
     }
 
-    public function opticalPower(): float|array|null
+    public function opticalInterfaces(array $serials = []): array|null
     {
-        if (empty($this->interfaces)) {
-            throw new Exception('Interface(s) not found.');
+        if (!empty($serials))
+            $this->serials = $serials;
+
+        if (empty($this->serials)) {
+            throw new Exception('Serial(s) not found.');
         }
 
         if ($this->model === 'C300') {
-            return (new C300($this->connection))->ontOpticalPower($this->interfaces);
+            return (new C300($this->connection))->ontOpticalInterfaces($this->serials);
         }
 
         if ($this->model === 'C600') {
-            return (new C600($this->connection))->ontOpticalPower($this->interfaces);
+            return (new C600($this->connection))->ontOpticalInterfaces($this->serials);
         }
 
         throw new Exception('Model ' . $this->model . ' is not supported.');
     }
 
-    public function opticalInterface(): string|array|null
+    public function opticalPowersBySerials(array $serials = []): array|null
     {
+        $opticalPowers = [];
+
+        if (!empty($serials))
+            $this->serials = $serials;
+
+        if (empty($this->serials))
+            throw new Exception('Serial(s) not found.');
+
+        foreach ($this->serials as $serial) {
+            $interfaceResponse = $this->opticalInterfaces([$serial])[0];
+
+            if ($interfaceResponse['success']) {
+                $interface = $interfaceResponse['result']['interface'];
+                $opticalPowers[] = $this->opticalPowers([$interface])[0];
+            } else {
+                $opticalPowers[] = $interfaceResponse;
+            }
+        }
+
+        return $opticalPowers;
+    }
+
+    public function opticalPowers(array $interfaces = []): array|null
+    {
+        if (!empty($interfaces))
+            $this->interfaces = $interfaces;
+
+        if (empty($this->interfaces)) {
+            throw new Exception('Interface(s) not found.');
+        }
+
         if ($this->model === 'C300') {
-            return (new C300($this->connection))->ontInterface($this->serials);
+            return (new C300($this->connection))->ontOpticalPowers($this->interfaces);
         }
 
         if ($this->model === 'C600') {
-            return (new C600($this->connection))->ontInterface($this->serials);
+            return (new C600($this->connection))->ontOpticalPowers($this->interfaces);
         }
 
-        throw new \Exception('Product model not supported');
+        throw new Exception('Model ' . $this->model . ' is not supported.');
     }
 }
