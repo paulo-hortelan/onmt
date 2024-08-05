@@ -2,19 +2,16 @@
 
 namespace PauloHortelan\Onmt\Services\Concerns;
 
-use PauloHortelan\Onmt\Models\Olt;
-
 trait Validations
 {
     /**
-     * Verify if OLT brand is valid with the calling service
+     * Verify if string is a valid IP
      */
-    public function oltValid(Olt $olt): bool
+    public function isValidIP(string $ip): bool
     {
-        $callingService = get_class($this);
-        $exploded = explode('\\', $callingService);
-        $brand = $exploded[count($exploded) - 2];
+        if (filter_var($ip, FILTER_VALIDATE_IP))
+            return true;
 
-        return $olt->brand === $brand;
+        return false;
     }
 }
