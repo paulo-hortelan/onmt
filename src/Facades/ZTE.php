@@ -12,6 +12,6 @@ class ZTE extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return ZTEService::class;
+        return 'ZTEService';
     }
 }

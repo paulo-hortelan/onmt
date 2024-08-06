@@ -12,6 +12,6 @@ class Nokia extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return NokiaService::class;
+        return 'NokiaService';
     }
 }

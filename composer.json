@@ -88,7 +88,9 @@
                 "PauloHortelan\\Onmt\\OnmtServiceProvider"
             ],
             "aliases": {
-                "Onmt": "PauloHortelan\\Onmt\\Facades\\Onmt"
+                "Fiberhome": "PauloHortelan\\Onmt\\Facades\\Fiberhome",
+                "Nokia": "PauloHortelan\\Onmt\\Facades\\Nokia",
+                "ZTE": "PauloHortelan\\Onmt\\Facades\\ZTE"
             }
         }
     },

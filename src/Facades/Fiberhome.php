@@ -12,6 +12,6 @@ class Fiberhome extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return FiberhomeService::class;
+        return 'FiberhomeService';
     }
 }
