@@ -12,28 +12,25 @@ use PauloHortelan\Onmt\Services\ZTE\ZTEService;
 
 class OnmtServiceProvider extends ServiceProvider
 {
-
     public function boot()
     {
         $this->registerFacades();
     }
 
-    public function register()
-    {
-    }
+    public function register() {}
 
     protected function registerFacades()
     {
-        $this->app->singleton("Nokia", function ($app) {
-            return new NokiaService();
+        $this->app->singleton('Nokia', function ($app) {
+            return new NokiaService;
         });
 
-        $this->app->singleton("Fiberhome", function ($app) {
-            return new FiberhomeService();
+        $this->app->singleton('Fiberhome', function ($app) {
+            return new FiberhomeService;
         });
 
-        $this->app->singleton("ZTE", function ($app) {
-            return new ZTEService();
+        $this->app->singleton('ZTE', function ($app) {
+            return new ZTEService;
         });
     }
 }
