@@ -2,7 +2,7 @@
 
 namespace PauloHortelan\Onmt\Services\ZTE\Models;
 
-use PauloHortelan\Onmt\Connections\Telnet;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 
 class C300
 {
@@ -38,7 +38,7 @@ class C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (! $success) {
+            if (!$success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 
@@ -77,7 +77,7 @@ class C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (! $success) {
+            if (!$success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 

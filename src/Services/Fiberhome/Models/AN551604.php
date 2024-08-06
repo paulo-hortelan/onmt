@@ -2,7 +2,7 @@
 
 namespace PauloHortelan\Onmt\Services\Fiberhome\Models;
 
-use PauloHortelan\Onmt\Connections\TL1;
+use PauloHortelan\Onmt\Services\Connections\TL1;
 
 class AN551604
 {
@@ -45,7 +45,7 @@ class AN551604
                     }
                 }
 
-                if (! $success) {
+                if (!$success) {
                     $errorInfo = $response;
                 }
             } catch (\Exception $e) {
@@ -98,7 +98,7 @@ class AN551604
                     }
                 }
 
-                if (! $success) {
+                if (!$success) {
                     $errorInfo = $response;
                 }
             } catch (\Exception $e) {

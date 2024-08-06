@@ -3,15 +3,14 @@
 namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 /**
- * @see \PauloHortelan\Onmt\Services\NokiaService
+ * @see \PauloHortelan\Onmt\Services\Nokia\NokiaService
  */
 class Nokia extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'NokiaService';
+        return \PauloHortelan\Onmt\Services\Nokia\NokiaService::class;
     }
 }

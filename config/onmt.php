@@ -1,7 +1,6 @@
 <?php
 
-// config for PauloHortelan/Onmt
-return [
-    'prefix' => 'api',
-    'middleware' => ['api'],
-];
+/*
+ * You can place your custom package configuration in here.
+ */
+return [];

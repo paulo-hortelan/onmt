@@ -1,6 +1,6 @@
 <?php
 
-use PauloHortelan\Onmt\Connections\TL1;
+use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Facades\Fiberhome;
 use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 

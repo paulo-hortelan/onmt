@@ -3,7 +3,7 @@
 namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
-use PauloHortelan\Onmt\Connections\Telnet;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Nokia\Models\FX16;
 
@@ -27,11 +27,11 @@ class NokiaService
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
+        if (!$this->isValidIP($ipOlt) || !$this->isValidIP($ipServer)) {
             throw new Exception('OLT brand does not match the service.');
         }
 
-        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-'.$this->model);
+        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-' . $this->model);
         $this->connection->stripPromptFromBuffer(true);
         $this->connection->exec('environment inhibit-alarms');
 
@@ -88,7 +88,7 @@ class NokiaService
 
     public function opticalDetails(array $interfaces = []): ?array
     {
-        if (! empty($interfaces)) {
+        if (!empty($interfaces)) {
             $this->interfaces = $interfaces;
         }
 
@@ -100,12 +100,12 @@ class NokiaService
             return (new FX16($this->connection))->ontOpticalDetails($this->interfaces);
         }
 
-        throw new Exception('Model '.$this->model.' is not supported.');
+        throw new Exception('Model ' . $this->model . ' is not supported.');
     }
 
     public function opticalInterfaces(array $serials = []): ?array
     {
-        if (! empty($serials)) {
+        if (!empty($serials)) {
             $this->serials = $serials;
         }
 
@@ -117,14 +117,14 @@ class NokiaService
             return (new FX16($this->connection))->ontOpticalInterfaces($this->serials);
         }
 
-        throw new Exception('Model '.$this->model.' is not supported.');
+        throw new Exception('Model ' . $this->model . ' is not supported.');
     }
 
     public function opticalDetailsBySerials(array $serials = []): ?array
     {
         $opticalDetails = [];
 
-        if (! empty($serials)) {
+        if (!empty($serials)) {
             $this->serials = $serials;
         }
 
@@ -148,7 +148,7 @@ class NokiaService
 
     public function portDetails(array $interfaces = []): ?array
     {
-        if (! empty($interfaces)) {
+        if (!empty($interfaces)) {
             $this->interfaces = $interfaces;
         }
 
@@ -160,6 +160,6 @@ class NokiaService
             return (new FX16($this->connection))->ontPortDetails($this->interfaces);
         }
 
-        throw new Exception('Model '.$this->model.' is not supported.');
+        throw new Exception('Model ' . $this->model . ' is not supported.');
     }
 }

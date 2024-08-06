@@ -1,6 +1,6 @@
 <?php
 
-namespace PauloHortelan\Onmt\Connections;
+namespace PauloHortelan\Onmt\Services\Connections;
 
 /**
  * TL1 class
@@ -53,8 +53,8 @@ class TL1 extends Telnet
         }
 
         try {
-            if (! empty($user_prompt)) {
-                if (! empty($username)) {
+            if (!empty($user_prompt)) {
+                if (!empty($username)) {
                     $this->setPrompt($user_prompt);
                     $this->waitPrompt();
                     $this->write($username);
@@ -89,7 +89,7 @@ class TL1 extends Telnet
      */
     public static function getInstance($host, $port, $timeout, $streamTimeout, $username, $password, $hostType)
     {
-        if (! isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
+        if (!isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
             self::$instance = new self($host, $port, $timeout, $streamTimeout, $username, $password, $hostType);
         }
 

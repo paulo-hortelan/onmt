@@ -3,15 +3,14 @@
 namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 
 /**
- * @see \PauloHortelan\Onmt\Services\FiberhomeService
+ * @see \PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService
  */
 class Fiberhome extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return 'FiberhomeService';
+        return \PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService::class;
     }
 }

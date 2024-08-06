@@ -1,6 +1,6 @@
 <?php
 
-use PauloHortelan\Onmt\Connections\Telnet;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Facades\Nokia;
 use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
