@@ -51,7 +51,7 @@ class FX16
                     $laserBiasCurr = (float) $match[1];
                 }
 
-                if (!$success) {
+                if (! $success) {
                     $errorInfo = $response;
                 }
             } catch (\Exception $e) {
@@ -98,7 +98,7 @@ class FX16
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success) {
+            if (! $success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 
@@ -144,7 +144,7 @@ class FX16
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success) {
+            if (! $success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 

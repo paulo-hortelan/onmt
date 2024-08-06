@@ -1,7 +1,7 @@
 <?php
 
-use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Facades\ZTE;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\ZTE\ZTEService;
 
 uses()->group('ZTE');

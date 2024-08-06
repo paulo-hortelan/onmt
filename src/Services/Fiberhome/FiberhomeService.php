@@ -3,9 +3,9 @@
 namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
-use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Fiberhome\Models\AN551604;
 
 class FiberhomeService
@@ -30,12 +30,12 @@ class FiberhomeService
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (!$this->isValidIP($ipOlt) || !$this->isValidIP($ipServer)) {
+        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('OLT brand does not match the service.');
         }
 
         $this->ipOlt = $ipOlt;
-        $this->connection = TL1::getInstance($ipServer, 3337, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-' . $this->model);
+        $this->connection = TL1::getInstance($ipServer, 3337, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.$this->model);
         $this->connection->stripPromptFromBuffer(true);
 
         return $this;
@@ -87,11 +87,11 @@ class FiberhomeService
      */
     public function opticalPowers(array $interfaces = [], array $serials = []): ?array
     {
-        if (!empty($interfaces)) {
+        if (! empty($interfaces)) {
             $this->interfaces = $interfaces;
         }
 
-        if (!empty($serials)) {
+        if (! empty($serials)) {
             $this->serials = $serials;
         }
 
@@ -103,7 +103,7 @@ class FiberhomeService
             throw new Exception('Serial(s) not found.');
         }
 
-        if (!$this->assertSameLength($this->interfaces, $this->serials)) {
+        if (! $this->assertSameLength($this->interfaces, $this->serials)) {
             throw new Exception('The number of interfaces and serials are not the same.');
         }
 
@@ -111,16 +111,16 @@ class FiberhomeService
             return (new AN551604($this->connection, $this->ipOlt))->ontOpticalPowers($this->interfaces, $this->serials);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 
     public function opticalStates(array $interfaces = [], array $serials = []): ?array
     {
-        if (!empty($interfaces)) {
+        if (! empty($interfaces)) {
             $this->interfaces = $interfaces;
         }
 
-        if (!empty($serials)) {
+        if (! empty($serials)) {
             $this->serials = $serials;
         }
 
@@ -132,7 +132,7 @@ class FiberhomeService
             throw new Exception('Serial(s) not found.');
         }
 
-        if (!$this->assertSameLength($this->interfaces, $this->serials)) {
+        if (! $this->assertSameLength($this->interfaces, $this->serials)) {
             throw new Exception('The number of interfaces and serials are not the same.');
         }
 
@@ -140,6 +140,6 @@ class FiberhomeService
             return (new AN551604($this->connection, $this->ipOlt))->ontOpticalStates($this->interfaces, $this->serials);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 }

@@ -45,7 +45,7 @@ class AN551604
                     }
                 }
 
-                if (!$success) {
+                if (! $success) {
                     $errorInfo = $response;
                 }
             } catch (\Exception $e) {
@@ -98,7 +98,7 @@ class AN551604
                     }
                 }
 
-                if (!$success) {
+                if (! $success) {
                     $errorInfo = $response;
                 }
             } catch (\Exception $e) {

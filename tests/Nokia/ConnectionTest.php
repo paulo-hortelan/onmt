@@ -1,7 +1,7 @@
 <?php
 
-use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Facades\Nokia;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 uses()->group('Nokia');
