@@ -2,29 +2,38 @@
 
 namespace PauloHortelan\Onmt;
 
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Illuminate\Support\ServiceProvider;
+use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
+use PauloHortelan\Onmt\Services\Nokia\NokiaService;
+use PauloHortelan\Onmt\Services\ZTE\ZTEService;
 
-class OnmtServiceProvider extends PackageServiceProvider
+// use Spatie\LaravelPackageTools\Package;
+// use Spatie\LaravelPackageTools\PackageServiceProvider;
+
+class OnmtServiceProvider extends ServiceProvider
 {
-    /**
-     * Perform post-registration booting of services.
-     *
-     * @return void
-     */
+
     public function boot()
     {
-        parent::boot();
+        $this->registerFacades();
     }
 
-    public function configurePackage(Package $package): void
+    public function register()
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
-        $package
-            ->name('onmt');
+    }
+
+    protected function registerFacades()
+    {
+        $this->app->singleton("Nokia", function ($app) {
+            return new NokiaService();
+        });
+
+        $this->app->singleton("Fiberhome", function ($app) {
+            return new FiberhomeService();
+        });
+
+        $this->app->singleton("ZTE", function ($app) {
+            return new ZTEService();
+        });
     }
 }
