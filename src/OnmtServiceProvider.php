@@ -19,16 +19,16 @@ class OnmtServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->bind("NokiaService", function ($app) {
-            return new NokiaService();
+        $this->app->bind('NokiaService', function ($app) {
+            return new NokiaService;
         });
 
-        $this->app->bind("FiberhomeService", function ($app) {
-            return new FiberhomeService();
+        $this->app->bind('FiberhomeService', function ($app) {
+            return new FiberhomeService;
         });
 
-        $this->app->bind("ZTEService", function ($app) {
-            return new ZTEService();
+        $this->app->bind('ZTEService', function ($app) {
+            return new ZTEService;
         });
     }
 
