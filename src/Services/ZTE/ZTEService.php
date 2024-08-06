@@ -24,15 +24,15 @@ class ZTEService
 
     public array $interfaces = [];
 
-    public function connect(string $ipOlt, string $username, string $password, string $ipServer = NULL): mixed
+    public function connect(string $ipOlt, string $username, string $password, ?string $ipServer = null): mixed
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (!$this->isValidIP($ipOlt) || !$this->isValidIP($ipServer)) {
+        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('OLT brand does not match the service.');
         }
 
-        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'ZTE-' . $this->model);
+        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'ZTE-'.$this->model);
         $this->connection->stripPromptFromBuffer(true);
         $this->connection->exec('terminal length 0');
 
@@ -76,10 +76,11 @@ class ZTEService
         return $this;
     }
 
-    public function opticalInterfaces(array $serials = []): array|null
+    public function opticalInterfaces(array $serials = []): ?array
     {
-        if (!empty($serials))
+        if (! empty($serials)) {
             $this->serials = $serials;
+        }
 
         if (empty($this->serials)) {
             throw new Exception('Serial(s) not found.');
@@ -93,18 +94,20 @@ class ZTEService
             return (new C600($this->connection))->ontOpticalInterfaces($this->serials);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 
-    public function opticalPowersBySerials(array $serials = []): array|null
+    public function opticalPowersBySerials(array $serials = []): ?array
     {
         $opticalPowers = [];
 
-        if (!empty($serials))
+        if (! empty($serials)) {
             $this->serials = $serials;
+        }
 
-        if (empty($this->serials))
+        if (empty($this->serials)) {
             throw new Exception('Serial(s) not found.');
+        }
 
         foreach ($this->serials as $serial) {
             $interfaceResponse = $this->opticalInterfaces([$serial])[0];
@@ -120,10 +123,11 @@ class ZTEService
         return $opticalPowers;
     }
 
-    public function opticalPowers(array $interfaces = []): array|null
+    public function opticalPowers(array $interfaces = []): ?array
     {
-        if (!empty($interfaces))
+        if (! empty($interfaces)) {
             $this->interfaces = $interfaces;
+        }
 
         if (empty($this->interfaces)) {
             throw new Exception('Interface(s) not found.');
@@ -137,6 +141,6 @@ class ZTEService
             return (new C600($this->connection))->ontOpticalPowers($this->interfaces);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 }

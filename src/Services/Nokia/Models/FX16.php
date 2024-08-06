@@ -51,24 +51,25 @@ class FX16
                     $laserBiasCurr = (float) $match[1];
                 }
 
-                if (!$success)
+                if (! $success) {
                     $errorInfo = $response;
+                }
             } catch (\Exception $e) {
                 $errorInfo = $e->getMessage();
             }
 
             $opticalDetails[] = [
-                "success" => $success,
-                "errorInfo" => $errorInfo ?? NULL,
-                "result" => [
-                    "interface" => $interface,
-                    "txSignalLevel" => $txSignalLevel ?? NULL,
-                    "ontVoltage" => $ontVoltage ?? NULL,
-                    "oltRxSigLevel" => $oltRxSigLevel ?? NULL,
-                    "rxSignalLevel" => $rxSignalLevel ?? NULL,
-                    "ontTemperature" => $ontTemperature ?? NULL,
-                    "laserBiasCurr" => $laserBiasCurr ?? NULL,
-                ]
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'interface' => $interface,
+                    'txSignalLevel' => $txSignalLevel ?? null,
+                    'ontVoltage' => $ontVoltage ?? null,
+                    'oltRxSigLevel' => $oltRxSigLevel ?? null,
+                    'rxSignalLevel' => $rxSignalLevel ?? null,
+                    'ontTemperature' => $ontTemperature ?? null,
+                    'laserBiasCurr' => $laserBiasCurr ?? null,
+                ],
             ];
         }
 
@@ -97,16 +98,17 @@ class FX16
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success)
-                $errorInfo = "Interface not found on OLT";
+            if (! $success) {
+                $errorInfo = 'Interface not found on OLT';
+            }
 
             $opticalInterfaces[] = [
-                "success" => $success,
-                "errorInfo" => $errorInfo ?? NULL,
-                "result" => [
-                    "serial" => $serial,
-                    "interface" => $interface ?? NULL,
-                ]
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'serial' => $serial,
+                    'interface' => $interface ?? null,
+                ],
             ];
         }
 
@@ -142,18 +144,19 @@ class FX16
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success)
-                $errorInfo = "Interface not found on OLT";
+            if (! $success) {
+                $errorInfo = 'Interface not found on OLT';
+            }
 
             $portDetails[] = [
-                "success" => $success,
-                "errorInfo" => $errorInfo ?? NULL,
-                "result" => [
-                    "interface" => $interface,
-                    "oprStatus" => $oprStatus ?? NULL,
-                    "adminStatus" => $adminStatus ?? NULL,
-                    "lastChgOprStat" => $lastChgOprStat ?? NULL
-                ]
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'interface' => $interface,
+                    'oprStatus' => $oprStatus ?? null,
+                    'adminStatus' => $adminStatus ?? null,
+                    'lastChgOprStat' => $lastChgOprStat ?? null,
+                ],
             ];
         }
 

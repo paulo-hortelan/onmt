@@ -1,19 +1,16 @@
-# This is my package onmt
+<!-- <p align="center"><img src="/images/requests-graph.png" alt="Requests Graph for Laravel Pulse"></p> -->
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/paulo-hortelan/onmt.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/onmt)
+# Optical Network Manager (ONMT)
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/paulo-hortelan/requests-graph-pulse.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/onmt)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/paulo-hortelan/onmt/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/paulo-hortelan/onmt/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/paulo-hortelan/onmt/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/paulo-hortelan/onmt/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/paulo-hortelan/onmt.svg?style=flat-square)](https://packagist.org/packages/paulo-hortelan/onmt)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Buy%20me%20a%20coffee!-%2346b798.svg)](https://ko-fi.com/paulohortelan)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+This is a Laravel package that adds methods for interacting and gather information aboout optical devices. 
 
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/onmt.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/onmt)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+<!-- - Customizable requests status to be shown -->
 
 ## Installation
 
@@ -23,38 +20,46 @@ You can install the package via composer:
 composer require paulo-hortelan/onmt
 ```
 
-You can publish and run the migrations with:
+<!-- ## Register the recorder
 
-```bash
-php artisan vendor:publish --tag="onmt-migrations"
-php artisan migrate
-```
+Add the `RequestsGraphRecorder` inside `config/pulse.php`. (If you don\'t have this file make sure you have published the config file of Larave Pulse using `php artisan vendor:publish --tag=pulse-config`) -->
 
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="onmt-config"
-```
-
-This is the contents of the published config file:
-
-```php
+<!-- ```
 return [
-];
-```
+    // ...
 
-Optionally, you can publish the views using
+    'recorders' => [
+        // Existing recorders...
+
+        \PauloHortelan\RequestsGraphPulse\Recorders\RequestsGraphRecorder::class => [
+            'enabled' => env('PULSE_REQUESTS_GRAPH_ENABLED', true),
+            'sample_rate' => env('PULSE_REQUESTS_GRAPH_SAMPLE_RATE', 1),
+            'record_informational' => env('PULSE_REQUESTS_GRAPH_RECORD_INFORMATIONAL', false),
+            'record_successful' => env('PULSE_REQUESTS_GRAPH_RECORD_SUCCESSFUL', true),
+            'record_redirection' => env('PULSE_REQUESTS_GRAPH_RECORD_REDIRECTION', false),
+            'record_client_error' => env('PULSE_REQUESTS_GRAPH_RECORD_CLIENT_ERROR', true),
+            'record_server_error' => env('PULSE_REQUESTS_GRAPH_RECORD_SERVER_ERROR', true),
+            'ignore' => [
+                '#^/pulse$#', // Pulse dashboard...
+            ],            
+        ], 
+    ]
+]
+``` -->
+
+<!-- ## Add to your dashboard
+
+To add the card to the Pulse dashboard, you must first [publish the vendor view](https://laravel.com/docs/10.x/pulse#dashboard-customization).
 
 ```bash
-php artisan vendor:publish --tag="onmt-views"
+php artisan vendor:publish --tag=pulse-dashboard
 ```
 
-## Usage
+Then, you can modify the `dashboard.blade.php` file and add the requests-graph livewire template:
 
 ```php
-$Onmt = new PauloHortelan\Onmt();
-echo $Onmt->echoPhrase('Hello, PauloHortelan!');
-```
+<livewire:requests-graph cols="6" />
+``` -->
 
 ## Testing
 
@@ -76,8 +81,8 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
-- [paulo-hortelan](https://github.com/paulo-hortelan)
-- [All Contributors](../../contributors)
+-   [Paulo Hortelan](https://github.com/paulo-hortelan)
+-   [All Contributors](../../contributors)
 
 ## License
 

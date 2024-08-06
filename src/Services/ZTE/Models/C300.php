@@ -38,17 +38,18 @@ class C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success)
-                $errorInfo = "Interface not found on OLT";
+            if (! $success) {
+                $errorInfo = 'Interface not found on OLT';
+            }
 
             $opticalPowers[] = [
-                "success" => $success,
-                "errorInfo" => $errorInfo ?? NULL,
-                "result" => [
-                    "interface" => $interface,
-                    "downRxPower" => $downRxPower ?? NULL,
-                    "downTxPower" => $downTxPower ?? NULL,
-                ]
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'interface' => $interface,
+                    'downRxPower' => $downRxPower ?? null,
+                    'downTxPower' => $downTxPower ?? null,
+                ],
             ];
         }
 
@@ -58,7 +59,7 @@ class C300
     /**
      * Returns the ONT optical interfaces
      */
-    public function ontOpticalInterfaces(array $serials): array|null
+    public function ontOpticalInterfaces(array $serials): ?array
     {
         $opticalInterfaces = [];
 
@@ -76,16 +77,17 @@ class C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success)
-                $errorInfo = "Interface not found on OLT";
+            if (! $success) {
+                $errorInfo = 'Interface not found on OLT';
+            }
 
             $opticalInterfaces[] = [
-                "success" => $success,
-                "errorInfo" => $errorInfo ?? NULL,
-                "result" => [
-                    "serial" => $serial,
-                    "interface" => $interface ?? NULL,
-                ]
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'serial' => $serial,
+                    'interface' => $interface ?? null,
+                ],
             ];
         }
 

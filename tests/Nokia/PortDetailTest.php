@@ -21,12 +21,12 @@ describe('Nokia Port Detail', function () {
         $detail = $this->nokia->portDetails([$this->interface1]);
 
         expect($detail)->toBeArray();
-        expect($detail[0]["result"]["oprStatus"])->toBeString();
+        expect($detail[0]['result']['oprStatus'])->toBeString();
 
         $detail = $this->nokia->interface($this->interface1)->portDetails();
 
         expect($detail)->toBeArray();
-        expect($detail[0]["result"]["oprStatus"])->toBeString();
+        expect($detail[0]['result']['oprStatus'])->toBeString();
     });
 
     it('can get multiple details', function () {
@@ -35,16 +35,16 @@ describe('Nokia Port Detail', function () {
         $details = $this->nokia->portDetails($interfaces);
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["oprStatus"])->toBeString();
-        expect($details[1]["result"]["oprStatus"])->toBeString();
-        expect($details[2]["result"]["oprStatus"])->toBeString();
+        expect($details[0]['result']['oprStatus'])->toBeString();
+        expect($details[1]['result']['oprStatus'])->toBeString();
+        expect($details[2]['result']['oprStatus'])->toBeString();
 
         $details = $this->nokia->interfaces($interfaces)->portDetails();
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["oprStatus"])->toBeString();
-        expect($details[1]["result"]["oprStatus"])->toBeString();
-        expect($details[2]["result"]["oprStatus"])->toBeString();
+        expect($details[0]['result']['oprStatus'])->toBeString();
+        expect($details[1]['result']['oprStatus'])->toBeString();
+        expect($details[2]['result']['oprStatus'])->toBeString();
     });
 });
 

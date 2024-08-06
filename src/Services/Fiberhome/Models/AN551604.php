@@ -8,74 +8,117 @@ class AN551604
 {
     protected TL1 $connection;
 
-    protected string $hostServer;
+    protected string $ipOlt;
 
-    public function __construct(TL1 $connection, string $hostServer)
+    public function __construct(TL1 $connection, string $ipOlt)
     {
         $this->connection = $connection;
-        $this->hostServer = $hostServer;
+        $this->ipOlt = $ipOlt;
     }
 
     /**
-     * Returns the ONT optical power
+     * Returns the ONT optical powers
      */
-    public function ontOpticalPower(array $interfaces, array $serials): array|float|null
+    public function ontOpticalPowers(array $interfaces, array $serials): ?array
     {
-        $opticalPower = [];
+        $opticalPowers = [];
 
         for ($i = 0; $i < count($interfaces); $i++) {
+            $success = false;
             $interface = $interfaces[$i];
             $serial = $serials[$i];
 
-            $response = $this->connection->exec("LST-OMDDM::OLTID={$this->hostServer},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;");
+            try {
+                $response = $this->connection->exec("LST-OMDDM::OLTID={$this->ipOlt},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;");
 
-            if (str_contains($response, 'M  CTAG COMPLD')) {
-                $response = preg_split("/\r\n|\n|\r/", $response);
+                if (str_contains($response, 'M  CTAG COMPLD')) {
+                    $response = preg_split("/\r\n|\n|\r/", $response);
 
-                foreach ($response as $key => $column) {
-                    if (preg_match('/ONUID/', $column)) {
-                        $splitted = preg_split('/\\t/', $response[$key + 1]);
+                    foreach ($response as $key => $column) {
+                        if (preg_match('/ONUID/', $column)) {
+                            $success = true;
+                            $splitted = preg_split('/\\t/', $response[$key + 1]);
 
-                        isset($splitted[1]) ? $sinal = str_replace(',', '.', $splitted[1]) : $sinal = null;
-
-                        $opticalPower[] = (float) $sinal;
+                            $rxPower = (float) str_replace(',', '.', $splitted[1]);
+                            $txPower = (float) str_replace(',', '.', $splitted[3]);
+                        }
                     }
                 }
-            } else {
-                $opticalPower[] = null;
+
+                if (! $success) {
+                    $errorInfo = $response;
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            $opticalPowers[] = [
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'interface' => $interface,
+                    'serial' => $serial ?? null,
+                    'rxPower' => $rxPower ?? null,
+                    'txPower' => $txPower ?? null,
+                ],
+            ];
         }
 
-        if (count($opticalPower) === 1) {
-            return $opticalPower[0];
-        }
-
-        return $opticalPower;
+        return $opticalPowers;
     }
 
     /**
-     * Returns the ONT optical interface
+     * Returns the ONT optical powers
      */
-    public function ontOpticalInterface(array $serials): array|string
+    public function ontOpticalStates(array $interfaces, array $serials): ?array
     {
-        $opticalInterface = [];
+        $opticalStates = [];
 
-        foreach ($serials as $serial) {
-            $formattedSerial = substr_replace($serial, ':', 4, 0);
+        for ($i = 0; $i < count($interfaces); $i++) {
+            $success = false;
+            $interface = $interfaces[$i];
+            $serial = $serials[$i];
 
-            $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
+            try {
+                $response = $this->connection->exec("LST-ONUSTATE::OLTID={$this->ipOlt},PONID={$interface},ONUIDTYPE=MAC,ONUID={$serial}:CTAG::;");
 
-            if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
-                $opticalInterface[] = trim((string) $match[1]);
-            } else {
-                throw new \Exception('Ont interface not found.');
+                if (str_contains($response, 'M  CTAG COMPLD')) {
+                    $response = preg_split("/\r\n|\n|\r/", $response);
+
+                    foreach ($response as $key => $column) {
+                        if (preg_match('/ONUID/', $column)) {
+                            $success = true;
+                            $splitted = preg_split('/\\t/', $response[$key + 1]);
+
+                            $adminState = $splitted[1];
+                            $oprState = $splitted[2];
+                            $auth = $splitted[3];
+                            $lastOffTime = $splitted[6];
+                        }
+                    }
+                }
+
+                if (! $success) {
+                    $errorInfo = $response;
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            $opticalStates[] = [
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'interface' => $interface,
+                    'serial' => $serial ?? null,
+                    'adminState' => $adminState ?? null,
+                    'oprState' => $oprState ?? null,
+                    'auth' => $auth ?? null,
+                    'lastOffTime' => $lastOffTime ?? null,
+                ],
+            ];
         }
 
-        if (count($opticalInterface) === 1) {
-            return $opticalInterface[0];
-        }
-
-        return $opticalInterface;
+        return $opticalStates;
     }
 }

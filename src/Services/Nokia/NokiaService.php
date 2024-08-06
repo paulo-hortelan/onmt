@@ -23,15 +23,15 @@ class NokiaService
 
     public array $interfaces = [];
 
-    public function connect(string $ipOlt, string $username, string $password, string $ipServer = NULL): mixed
+    public function connect(string $ipOlt, string $username, string $password, ?string $ipServer = null): mixed
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (!$this->isValidIP($ipOlt) || !$this->isValidIP($ipServer)) {
+        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('OLT brand does not match the service.');
         }
 
-        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-' . $this->model);
+        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-'.$this->model);
         $this->connection->stripPromptFromBuffer(true);
         $this->connection->exec('environment inhibit-alarms');
 
@@ -86,10 +86,11 @@ class NokiaService
         return $this;
     }
 
-    public function opticalDetails(array $interfaces = []): array|null
+    public function opticalDetails(array $interfaces = []): ?array
     {
-        if (!empty($interfaces))
+        if (! empty($interfaces)) {
             $this->interfaces = $interfaces;
+        }
 
         if (empty($this->interfaces)) {
             throw new Exception('Interface(s) not found.');
@@ -99,13 +100,14 @@ class NokiaService
             return (new FX16($this->connection))->ontOpticalDetails($this->interfaces);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 
-    public function opticalInterfaces(array $serials = []): array|null
+    public function opticalInterfaces(array $serials = []): ?array
     {
-        if (!empty($serials))
+        if (! empty($serials)) {
             $this->serials = $serials;
+        }
 
         if (empty($this->serials)) {
             throw new Exception('Serial(s) not found.');
@@ -115,18 +117,20 @@ class NokiaService
             return (new FX16($this->connection))->ontOpticalInterfaces($this->serials);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 
-    public function opticalDetailsBySerials(array $serials = []): array|null
+    public function opticalDetailsBySerials(array $serials = []): ?array
     {
         $opticalDetails = [];
 
-        if (!empty($serials))
+        if (! empty($serials)) {
             $this->serials = $serials;
+        }
 
-        if (empty($this->serials))
+        if (empty($this->serials)) {
             throw new Exception('Serial(s) not found.');
+        }
 
         foreach ($this->serials as $serial) {
             $interfaceResponse = $this->opticalInterfaces([$serial])[0];
@@ -142,10 +146,11 @@ class NokiaService
         return $opticalDetails;
     }
 
-    public function portDetails(array $interfaces = []): array|null
+    public function portDetails(array $interfaces = []): ?array
     {
-        if (!empty($interfaces))
+        if (! empty($interfaces)) {
             $this->interfaces = $interfaces;
+        }
 
         if (empty($this->interfaces)) {
             throw new Exception('Interface(s) not found.');
@@ -155,6 +160,6 @@ class NokiaService
             return (new FX16($this->connection))->ontPortDetails($this->interfaces);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 }

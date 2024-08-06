@@ -26,11 +26,4 @@ describe('ZTE Connection Telnet', function () {
 
         expect($zte)->toBeInstanceOf(ZTEService::class);
     });
-
-    // it('can close connection', function () {
-    //     $zte = ZTE::connect($this->ipServer, $this->username, $this->password);
-    //     $zte->disconnect();
-
-    //     $zte->opticalInterface($this->serial1);
-    // })->throws(Exception::class);
 });

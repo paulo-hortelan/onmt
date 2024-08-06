@@ -25,12 +25,12 @@ describe('Nokia Optical Detail - Success', function () {
         $detail = $this->nokia->opticalDetails([$this->interface1]);
 
         expect($detail)->toBeArray();
-        expect($detail[0]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($detail[0]['result']['rxSignalLevel'])->toBeFloat();
 
         $detail = $this->nokia->interface($this->interface1)->opticalDetails();
 
         expect($detail)->toBeArray();
-        expect($detail[0]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($detail[0]['result']['rxSignalLevel'])->toBeFloat();
     });
 
     it('can get multiple details', function () {
@@ -39,16 +39,16 @@ describe('Nokia Optical Detail - Success', function () {
         $details = $this->nokia->opticalDetails($interfaces);
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[1]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[2]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[2]['result']['rxSignalLevel'])->toBeFloat();
 
         $details = $this->nokia->interfaces($interfaces)->opticalDetails();
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[1]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[2]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[2]['result']['rxSignalLevel'])->toBeFloat();
     });
 });
 
@@ -57,12 +57,12 @@ describe('Nokia Optical Detail By Serial - Success', function () {
         $detail = $this->nokia->opticalDetailsBySerials([$this->serial1]);
 
         expect($detail)->toBeArray();
-        expect($detail[0]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($detail[0]['result']['rxSignalLevel'])->toBeFloat();
 
         $detail = $this->nokia->serial($this->serial1)->opticalDetailsBySerials();
 
         expect($detail)->toBeArray();
-        expect($detail[0]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($detail[0]['result']['rxSignalLevel'])->toBeFloat();
     });
 
     it('can get multiple details', function () {
@@ -71,32 +71,32 @@ describe('Nokia Optical Detail By Serial - Success', function () {
         $details = $this->nokia->opticalDetailsBySerials($serials);
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[1]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[2]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[2]['result']['rxSignalLevel'])->toBeFloat();
 
         $details = $this->nokia->serials($serials)->opticalDetailsBySerials();
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[1]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[2]["result"]["rxSignalLevel"])->toBeFloat();
+        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[2]['result']['rxSignalLevel'])->toBeFloat();
 
-        $serials = [$this->serial1, $this->serial2, "ALCLFC000000"];
+        $serials = [$this->serial1, $this->serial2, 'ALCLFC000000'];
 
         $details = $this->nokia->opticalDetailsBySerials($serials);
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[1]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[2]["success"])->toBeFalse();
+        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[2]['success'])->toBeFalse();
 
         $details = $this->nokia->serials($serials)->opticalDetailsBySerials();
 
         expect($details)->toBeArray();
-        expect($details[0]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[1]["result"]["rxSignalLevel"])->toBeFloat();
-        expect($details[2]["success"])->toBeFalse();
+        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
+        expect($details[2]['success'])->toBeFalse();
     });
 });
 

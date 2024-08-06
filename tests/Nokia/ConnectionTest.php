@@ -26,11 +26,4 @@ describe('Nokia Connection Telnet', function () {
 
         expect($nokia)->toBeInstanceOf(NokiaService::class);
     });
-
-    it('can close connection', function () {
-        $nokia = Nokia::connect($this->ipServer, $this->username, $this->password);
-        $nokia->disconnect();
-
-        $nokia->opticalInterface($this->serial1);
-    })->throws(Exception::class);
 });

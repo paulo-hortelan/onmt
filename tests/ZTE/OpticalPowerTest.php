@@ -25,12 +25,12 @@ describe('ZTE Optical Power - Success', function () {
         $powers = $this->zte->opticalPowers([$this->interface1]);
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
 
         $powers = $this->zte->interface($this->interface1)->opticalPowers();
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
     });
 
     it('can get multiple powers', function () {
@@ -39,16 +39,16 @@ describe('ZTE Optical Power - Success', function () {
         $powers = $this->zte->opticalPowers($interfaces);
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[1]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[2]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
+        expect($powers[1]['result']['downRxPower'])->toBeFloat();
+        expect($powers[2]['result']['downRxPower'])->toBeFloat();
 
         $powers = $this->zte->interfaces($interfaces)->opticalPowers();
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[1]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[2]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
+        expect($powers[1]['result']['downRxPower'])->toBeFloat();
+        expect($powers[2]['result']['downRxPower'])->toBeFloat();
     });
 });
 
@@ -57,12 +57,12 @@ describe('ZTE Optical Power By Serial - Success', function () {
         $powers = $this->zte->opticalPowersBySerials([$this->serial1]);
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
 
         $powers = $this->zte->serial($this->serial1)->opticalPowersBySerials();
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
     });
 
     it('can get multiple power', function () {
@@ -71,32 +71,32 @@ describe('ZTE Optical Power By Serial - Success', function () {
         $powers = $this->zte->opticalPowersBySerials($serials);
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[1]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[2]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
+        expect($powers[1]['result']['downRxPower'])->toBeFloat();
+        expect($powers[2]['result']['downRxPower'])->toBeFloat();
 
         $powers = $this->zte->serials($serials)->opticalPowersBySerials();
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[1]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[2]["result"]["downRxPower"])->toBeFloat();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
+        expect($powers[1]['result']['downRxPower'])->toBeFloat();
+        expect($powers[2]['result']['downRxPower'])->toBeFloat();
 
-        $serials = [$this->serial1, $this->serial2, "ALCLFC000000"];
+        $serials = [$this->serial1, $this->serial2, 'ALCLFC000000'];
 
         $powers = $this->zte->opticalPowersBySerials($serials);
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[1]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[2]["success"])->toBeFalse();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
+        expect($powers[1]['result']['downRxPower'])->toBeFloat();
+        expect($powers[2]['success'])->toBeFalse();
 
         $powers = $this->zte->serials($serials)->opticalPowersBySerials();
 
         expect($powers)->toBeArray();
-        expect($powers[0]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[1]["result"]["downRxPower"])->toBeFloat();
-        expect($powers[2]["success"])->toBeFalse();
+        expect($powers[0]['result']['downRxPower'])->toBeFloat();
+        expect($powers[1]['result']['downRxPower'])->toBeFloat();
+        expect($powers[2]['success'])->toBeFalse();
     });
 });
 
