@@ -12,7 +12,6 @@ use PauloHortelan\Onmt\Services\ZTE\ZTEService;
 
 class OnmtServiceProvider extends ServiceProvider
 {
-
     // public function boot()
     // {
     //     $this->registerFacades();
