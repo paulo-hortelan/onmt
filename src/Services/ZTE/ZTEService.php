@@ -3,8 +3,8 @@
 namespace PauloHortelan\Onmt\Services\ZTE;
 
 use Exception;
-use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\ZTE\Models\C300;
 use PauloHortelan\Onmt\Services\ZTE\Models\C600;
 
@@ -76,7 +76,7 @@ class ZTEService
         return $this;
     }
 
-    public function opticalInterfaces(array $serials = []): ?array
+    public function ontsInterface(array $serials = []): ?array
     {
         if (!empty($serials)) {
             $this->serials = $serials;
@@ -87,19 +87,19 @@ class ZTEService
         }
 
         if ($this->model === 'C300') {
-            return (new C300($this->connection))->ontOpticalInterfaces($this->serials);
+            return (new C300($this->connection))->ontsInterface($this->serials);
         }
 
         if ($this->model === 'C600') {
-            return (new C600($this->connection))->ontOpticalInterfaces($this->serials);
+            return (new C600($this->connection))->ontsInterface($this->serials);
         }
 
         throw new Exception('Model ' . $this->model . ' is not supported.');
     }
 
-    public function opticalPowersBySerials(array $serials = []): ?array
+    public function ontsOpticalPowerBySerial(array $serials = []): ?array
     {
-        $opticalPowers = [];
+        $ontsOpticalPower = [];
 
         if (!empty($serials)) {
             $this->serials = $serials;
@@ -110,20 +110,20 @@ class ZTEService
         }
 
         foreach ($this->serials as $serial) {
-            $interfaceResponse = $this->opticalInterfaces([$serial])[0];
+            $interfaceResponse = $this->ontsInterface([$serial])[0];
 
             if ($interfaceResponse['success']) {
                 $interface = $interfaceResponse['result']['interface'];
-                $opticalPowers[] = $this->opticalPowers([$interface])[0];
+                $ontsOpticalPower[] = $this->ontsOpticalPower([$interface])[0];
             } else {
-                $opticalPowers[] = $interfaceResponse;
+                $ontsOpticalPower[] = $interfaceResponse;
             }
         }
 
-        return $opticalPowers;
+        return $ontsOpticalPower;
     }
 
-    public function opticalPowers(array $interfaces = []): ?array
+    public function ontsOpticalPower(array $interfaces = []): ?array
     {
         if (!empty($interfaces)) {
             $this->interfaces = $interfaces;
@@ -134,11 +134,11 @@ class ZTEService
         }
 
         if ($this->model === 'C300') {
-            return (new C300($this->connection))->ontOpticalPowers($this->interfaces);
+            return (new C300($this->connection))->ontsOpticalPower($this->interfaces);
         }
 
         if ($this->model === 'C600') {
-            return (new C600($this->connection))->ontOpticalPowers($this->interfaces);
+            return (new C600($this->connection))->ontsOpticalPower($this->interfaces);
         }
 
         throw new Exception('Model ' . $this->model . ' is not supported.');

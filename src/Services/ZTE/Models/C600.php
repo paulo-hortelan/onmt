@@ -5,26 +5,40 @@ namespace PauloHortelan\Onmt\Services\ZTE\Models;
 class C600 extends C300
 {
     /**
-     * Returns the ONT interface
+     * Returns the ONT's interface
      */
-    public function ontInterface(array $serials): array|string|null
+    public function ontsInterface(array $serials): ?array
     {
-        $opticalInterface = [];
+        $ontsInterface = [];
 
         foreach ($serials as $serial) {
-            $response = $this->connection->exec("show gpon onu by sn $serial");
+            $success = false;
 
-            if (preg_match('/gpon_onu.*/m', $response, $match)) {
-                $opticalInterface[] = (string) $match[0];
-            } else {
-                $opticalInterface[] = null;
+            try {
+                $response = $this->connection->exec("show gpon onu by sn $serial");
+
+                if (preg_match('/gpon_onu.*/m', $response, $match)) {
+                    $success = true;
+                    $interface = trim($match[0]);
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
             }
+
+            if (!$success) {
+                $errorInfo = 'Interface not found on OLT';
+            }
+
+            $ontsInterface[] = [
+                'success' => $success,
+                'errorInfo' => $errorInfo ?? null,
+                'result' => [
+                    'serial' => $serial,
+                    'interface' => $interface ?? null,
+                ],
+            ];
         }
 
-        if (count($opticalInterface) === 1) {
-            return $opticalInterface[0];
-        }
-
-        return $opticalInterface;
+        return $ontsInterface;
     }
 }

@@ -14,11 +14,11 @@ class C300
     }
 
     /**
-     * Returns the ONT optical powers
+     * Returns the ONT's optical power
      */
-    public function ontOpticalPowers(array $interfaces): array|float|null
+    public function ontsOpticalPower(array $interfaces): ?array
     {
-        $opticalPowers = [];
+        $ontsOpticalPower = [];
 
         foreach ($interfaces as $interface) {
             $success = false;
@@ -42,7 +42,7 @@ class C300
                 $errorInfo = 'Interface not found on OLT';
             }
 
-            $opticalPowers[] = [
+            $ontsOpticalPower[] = [
                 'success' => $success,
                 'errorInfo' => $errorInfo ?? null,
                 'result' => [
@@ -53,15 +53,15 @@ class C300
             ];
         }
 
-        return $opticalPowers;
+        return $ontsOpticalPower;
     }
 
     /**
-     * Returns the ONT optical interfaces
+     * Returns the ONT's interface
      */
-    public function ontOpticalInterfaces(array $serials): ?array
+    public function ontsInterface(array $serials): ?array
     {
-        $opticalInterfaces = [];
+        $ontsInterface = [];
 
         foreach ($serials as $serial) {
             $success = false;
@@ -81,7 +81,7 @@ class C300
                 $errorInfo = 'Interface not found on OLT';
             }
 
-            $opticalInterfaces[] = [
+            $ontsInterface[] = [
                 'success' => $success,
                 'errorInfo' => $errorInfo ?? null,
                 'result' => [
@@ -91,6 +91,6 @@ class C300
             ];
         }
 
-        return $opticalInterfaces;
+        return $ontsInterface;
     }
 }

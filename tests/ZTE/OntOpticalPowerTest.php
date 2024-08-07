@@ -20,14 +20,14 @@ beforeEach(function () {
     $this->zte = ZTE::connect($ipServer, $username, $password);
 });
 
-describe('ZTE Optical Power - Success', function () {
+describe('ZTE Ont Optical Power - Success', function () {
     it('can get single power', function () {
-        $powers = $this->zte->opticalPowers([$this->interface1]);
+        $powers = $this->zte->ontsOpticalPower([$this->interface1]);
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
 
-        $powers = $this->zte->interface($this->interface1)->opticalPowers();
+        $powers = $this->zte->interface($this->interface1)->ontsOpticalPower();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
@@ -36,14 +36,14 @@ describe('ZTE Optical Power - Success', function () {
     it('can get multiple powers', function () {
         $interfaces = [$this->interface1, $this->interface2, $this->interface3];
 
-        $powers = $this->zte->opticalPowers($interfaces);
+        $powers = $this->zte->ontsOpticalPower($interfaces);
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
         expect($powers[1]['result']['downRxPower'])->toBeFloat();
         expect($powers[2]['result']['downRxPower'])->toBeFloat();
 
-        $powers = $this->zte->interfaces($interfaces)->opticalPowers();
+        $powers = $this->zte->interfaces($interfaces)->ontsOpticalPower();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
@@ -52,14 +52,14 @@ describe('ZTE Optical Power - Success', function () {
     });
 });
 
-describe('ZTE Optical Power By Serial - Success', function () {
+describe('ZTE Ont Optical Power By Serial - Success', function () {
     it('can get single power', function () {
-        $powers = $this->zte->opticalPowersBySerials([$this->serial1]);
+        $powers = $this->zte->ontsOpticalPowerBySerial([$this->serial1]);
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
 
-        $powers = $this->zte->serial($this->serial1)->opticalPowersBySerials();
+        $powers = $this->zte->serial($this->serial1)->ontsOpticalPowerBySerial();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
@@ -68,14 +68,14 @@ describe('ZTE Optical Power By Serial - Success', function () {
     it('can get multiple power', function () {
         $serials = [$this->serial1, $this->serial2, $this->serial3];
 
-        $powers = $this->zte->opticalPowersBySerials($serials);
+        $powers = $this->zte->ontsOpticalPowerBySerial($serials);
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
         expect($powers[1]['result']['downRxPower'])->toBeFloat();
         expect($powers[2]['result']['downRxPower'])->toBeFloat();
 
-        $powers = $this->zte->serials($serials)->opticalPowersBySerials();
+        $powers = $this->zte->serials($serials)->ontsOpticalPowerBySerial();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
@@ -84,14 +84,14 @@ describe('ZTE Optical Power By Serial - Success', function () {
 
         $serials = [$this->serial1, $this->serial2, 'ALCLFC000000'];
 
-        $powers = $this->zte->opticalPowersBySerials($serials);
+        $powers = $this->zte->ontsOpticalPowerBySerial($serials);
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
         expect($powers[1]['result']['downRxPower'])->toBeFloat();
         expect($powers[2]['success'])->toBeFalse();
 
-        $powers = $this->zte->serials($serials)->opticalPowersBySerials();
+        $powers = $this->zte->serials($serials)->ontsOpticalPowerBySerial();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['downRxPower'])->toBeFloat();
