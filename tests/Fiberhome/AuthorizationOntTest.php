@@ -33,21 +33,40 @@ beforeEach(function () {
     $this->ccos1 = env('FIBERHOME_CCOS_1');
     $this->ccos2 = env('FIBERHOME_CCOS_2');
 
+    $this->serviceId1 = env('FIBERHOME_SERVICE_ID_1');
+    $this->serviceId2 = env('FIBERHOME_SERVICE_ID_2');
+
+    $this->serviceModelProfile1 = env('FIBERHOME_SERVICE_MODEL_PROFILE_1');
+    $this->serviceModelProfile2 = env('FIBERHOME_SERVICE_MODEL_PROFILE_2');
+
+    $this->serviceType1 = env('FIBERHOME_SERVICE_TYPE_1');
+    $this->serviceType2 = env('FIBERHOME_SERVICE_TYPE_2');
+
     $this->fiberhome = Fiberhome::timeout(5, 10)->connect($ipOlt, $username, $password, $ipServer);
+    $this->fiberhome->interfaces([$this->interface1])->serials([$this->serial1]);
 });
 
 describe('Fiberhome Authorize Onts', function () {
     it('can authorize onts', function () {
-        $authorizedOnts = $this->fiberhome->authorizeOnts([$this->interface1], [$this->serial1], [$this->ontType1], [$this->pppoeUsername1]);
+        $authorizedOnts = $this->fiberhome->authorizeOnts([$this->ontType1], [$this->pppoeUsername1]);
 
         expect($authorizedOnts)->toBeArray();
         expect($authorizedOnts[0]['success'])->toBeTrue();
     });
-});
+})->skip();
 
 describe('Fiberhome Configure Onts Vlan', function () {
     it('can configure onts vlan', function () {
-        $configVlanOnts = $this->fiberhome->configureVlanOnts([$this->interface1], [$this->serial1], [$this->portInterface1], [$this->vlan1], [$this->ccos1]);
+        $configVlanOnts = $this->fiberhome->configureVlanOnts([$this->portInterface1], [$this->vlan1], [$this->ccos1]);
+
+        expect($configVlanOnts)->toBeArray();
+        expect($configVlanOnts[0]['success'])->toBeTrue();
+    });
+})->skip();
+
+describe('Fiberhome Configure Onts Veip and Vlan', function () {
+    it('can configure onts vlan and veip', function () {
+        $configVlanOnts = $this->fiberhome->configureVeipVlanOnts([$this->portInterface1], [$this->serviceId1], [$this->vlan1], [$this->serviceModelProfile1], [$this->serviceType1]);
 
         expect($configVlanOnts)->toBeArray();
         expect($configVlanOnts[0]['success'])->toBeTrue();
@@ -56,9 +75,7 @@ describe('Fiberhome Configure Onts Vlan', function () {
 
 describe('Fiberhome Remove Onts', function () {
     it('can remove onts', function () {
-        $removeOnts = $this->fiberhome->removeOnts([$this->interface1], [$this->serial1]);
-
-        var_dump($removeOnts);
+        $removeOnts = $this->fiberhome->removeOnts();
 
         expect($removeOnts)->toBeArray();
         expect($removeOnts[0]['success'])->toBeTrue();

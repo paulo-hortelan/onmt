@@ -25,8 +25,6 @@ describe('Fiberhome Unregistered Onts - Success', function () {
     it('can get unregistered onts', function () {
         $unregisteredOnts = $this->fiberhome->unregisteredOnts();
 
-        var_dump($unregisteredOnts);
-
         expect($unregisteredOnts)->toBeArray();
         expect($unregisteredOnts[0]['success'])->toBeTrue();
     });

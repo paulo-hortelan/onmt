@@ -23,13 +23,8 @@ beforeEach(function () {
 
 describe('Fiberhome Onts Port Info - Success', function () {
     it('can get single info', function () {
-        $ports = $this->fiberhome->ontsPortInfo([$this->interface1], [$this->serial1]);
-
-        expect($ports)->toBeArray();
-        expect($ports[0]['success'])->toBeTrue();
-        expect($ports[0]['result']['cvLan'])->toBeInt();
-
-        $ports = $this->fiberhome->interface($this->interface1)->serial($this->serial1)->ontsPortInfo();
+        $this->fiberhome->interfaces([$this->interface1])->serials([$this->serial1]);
+        $ports = $this->fiberhome->ontsPortInfo();
 
         expect($ports)->toBeArray();
         expect($ports[0]['success'])->toBeTrue();
@@ -37,20 +32,10 @@ describe('Fiberhome Onts Port Info - Success', function () {
     });
 
     it('can get multiple infos', function () {
-        $interfaces = [$this->interface1, $this->interface2, $this->interface3];
-        $serials = [$this->serial1, $this->serial2, $this->serial3];
+        $this->fiberhome->interfaces([$this->interface1, $this->interface2, $this->interface3]);
+        $this->fiberhome->serials([$this->serial1, $this->serial2, $this->serial3]);
 
-        $ports = $this->fiberhome->ontsPortInfo($interfaces, $serials);
-
-        expect($ports)->toBeArray();
-        expect($ports[0]['success'])->toBeTrue();
-        expect($ports[0]['result']['cvLan'])->toBeInt();
-        expect($ports[1]['success'])->toBeTrue();
-        expect($ports[1]['result']['cvLan'])->toBeInt();
-        expect($ports[2]['success'])->toBeTrue();
-        expect($ports[2]['result']['cvLan'])->toBeInt();
-
-        $ports = $this->fiberhome->interfaces($interfaces)->serials($serials)->ontsPortInfo();
+        $ports = $this->fiberhome->ontsPortInfo();
 
         expect($ports)->toBeArray();
         expect($ports[0]['success'])->toBeTrue();

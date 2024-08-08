@@ -69,6 +69,23 @@
         <env name="FIBERHOME_SERIAL_3" value=""/>
         <env name="FIBERHOME_INTERFACE_1" value=""/>
         <env name="FIBERHOME_INTERFACE_2" value=""/>
-        <env name="FIBERHOME_INTERFACE_3" value=""/>  
+        <env name="FIBERHOME_INTERFACE_3" value=""/> 
+        <env name="FIBERHOME_MODEL_TYPE_1" value=""/>
+        <env name="FIBERHOME_ONT_TYPE_1" value=""/>
+        <env name="FIBERHOME_ONT_TYPE_2" value=""/>
+        <env name="FIBERHOME_PPPOE_USERNAME_1" value=""/>
+        <env name="FIBERHOME_PPPOE_USERNAME_2" value=""/>
+        <env name="FIBERHOME_PORT_INTERFACE_1" value=""/>
+        <env name="FIBERHOME_PORT_INTERFACE_2" value=""/>
+        <env name="FIBERHOME_VLAN_1" value=""/>
+        <env name="FIBERHOME_VLAN_2" value=""/>
+        <env name="FIBERHOME_CCOS_1" value=""/>
+        <env name="FIBERHOME_CCOS_2" value=""/>
+        <env name="FIBERHOME_SERVICE_ID_1" value=""/>
+        <env name="FIBERHOME_SERVICE_ID_2" value=""/>    
+        <env name="FIBERHOME_SERVICE_MODEL_PROFILE_1" value=""/>
+        <env name="FIBERHOME_SERVICE_MODEL_PROFILE_2" value=""/> 
+        <env name="FIBERHOME_SERVICE_TYPE_1" value=""/>
+        <env name="FIBERHOME_SERVICE_TYPE_2" value=""/>   
     </php>    
 </phpunit>

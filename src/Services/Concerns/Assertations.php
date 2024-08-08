@@ -7,38 +7,14 @@ trait Assertations
     /**
      * Verify if both arrays have the same lengths
      */
-    public function assertSameLength($arrayA, $arrayB): bool
+    public function assertSameLength($arrayOfArrays): bool
     {
-        return count($arrayA) === count($arrayB);
-    }
+        for ($i = 0; $i < count($arrayOfArrays) - 1; $i++) {
+            if (count($arrayOfArrays[$i]) !== count($arrayOfArrays[$i + 1])) {
+                return false;
+            }
+        }
 
-    /**
-     * Verify if the three arrays have the same lengths
-     */
-    public function assertSameLengthThree($arrayA, $arrayB, $arrayC): bool
-    {
-        return count($arrayA) === count($arrayB)
-            && count($arrayB) === count($arrayC);
-    }
-
-    /**
-     * Verify if the four arrays have the same lengths
-     */
-    public function assertSameLengthFour($arrayA, $arrayB, $arrayC, $arrayD): bool
-    {
-        return count($arrayA) === count($arrayB)
-            && count($arrayB) === count($arrayC)
-            && count($arrayC) === count($arrayD);
-    }
-
-    /**
-     * Verify if the five arrays have the same lengths
-     */
-    public function assertSameLengthFive($arrayA, $arrayB, $arrayC, $arrayD, $arrayE): bool
-    {
-        return count($arrayA) === count($arrayB)
-            && count($arrayB) === count($arrayC)
-            && count($arrayC) === count($arrayD)
-            && count($arrayD) === count($arrayE);
+        return true;
     }
 }

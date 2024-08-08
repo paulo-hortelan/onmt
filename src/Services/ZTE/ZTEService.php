@@ -28,11 +28,11 @@ class ZTEService
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (!$this->isValidIP($ipOlt) || !$this->isValidIP($ipServer)) {
+        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('OLT brand does not match the service.');
         }
 
-        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'ZTE-' . $this->model);
+        $this->connection = Telnet::getInstance($ipServer, 23, $this->connTimeout, $this->streamTimeout, $username, $password, 'ZTE-'.$this->model);
         $this->connection->stripPromptFromBuffer(true);
         $this->connection->exec('terminal length 0');
 
@@ -78,7 +78,7 @@ class ZTEService
 
     public function ontsInterface(array $serials = []): ?array
     {
-        if (!empty($serials)) {
+        if (! empty($serials)) {
             $this->serials = $serials;
         }
 
@@ -94,14 +94,14 @@ class ZTEService
             return (new C600($this->connection))->ontsInterface($this->serials);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 
     public function ontsOpticalPowerBySerial(array $serials = []): ?array
     {
         $ontsOpticalPower = [];
 
-        if (!empty($serials)) {
+        if (! empty($serials)) {
             $this->serials = $serials;
         }
 
@@ -125,7 +125,7 @@ class ZTEService
 
     public function ontsOpticalPower(array $interfaces = []): ?array
     {
-        if (!empty($interfaces)) {
+        if (! empty($interfaces)) {
             $this->interfaces = $interfaces;
         }
 
@@ -141,6 +141,6 @@ class ZTEService
             return (new C600($this->connection))->ontsOpticalPower($this->interfaces);
         }
 
-        throw new Exception('Model ' . $this->model . ' is not supported.');
+        throw new Exception('Model '.$this->model.' is not supported.');
     }
 }

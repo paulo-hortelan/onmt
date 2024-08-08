@@ -25,7 +25,7 @@ class C600 extends C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success) {
+            if (! $success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 

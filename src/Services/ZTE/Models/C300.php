@@ -38,7 +38,7 @@ class C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success) {
+            if (! $success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 
@@ -77,7 +77,7 @@ class C300
                 $errorInfo = $e->getMessage();
             }
 
-            if (!$success) {
+            if (! $success) {
                 $errorInfo = 'Interface not found on OLT';
             }
 

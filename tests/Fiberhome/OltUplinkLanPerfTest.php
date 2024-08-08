@@ -61,7 +61,3 @@ describe('Fiberhome Optical Lan Perf - Success', function () {
         expect($lans[2]['result']['adminStatus'])->toBeString();
     });
 });
-
-afterAll(function () {
-    $this->fiberhome->disconnect();
-});

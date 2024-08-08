@@ -23,13 +23,8 @@ beforeEach(function () {
 
 describe('Fiberhome Optical Lan Info - Success', function () {
     it('can get single lan info', function () {
-        $lans = $this->fiberhome->ontsLanInfo([$this->interface1], [$this->serial1]);
-
-        expect($lans)->toBeArray();
-        expect($lans[0]['success'])->toBeTrue();
-        expect($lans[0]['result']['adminStatus'])->toBeString();
-
-        $lans = $this->fiberhome->interface($this->interface1)->serial($this->serial1)->ontsLanInfo();
+        $this->fiberhome->interfaces([$this->interface1])->serials([$this->serial1]);
+        $lans = $this->fiberhome->ontsLanInfo();
 
         expect($lans)->toBeArray();
         expect($lans[0]['success'])->toBeTrue();
@@ -37,20 +32,10 @@ describe('Fiberhome Optical Lan Info - Success', function () {
     });
 
     it('can get multiple lan infos', function () {
-        $interfaces = [$this->interface1, $this->interface2, $this->interface3];
-        $serials = [$this->serial1, $this->serial2, $this->serial3];
+        $this->fiberhome->interfaces([$this->interface1, $this->interface2, $this->interface3]);
+        $this->fiberhome->serials([$this->serial1, $this->serial2, $this->serial3]);
 
-        $lans = $this->fiberhome->ontsLanInfo($interfaces, $serials);
-
-        expect($lans)->toBeArray();
-        expect($lans[0]['success'])->toBeTrue();
-        expect($lans[0]['result']['adminStatus'])->toBeString();
-        expect($lans[1]['success'])->toBeTrue();
-        expect($lans[1]['result']['adminStatus'])->toBeString();
-        expect($lans[2]['success'])->toBeTrue();
-        expect($lans[2]['result']['adminStatus'])->toBeString();
-
-        $lans = $this->fiberhome->interfaces($interfaces)->serials($serials)->ontsLanInfo();
+        $lans = $this->fiberhome->ontsLanInfo();
 
         expect($lans)->toBeArray();
         expect($lans[0]['success'])->toBeTrue();
@@ -60,8 +45,4 @@ describe('Fiberhome Optical Lan Info - Success', function () {
         expect($lans[2]['success'])->toBeTrue();
         expect($lans[2]['result']['adminStatus'])->toBeString();
     });
-});
-
-afterAll(function () {
-    $this->fiberhome->disconnect();
 });

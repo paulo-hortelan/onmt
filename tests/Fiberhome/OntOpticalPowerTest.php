@@ -23,37 +23,23 @@ beforeEach(function () {
 
 describe('Fiberhome Ont Optical Power - Success', function () {
     it('can get single power', function () {
-        $powers = $this->fiberhome->ontsOpticalPower([$this->interface1], [$this->serial1]);
+        $this->fiberhome->interfaces([$this->interface1])->serials([$this->serial1]);
 
-        expect($powers)->toBeArray();
-        expect($powers[0]['result']['rxPower'])->toBeFloat();
-
-        $powers = $this->fiberhome->interface($this->interface1)->ontsOpticalPower();
+        $powers = $this->fiberhome->ontsOpticalPower();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['rxPower'])->toBeFloat();
     });
 
     it('can get multiple powers', function () {
-        $interfaces = [$this->interface1, $this->interface2, $this->interface3];
-        $serials = [$this->serial1, $this->serial2, $this->serial3];
+        $this->fiberhome->interfaces([$this->interface1, $this->interface2, $this->interface3]);
+        $this->fiberhome->serials([$this->serial1, $this->serial2, $this->serial3]);
 
-        $powers = $this->fiberhome->ontsOpticalPower($interfaces, $serials);
-
-        expect($powers)->toBeArray();
-        expect($powers[0]['result']['rxPower'])->toBeFloat();
-        expect($powers[1]['result']['rxPower'])->toBeFloat();
-        expect($powers[2]['result']['rxPower'])->toBeFloat();
-
-        $powers = $this->fiberhome->interfaces($interfaces)->ontsOpticalPower();
+        $powers = $this->fiberhome->ontsOpticalPower();
 
         expect($powers)->toBeArray();
         expect($powers[0]['result']['rxPower'])->toBeFloat();
         expect($powers[1]['result']['rxPower'])->toBeFloat();
         expect($powers[2]['result']['rxPower'])->toBeFloat();
     });
-});
-
-afterAll(function () {
-    $this->fiberhome->disconnect();
 });
