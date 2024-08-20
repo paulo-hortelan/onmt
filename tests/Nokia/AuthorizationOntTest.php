@@ -39,17 +39,16 @@ describe('Nokia Provision Onts - Success', function () {
 
         $ontNblkCommand =
             [
-                "DESC1" => $this->pppoeUsername1,
-                "DESC2" => $this->pppoeUsername1,
-                "SWVERPLND" => $this->swVerPlnd1,
+                'DESC1' => $this->pppoeUsername1,
+                'DESC2' => $this->pppoeUsername1,
+                'SWVERPLND' => $this->swVerPlnd1,
             ];
 
-        $this->nokiaTL1->interfaces([$this->ponInterface1 . '/' . $ontIndex])->serials([$this->serial1]);
+        $this->nokiaTL1->interfaces([$this->ponInterface1.'/'.$ontIndex])->serials([$this->serial1]);
 
         $provisionedOnts = $this->nokiaTL1->provisionOnt([], [], $ontNblkCommand);
 
         var_dump($provisionedOnts);
-
 
         // var_dump($interface);
 

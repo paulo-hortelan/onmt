@@ -38,7 +38,7 @@ class NokiaService
         }
 
         self::$ipOlt = $ipOlt;
-        self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-' . self::$model);
+        self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-'.self::$model);
         self::$telnetConn->stripPromptFromBuffer(true);
         self::$telnetConn->exec('environment inhibit-alarms');
 
@@ -54,7 +54,7 @@ class NokiaService
         }
 
         self::$ipOlt = $ipOlt;
-        self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-' . self::$model);
+        self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-'.self::$model);
         self::$tl1Conn->stripPromptFromBuffer(true);
 
         return $this;
@@ -121,7 +121,7 @@ class NokiaService
             return FX16::showEquipmentOntOptics();
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function ontsInterface(): ?array
@@ -132,7 +132,7 @@ class NokiaService
             return FX16::showEquipmentOntIndex();
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function ontsDetailBySerials(): ?array
@@ -167,7 +167,7 @@ class NokiaService
             return FX16::showInterfacePort();
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function unregisteredOnts(): ?array
@@ -176,31 +176,32 @@ class NokiaService
             return FX16::showPonUnprovisionOnu();
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function ontsByPonInterfaces(array $ponInterfaces): ?array
     {
         if (empty($ponInterfaces)) {
-            throw new Exception("Pon Interface(s) not provided.");
+            throw new Exception('Pon Interface(s) not provided.');
         }
 
         if (self::$model === 'FX16') {
             return FX16::showEquipmentOntStatusPon($ponInterfaces);
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function getNextOntIndex(string $ponInterface): ?int
     {
-        if (empty($ponInterface))
+        if (empty($ponInterface)) {
             throw new Exception('Pon Interface(s) not provided.');
+        }
 
         $onts = $this->ontsByPonInterfaces([$ponInterface]);
 
         $lastOntInterface = $onts[count($onts) - 1]['result']['interface'];
-        $lastIndex = (int) array_slice(explode("/", $lastOntInterface), -1, 1)[0];
+        $lastIndex = (int) array_slice(explode('/', $lastOntInterface), -1, 1)[0];
 
         return $lastIndex + 1;
     }
@@ -225,7 +226,7 @@ class NokiaService
 
             $this->interfaces($interfaces);
 
-            if (!empty($interfaces)) {
+            if (! empty($interfaces)) {
                 $removedOnts = FX16::configureEquipmentOntNoInterface();
                 $ontsResponse = array_merge($ontsResponse, $removedOnts);
             }
@@ -233,7 +234,7 @@ class NokiaService
             return $ontsResponse;
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function provisionOnt(array $tid, array $ctag, array $ontNblk): ?array
@@ -246,7 +247,7 @@ class NokiaService
             return FX16::entOnt($tid, $ctag, $ontNblk);
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function editProvisionOnts(array $pppoeUsernames, array $swVerPlnds, array $opticShists = [], array $plndCfgfiles1 = [], array $dlCfgfiles1 = [], array $voidAlloweds = []): ?array
@@ -264,6 +265,6 @@ class NokiaService
             return FX16::entOnt($pppoeUsernames, $swVerPlnds, $opticShists, $plndCfgfiles1, $dlCfgfiles1, $voidAlloweds);
         }
 
-        throw new Exception('Model ' . self::$model . ' is not supported.');
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 }

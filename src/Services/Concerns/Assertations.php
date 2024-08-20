@@ -11,8 +11,9 @@ trait Assertations
      */
     public function assertSameLength($arrayOfArrays): bool
     {
-        if (empty($arrayOfArrays))
+        if (empty($arrayOfArrays)) {
             return true;
+        }
 
         for ($i = 0; $i < count($arrayOfArrays) - 1; $i++) {
             if (count($arrayOfArrays[$i]) !== count($arrayOfArrays[$i + 1])) {
@@ -26,10 +27,11 @@ trait Assertations
     /**
      * Validates that all required parameters are set and non-empty.
      *
-     * @param array $parameters An associative array of parameters to check.
+     * @param  array  $parameters  An associative array of parameters to check.
+     *
      * @throws Exception If any required parameter is missing or empty.
      */
-    function validateParameters(array $parameters)
+    public function validateParameters(array $parameters)
     {
         foreach ($parameters as $key => $value) {
             if (empty($value)) {
@@ -48,8 +50,9 @@ trait Assertations
             $array
         );
 
-        if (empty($formatted))
-            return "";
+        if (empty($formatted)) {
+            return '';
+        }
 
         return implode(',', $formatted);
     }

@@ -66,7 +66,7 @@ class FX16 extends NokiaService
                     'success' => false,
                     'errorInfo' => $errorInfo,
                     'result' => [
-                        'interface' => $interface
+                        'interface' => $interface,
                     ],
                 ];
             }
@@ -111,7 +111,7 @@ class FX16 extends NokiaService
                     'success' => false,
                     'errorInfo' => $errorInfo,
                     'result' => [
-                        'serial' => $serial
+                        'serial' => $serial,
                     ],
                 ];
             }
@@ -164,7 +164,7 @@ class FX16 extends NokiaService
                     'success' => false,
                     'errorInfo' => $errorInfo,
                     'result' => [
-                        'interface' => $interface
+                        'interface' => $interface,
                     ],
                 ];
             }
@@ -181,7 +181,7 @@ class FX16 extends NokiaService
         $unregOnts = [];
 
         try {
-            $response = self::$telnetConn->exec("show pon unprovision-onu");
+            $response = self::$telnetConn->exec('show pon unprovision-onu');
 
             if (! str_contains($response, 'gpon-index')) {
                 throw new \Exception($response);
@@ -273,7 +273,7 @@ class FX16 extends NokiaService
                 'success' => true,
                 'errorInfo' => null,
                 'result' => [
-                    'interface' => $interface
+                    'interface' => $interface,
                 ],
             ];
         } catch (\Exception $e) {
@@ -283,7 +283,7 @@ class FX16 extends NokiaService
                 'success' => false,
                 'errorInfo' => $errorInfo,
                 'result' => [
-                    'interface' => $interface
+                    'interface' => $interface,
                 ],
             ];
         }
@@ -317,7 +317,7 @@ class FX16 extends NokiaService
                                 'success' => true,
                                 'errorInfo' => null,
                                 'result' => [
-                                    'ponInterface' => $ponInterface
+                                    'ponInterface' => $ponInterface,
                                 ],
                             ];
                         }
@@ -356,7 +356,7 @@ class FX16 extends NokiaService
                     'success' => false,
                     'errorInfo' => $errorInfo,
                     'result' => [
-                        'ponInterface' => $ponInterface
+                        'ponInterface' => $ponInterface,
                     ],
                 ];
             }
@@ -370,10 +370,11 @@ class FX16 extends NokiaService
      */
     public static function configureEquipmentOntInterfaceAdminState($adminState): ?array
     {
-        $adminStates = ["down", "up"];
+        $adminStates = ['down', 'up'];
 
-        if (!in_array($adminState, $adminStates))
+        if (! in_array($adminState, $adminStates)) {
             throw new Exception("AdminState must be 'down' or 'up'");
+        }
 
         $configuredOnts = [];
 
@@ -385,7 +386,7 @@ class FX16 extends NokiaService
                     'success' => true,
                     'errorInfo' => null,
                     'result' => [
-                        'interface' => $interface
+                        'interface' => $interface,
                     ],
                 ];
             } catch (\Exception $e) {
@@ -395,7 +396,7 @@ class FX16 extends NokiaService
                     'success' => false,
                     'errorInfo' => $errorInfo,
                     'result' => [
-                        'interface' => $interface
+                        'interface' => $interface,
                     ],
                 ];
             }
@@ -419,7 +420,7 @@ class FX16 extends NokiaService
                     'success' => true,
                     'errorInfo' => null,
                     'result' => [
-                        'interface' => $interface
+                        'interface' => $interface,
                     ],
                 ];
             } catch (\Exception $e) {
@@ -429,7 +430,7 @@ class FX16 extends NokiaService
                     'success' => false,
                     'errorInfo' => $errorInfo,
                     'result' => [
-                        'interface' => $interface
+                        'interface' => $interface,
                     ],
                 ];
             }
