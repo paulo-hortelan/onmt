@@ -26,19 +26,19 @@ class FiberhomeService
 
     public static array $interfaces = [];
 
-    public function connect(string $ipOlt, string $username, string $password, ?string $ipServer = null): ?object
+    public function connect(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): ?object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
         if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
-            throw new Exception('OLT brand does not match the service.');
+            throw new Exception('Provided IP(s) are not valid(s).');
         }
 
         self::$ipOlt = $ipOlt;
-        self::$connection = TL1::getInstance($ipServer, 3337, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.self::$model);
+        self::$connection = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-' . self::$model);
         self::$connection->stripPromptFromBuffer(true);
 
-        return new static;
+        return $this;
     }
 
     public function disconnect(): void
@@ -62,14 +62,14 @@ class FiberhomeService
     {
         self::$interfaces = $interfaces;
 
-        return new static;
+        return $this;
     }
 
     public function serials(array $serials): mixed
     {
         self::$serials = array_map('strtoupper', $serials);
 
-        return new static;
+        return $this;
     }
 
     private function validateInterfacesSerials()
@@ -104,7 +104,7 @@ class FiberhomeService
             return AN551604::lstOMDDM();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     /**
@@ -124,7 +124,7 @@ class FiberhomeService
             return AN551604::lstOnuState();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     /**
@@ -144,7 +144,7 @@ class FiberhomeService
             return AN551604::lstPortVlan();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     public function ontsLanInfo(): ?array
@@ -155,7 +155,7 @@ class FiberhomeService
             return AN551604::lstOnuLanInfo();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     public function oltUplinksLanPerf(array $portInterfaces): ?array
@@ -164,7 +164,7 @@ class FiberhomeService
             return AN551604::lstLanPerf($portInterfaces);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     /**
@@ -178,7 +178,7 @@ class FiberhomeService
             return AN551604::lstUnregOnu();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     public function registeredOnts(): ?array
@@ -187,7 +187,7 @@ class FiberhomeService
             return AN551604::lstOnu();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     public function authorizeOnts(array $ontTypes = [], array $pppoeUsernames = []): ?array
@@ -202,7 +202,7 @@ class FiberhomeService
             return AN551604::addOnu($ontTypes, $pppoeUsernames);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     public function configureVlanOnts(array $portInterfaces, array $vlans, array $ccoss): ?array
@@ -217,7 +217,7 @@ class FiberhomeService
             return AN551604::cfgLanPortVlan($portInterfaces, $vlans, $ccoss);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     /**
@@ -244,7 +244,7 @@ class FiberhomeService
             return AN551604::cfgVeipService($portInterfaces, $serviceIds, $vlans, $serviceModelProfiles, $serviceTypes);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 
     /**
@@ -262,6 +262,6 @@ class FiberhomeService
             return AN551604::delOnu();
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        throw new Exception('Model ' . self::$model . ' is not supported.');
     }
 }

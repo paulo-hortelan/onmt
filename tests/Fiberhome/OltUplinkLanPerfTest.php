@@ -18,7 +18,7 @@ beforeEach(function () {
     $this->interface2 = env('FIBERHOME_INTERFACE_2');
     $this->interface3 = env('FIBERHOME_INTERFACE_3');
 
-    $this->fiberhome = Fiberhome::connect($ipOlt, $username, $password, $ipServer);
+    $this->fiberhome = Fiberhome::connect($ipOlt, $username, $password, 3337, $ipServer);
 });
 
 describe('Fiberhome Optical Lan Perf - Success', function () {

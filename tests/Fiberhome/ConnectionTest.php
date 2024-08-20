@@ -23,7 +23,7 @@ describe('Fiberhome Connection TL1', function () {
     });
 
     it('can login', function () {
-        $fiberhome = Fiberhome::connect($this->ipOlt, $this->username, $this->password, $this->ipServer);
+        $fiberhome = Fiberhome::connect($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
 
         expect($fiberhome)->toBeInstanceOf(FiberhomeService::class);
     });

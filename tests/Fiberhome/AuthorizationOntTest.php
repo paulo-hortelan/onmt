@@ -42,7 +42,7 @@ beforeEach(function () {
     $this->serviceType1 = env('FIBERHOME_SERVICE_TYPE_1');
     $this->serviceType2 = env('FIBERHOME_SERVICE_TYPE_2');
 
-    $this->fiberhome = Fiberhome::timeout(5, 10)->connect($ipOlt, $username, $password, $ipServer);
+    $this->fiberhome = Fiberhome::timeout(5, 10)->connect($ipOlt, $username, $password, 3337, $ipServer);
     $this->fiberhome->interfaces([$this->interface1])->serials([$this->serial1]);
 });
 

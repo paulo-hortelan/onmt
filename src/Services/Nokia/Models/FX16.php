@@ -2,32 +2,27 @@
 
 namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
-use PauloHortelan\Onmt\Services\Connections\Telnet;
+use Exception;
+use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
-class FX16
+class FX16 extends NokiaService
 {
-    protected Telnet $connection;
-
-    public function __construct(Telnet $connection)
-    {
-        $this->connection = $connection;
-    }
-
     /**
-     * Returns the ONT optical details
+     * Returns the ONT's optical details
      */
-    public function ontOpticalDetails(array $interfaces): array|float|null
+    public static function showEquipmentOntOptics(): ?array
     {
-        $opticalDetails = [];
+        $ontsDetail = [];
 
-        foreach ($interfaces as $interface) {
-            $success = false;
-
+        foreach (self::$interfaces as $interface) {
             try {
-                $response = $this->connection->exec("show equipment ont optics $interface detail");
+                $response = self::$telnetConn->exec("show equipment ont optics $interface detail");
+
+                if (! str_contains($response, 'tx-signal-level')) {
+                    throw new \Exception($response);
+                }
 
                 if (preg_match('/tx-signal-level.*:(.*\s)/m', $response, $match)) {
-                    $success = true;
                     $txSignalLevel = (float) $match[1];
                 }
 
@@ -51,85 +46,96 @@ class FX16
                     $laserBiasCurr = (float) $match[1];
                 }
 
-                if (! $success) {
-                    $errorInfo = $response;
-                }
+                $ontsDetail[] = [
+                    'success' => true,
+                    'errorInfo' => null,
+                    'result' => [
+                        'interface' => $interface,
+                        'txSignalLevel' => $txSignalLevel ?? null,
+                        'ontVoltage' => $ontVoltage ?? null,
+                        'oltRxSigLevel' => $oltRxSigLevel ?? null,
+                        'rxSignalLevel' => $rxSignalLevel ?? null,
+                        'ontTemperature' => $ontTemperature ?? null,
+                        'laserBiasCurr' => $laserBiasCurr ?? null,
+                    ],
+                ];
             } catch (\Exception $e) {
                 $errorInfo = $e->getMessage();
-            }
 
-            $opticalDetails[] = [
-                'success' => $success,
-                'errorInfo' => $errorInfo ?? null,
-                'result' => [
-                    'interface' => $interface,
-                    'txSignalLevel' => $txSignalLevel ?? null,
-                    'ontVoltage' => $ontVoltage ?? null,
-                    'oltRxSigLevel' => $oltRxSigLevel ?? null,
-                    'rxSignalLevel' => $rxSignalLevel ?? null,
-                    'ontTemperature' => $ontTemperature ?? null,
-                    'laserBiasCurr' => $laserBiasCurr ?? null,
-                ],
-            ];
+                $ontsDetail[] = [
+                    'success' => false,
+                    'errorInfo' => $errorInfo,
+                    'result' => [
+                        'interface' => $interface
+                    ],
+                ];
+            }
         }
 
-        return $opticalDetails;
+        return $ontsDetail;
     }
 
     /**
-     * Returns the ONT optical interfaces
+     * Returns the ONT's optical interfaces
      */
-    public function ontOpticalInterfaces(array $serials): array|string|null
+    public static function showEquipmentOntIndex(): ?array
     {
-        $opticalInterfaces = [];
+        $ontsInterface = [];
 
-        foreach ($serials as $serial) {
-            $success = false;
+        foreach (self::$serials as $serial) {
             $formattedSerial = substr_replace($serial, ':', 4, 0);
 
             try {
-                $response = $this->connection->exec("show equipment ont index sn:$formattedSerial detail");
+                $response = self::$telnetConn->exec("show equipment ont index sn:$formattedSerial detail");
+
+                if (! str_contains($response, 'ont-idx')) {
+                    throw new \Exception($response);
+                }
 
                 if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
-                    $success = true;
                     $interface = trim($match[1]);
                 }
+
+                $ontsInterface[] = [
+                    'success' => true,
+                    'errorInfo' => null,
+                    'result' => [
+                        'serial' => $serial,
+                        'interface' => $interface ?? null,
+                    ],
+                ];
             } catch (\Exception $e) {
                 $errorInfo = $e->getMessage();
-            }
 
-            if (! $success) {
-                $errorInfo = 'Interface not found on OLT';
+                $ontsInterface[] = [
+                    'success' => false,
+                    'errorInfo' => $errorInfo,
+                    'result' => [
+                        'serial' => $serial
+                    ],
+                ];
             }
-
-            $opticalInterfaces[] = [
-                'success' => $success,
-                'errorInfo' => $errorInfo ?? null,
-                'result' => [
-                    'serial' => $serial,
-                    'interface' => $interface ?? null,
-                ],
-            ];
         }
 
-        return $opticalInterfaces;
+        return $ontsInterface;
     }
 
     /**
-     * Returns the ONT port details
+     * Returns the ONT's port details
      */
-    public function ontPortDetails(array $interfaces): array|string|null
+    public static function showInterfacePort(): ?array
     {
-        $portDetails = [];
+        $ontsPortDetail = [];
 
-        foreach ($interfaces as $interface) {
-            $success = false;
-
+        foreach (self::$interfaces as $interface) {
             try {
-                $response = $this->connection->exec("show interface port ont:$interface detail");
+                $response = self::$telnetConn->exec("show interface port ont:$interface detail");
+
+                if (! str_contains($response, 'opr-status')) {
+                    throw new \Exception($response);
+                }
 
                 if (preg_match('/opr-status.*?:(.*?[^\s]+)/m', $response, $match)) {
-                    $success = true;
                     $oprStatus = trim($match[1]);
                 }
 
@@ -140,26 +146,295 @@ class FX16
                 if (preg_match('/last-chg-opr-stat.*?:(.*?[^\s]+)/m', $response, $match)) {
                     $lastChgOprStat = trim($match[1]);
                 }
+
+                $ontsPortDetail[] = [
+                    'success' => true,
+                    'errorInfo' => null,
+                    'result' => [
+                        'interface' => $interface,
+                        'oprStatus' => $oprStatus ?? null,
+                        'adminStatus' => $adminStatus ?? null,
+                        'lastChgOprStat' => $lastChgOprStat ?? null,
+                    ],
+                ];
             } catch (\Exception $e) {
                 $errorInfo = $e->getMessage();
+
+                $ontsPortDetail[] = [
+                    'success' => false,
+                    'errorInfo' => $errorInfo,
+                    'result' => [
+                        'interface' => $interface
+                    ],
+                ];
+            }
+        }
+
+        return $ontsPortDetail;
+    }
+
+    /**
+     * Returns the ONT's optical details
+     */
+    public static function showPonUnprovisionOnu(): ?array
+    {
+        $unregOnts = [];
+
+        try {
+            $response = self::$telnetConn->exec("show pon unprovision-onu");
+
+            if (! str_contains($response, 'gpon-index')) {
+                throw new \Exception($response);
             }
 
-            if (! $success) {
-                $errorInfo = 'Interface not found on OLT';
-            }
+            $response = preg_split("/\r\n|\n|\r/", $response);
 
-            $portDetails[] = [
-                'success' => $success,
-                'errorInfo' => $errorInfo ?? null,
+            foreach ($response as $key => $column) {
+                if (preg_match('/gpon-index/', $column)) {
+                    $numOnts = count($response) - $key - 5;
+
+                    if ($numOnts === 0) {
+                        $unregOnts[] = [
+                            'success' => true,
+                            'errorInfo' => null,
+                            'result' => [],
+                        ];
+                    }
+
+                    for ($i = 1; $i <= $numOnts; $i++) {
+                        $splitted = preg_split('/\s+/', $response[$key + $i + 1]);
+
+                        $alarmIdx = (int) $splitted[1];
+                        $interface = $splitted[2];
+                        $serial = $splitted[3];
+
+                        $unregOnts[] = [
+                            'success' => true,
+                            'errorInfo' => null,
+                            'result' => [
+                                'alarmIdx' => $alarmIdx ?? null,
+                                'interface' => $interface ?? null,
+                                'serial' => $serial ?? null,
+                            ],
+                        ];
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            $errorInfo = $e->getMessage();
+
+            $unregOnts[] = [
+                'success' => false,
+                'errorInfo' => $errorInfo,
+                'result' => [],
+            ];
+        }
+
+        return $unregOnts;
+    }
+
+    /**
+     * Provision ONT's
+     */
+    public static function entOnt(array $tid, array $ctag, array $ontNblk): ?array
+    {
+        $provisionedOnt = [];
+
+        $interface = self::$interfaces[0];
+        $formattedInterface = str_replace('/', '-', $interface);
+        $serial = self::$serials[0];
+
+        $command = self::formatCommandEntOnt($tid, $formattedInterface, $ctag, $ontNblk);
+        $command .= ",SERNUM=\"$serial\";";
+
+        var_dump($command);
+
+        // $pppoeUsername = $pppoeUsernames[$i];
+        // $swVerPlnd = $swVerPlnds[$i];
+        // $opticShist = $opticShists[$i] ?? null;
+        // $plndCfgfile1 = $plndCfgfiles1[$i] ?? null;
+        // $dlCfgfile1 = $dlCfgfiles1[$i] ?? null;
+        // $voidAllowed = $voidAlloweds[$i] ?? null;
+
+        // $command = "ENT-ONT::ONT-$formattedInterface::::DESC1=\"$pppoeUsername\",DESC2=\"$pppoeUsername\",SERNUM=$serial,SWVERPLND=$swVerPlnd;";
+
+        // $optionalParts = array_filter([$opticShist, $plndCfgfile1, $dlCfgfile1, $voidAllowed]);
+
+        // if (!empty($optionalParts)) {
+        //     $command .= "," . implode(",", $optionalParts) . ";";
+        // } else {
+        //     $command .= ";";
+        // }
+
+        try {
+            self::$tl1Conn->exec($command);
+
+            $provisionedOnt[] = [
+                'success' => true,
+                'errorInfo' => null,
                 'result' => [
-                    'interface' => $interface,
-                    'oprStatus' => $oprStatus ?? null,
-                    'adminStatus' => $adminStatus ?? null,
-                    'lastChgOprStat' => $lastChgOprStat ?? null,
+                    'interface' => $interface
+                ],
+            ];
+        } catch (\Exception $e) {
+            $errorInfo = $e->getMessage();
+
+            $provisionedOnt[] = [
+                'success' => false,
+                'errorInfo' => $errorInfo,
+                'result' => [
+                    'interface' => $interface
                 ],
             ];
         }
 
-        return $portDetails;
+        return $provisionedOnt;
+    }
+
+    /**
+     * Get ONT's info by pon interfaces
+     */
+    public static function showEquipmentOntStatusPon($ponInterfaces): ?array
+    {
+        $onts = [];
+
+        foreach ($ponInterfaces as $ponInterface) {
+            try {
+                $response = self::$telnetConn->exec("show equipment ont status pon $ponInterface");
+
+                if (! str_contains($response, 'sernum')) {
+                    throw new \Exception($response);
+                }
+
+                $response = preg_split("/\r\n|\n|\r/", $response);
+
+                foreach ($response as $key => $column) {
+                    if (preg_match('/sernum/', $column)) {
+                        $numOnts = count($response) - $key - 5;
+
+                        if ($numOnts === 0) {
+                            $onts[] = [
+                                'success' => true,
+                                'errorInfo' => null,
+                                'result' => [
+                                    'ponInterface' => $ponInterface
+                                ],
+                            ];
+                        }
+
+                        for ($i = 1; $i <= $numOnts; $i++) {
+                            $splitted = preg_split('/\s+/', $response[$key + $i + 1]);
+
+                            $ponInterface = $splitted[0];
+                            $interface = $splitted[1];
+                            $serial = $splitted[2];
+                            $adminStatus = $splitted[3];
+                            $operStatus = $splitted[4];
+                            $oltRxSigLevel = $splitted[5];
+                            $ontOltDistance = $splitted[6];
+
+                            $onts[] = [
+                                'success' => true,
+                                'errorInfo' => null,
+                                'result' => [
+                                    'ponInterface' => $ponInterface,
+                                    'interface' => $interface ?? null,
+                                    'serial' => $serial ?? null,
+                                    'adminStatus' => $adminStatus ?? null,
+                                    'operStatus' => $operStatus ?? null,
+                                    'oltRxSigLevel' => $oltRxSigLevel ?? null,
+                                    'ontOltDistance' => $ontOltDistance ?? null,
+                                ],
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $onts[] = [
+                    'success' => false,
+                    'errorInfo' => $errorInfo,
+                    'result' => [
+                        'ponInterface' => $ponInterface
+                    ],
+                ];
+            }
+        }
+
+        return $onts;
+    }
+
+    /**
+     * Configure ONT's admin state
+     */
+    public static function configureEquipmentOntInterfaceAdminState($adminState): ?array
+    {
+        $adminStates = ["down", "up"];
+
+        if (!in_array($adminState, $adminStates))
+            throw new Exception("AdminState must be 'down' or 'up'");
+
+        $configuredOnts = [];
+
+        foreach (self::$interfaces as $interface) {
+            try {
+                self::$telnetConn->exec("configure equipment ont interface $interface admin-state $adminState");
+
+                $configuredOnts[] = [
+                    'success' => true,
+                    'errorInfo' => null,
+                    'result' => [
+                        'interface' => $interface
+                    ],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $configuredOnts[] = [
+                    'success' => false,
+                    'errorInfo' => $errorInfo,
+                    'result' => [
+                        'interface' => $interface
+                    ],
+                ];
+            }
+        }
+
+        return $configuredOnts;
+    }
+
+    /**
+     * Remove ONT's
+     */
+    public static function configureEquipmentOntNoInterface(): ?array
+    {
+        $removedOnts = [];
+
+        foreach (self::$interfaces as $interface) {
+            try {
+                self::$telnetConn->exec("configure equipment ont no interface $interface");
+
+                $removedOnts[] = [
+                    'success' => true,
+                    'errorInfo' => null,
+                    'result' => [
+                        'interface' => $interface
+                    ],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $removedOnts[] = [
+                    'success' => false,
+                    'errorInfo' => $errorInfo,
+                    'result' => [
+                        'interface' => $interface
+                    ],
+                ];
+            }
+        }
+
+        return $removedOnts;
     }
 }

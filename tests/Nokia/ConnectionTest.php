@@ -2,6 +2,7 @@
 
 use PauloHortelan\Onmt\Facades\Nokia;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
+use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 uses()->group('Nokia');
@@ -22,7 +23,21 @@ describe('Nokia Connection Telnet', function () {
     });
 
     it('can login', function () {
-        $nokia = Nokia::connect($this->ipServer, $this->username, $this->password);
+        $nokia = Nokia::connectTelnet($this->ipServer, $this->username, $this->password, 23);
+
+        expect($nokia)->toBeInstanceOf(NokiaService::class);
+    });
+});
+
+describe('Nokia Connection TL1', function () {
+    it('can create', function () {
+        $telnet = new TL1($this->ipServer, 1022, 3, 3);
+
+        $this->assertInstanceOf(Telnet::class, $telnet);
+    });
+
+    it('can login', function () {
+        $nokia = Nokia::connectTL1($this->ipServer, $this->username, $this->password, 1022);
 
         expect($nokia)->toBeInstanceOf(NokiaService::class);
     });

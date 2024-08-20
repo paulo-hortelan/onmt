@@ -18,12 +18,12 @@ beforeEach(function () {
 
 describe('Nokia Port Detail', function () {
     it('can get single detail', function () {
-        $detail = $this->nokia->portDetails([$this->interface1]);
+        $detail = $this->nokia->ontsPortDetail([$this->interface1]);
 
         expect($detail)->toBeArray();
         expect($detail[0]['result']['oprStatus'])->toBeString();
 
-        $detail = $this->nokia->interface($this->interface1)->portDetails();
+        $detail = $this->nokia->interface($this->interface1)->ontsPortDetail();
 
         expect($detail)->toBeArray();
         expect($detail[0]['result']['oprStatus'])->toBeString();
@@ -32,14 +32,14 @@ describe('Nokia Port Detail', function () {
     it('can get multiple details', function () {
         $interfaces = [$this->interface1, $this->interface2, $this->interface3];
 
-        $details = $this->nokia->portDetails($interfaces);
+        $details = $this->nokia->ontsPortDetail($interfaces);
 
         expect($details)->toBeArray();
         expect($details[0]['result']['oprStatus'])->toBeString();
         expect($details[1]['result']['oprStatus'])->toBeString();
         expect($details[2]['result']['oprStatus'])->toBeString();
 
-        $details = $this->nokia->interfaces($interfaces)->portDetails();
+        $details = $this->nokia->interfaces($interfaces)->ontsPortDetail();
 
         expect($details)->toBeArray();
         expect($details[0]['result']['oprStatus'])->toBeString();

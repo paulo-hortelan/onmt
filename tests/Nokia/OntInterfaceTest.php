@@ -18,11 +18,11 @@ beforeEach(function () {
 
 describe('Nokia Optical Interface', function () {
     it('can get single interface', function () {
-        $interface = $this->nokia->opticalInterfaces([$this->serial1])[0];
+        $interface = $this->nokia->ontsInterface([$this->serial1])[0];
 
         expect($interface['result']['interface'])->toBeString();
 
-        $interface = $this->nokia->serial($this->serial1)->opticalInterfaces()[0];
+        $interface = $this->nokia->serial($this->serial1)->ontsInterface()[0];
 
         expect($interface['result']['interface'])->toBeString();
     });
@@ -30,13 +30,13 @@ describe('Nokia Optical Interface', function () {
     it('can get multiple interfaces', function () {
         $serials = [$this->serial1, $this->serial2, $this->serial3];
 
-        $interfaces = $this->nokia->opticalInterfaces($serials);
+        $interfaces = $this->nokia->ontsInterface($serials);
 
         expect($interfaces[0]['result']['interface'])->toBeString();
         expect($interfaces[1]['result']['interface'])->toBeString();
         expect($interfaces[2]['result']['interface'])->toBeString();
 
-        $interfaces = $this->nokia->serials($serials)->opticalInterfaces();
+        $interfaces = $this->nokia->serials($serials)->ontsInterface();
 
         expect($interfaces[0]['result']['interface'])->toBeString();
         expect($interfaces[1]['result']['interface'])->toBeString();
