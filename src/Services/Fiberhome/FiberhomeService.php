@@ -3,6 +3,9 @@
 namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanServiceConfig;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\TL1;
@@ -205,43 +208,60 @@ class FiberhomeService
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
-    public function configureVlanOnts(array $portInterfaces, array $vlans, array $ccoss): ?array
+    /**
+     * Configure ONT's LAN service
+     *
+     * Parameters 'interfaces' and 'serials' must be already provided
+     *
+     * @param  array  $portInface  Port interface. Example: 'NA-NA-NA-1'
+     * @param  LanServiceConfig  $config  LAN service configuration parameters
+     * @return array Info about each ONT configuration
+     */
+    public function configureLanOnts(string $portInterface, LanServiceConfig $config): ?array
     {
         $this->validateInterfacesSerials();
 
-        if (! $this->assertSameLength([self::$interfaces, self::$serials, $portInterfaces, $vlans, $ccoss])) {
-            throw new Exception('The number of interfaces, serials, portInterfaces, vlans and ccoss are not the same.');
-        }
-
         if (self::$model === 'AN551604') {
-            return AN551604::cfgLanPortVlan($portInterfaces, $vlans, $ccoss);
+            return AN551604::cfgLanPortVlan($portInterface, $config);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     /**
-     * Configure ONT's Veip and Vlan
+     * Configure ONT's VEIP service
      *
      * Parameters 'interfaces' and 'serials' must be already provided
      *
-     * @param  array  $portInfaces  Port interface list. Example: 'NA-NA-NA-1'
-     * @param  array  $serviceIds  Service Id list
-     * @param  array  $vlans  Vlan list
-     * @param  array  $serviceModelsProfiles  Service Model Profile list
-     * @param  array  $serviceTypes  Serial list. Example: ['CMSZ123456']
+     * @param  array  $portInface  Port interface. Example: 'NA-NA-NA-1'
+     * @param  VeipServiceConfig  $config  VEIP service configuration parameters
      * @return array Info about each ONT configuration
      */
-    public function configureVeipVlanOnts(array $portInterfaces, array $serviceIds, array $vlans, array $serviceModelProfiles, array $serviceTypes): ?array
+    public function configureVeipOnts(string $portInterface, VeipServiceConfig $config): ?array
     {
         $this->validateInterfacesSerials();
 
-        if (! $this->assertSameLength([self::$interfaces, $portInterfaces, $serviceIds, $vlans, $serviceModelProfiles, $serviceTypes])) {
-            throw new Exception('The number of array elements are not the same.');
+        if (self::$model === 'AN551604') {
+            return AN551604::cfgVeipService($portInterface, $config);
         }
 
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Configure ONT's WAN service
+     *
+     * Parameters 'interfaces' and 'serials' must be already provided
+     *
+     * @param  WanServiceConfig  $config  WAN service configurations parameters
+     * @return array Info about each ONT configuration
+     */
+    public function configureWanOnts(WanServiceConfig $config): ?array
+    {
+        $this->validateInterfacesSerials();
+
         if (self::$model === 'AN551604') {
-            return AN551604::cfgVeipService($portInterfaces, $serviceIds, $vlans, $serviceModelProfiles, $serviceTypes);
+            return AN551604::setWanService($config);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');

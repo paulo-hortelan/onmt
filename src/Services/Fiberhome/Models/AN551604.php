@@ -2,6 +2,9 @@
 
 namespace PauloHortelan\Onmt\Services\Fiberhome\Models;
 
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanServiceConfig;
 use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 
 class AN551604 extends FiberhomeService
@@ -19,7 +22,8 @@ class AN551604 extends FiberhomeService
             $serial = self::$serials[$i];
 
             try {
-                $response = self::$connection->exec("LST-OMDDM::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;");
+                $command = "LST-OMDDM::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -36,6 +40,7 @@ class AN551604 extends FiberhomeService
 
                         $ontsOpticalPower[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'interface' => $interface,
@@ -51,6 +56,7 @@ class AN551604 extends FiberhomeService
 
                 $ontsOpticalPower[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [
                         'interface' => $interface,
@@ -76,7 +82,8 @@ class AN551604 extends FiberhomeService
             $serial = self::$serials[$i];
 
             try {
-                $response = self::$connection->exec("LST-ONUSTATE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;");
+                $command = "LST-ONUSTATE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -95,6 +102,7 @@ class AN551604 extends FiberhomeService
 
                         $opticalStates[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'interface' => $interface,
@@ -112,6 +120,7 @@ class AN551604 extends FiberhomeService
 
                 $opticalStates[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [
                         'interface' => $interface,
@@ -137,7 +146,8 @@ class AN551604 extends FiberhomeService
             $serial = self::$serials[$i];
 
             try {
-                $response = self::$connection->exec("LST-PORTVLAN::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;");
+                $command = "LST-PORTVLAN::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -155,6 +165,7 @@ class AN551604 extends FiberhomeService
 
                         $ontsPortInfo[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'interface' => $interface,
@@ -169,6 +180,7 @@ class AN551604 extends FiberhomeService
 
                 $ontsPortInfo[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [
                         'interface' => $interface,
@@ -194,7 +206,8 @@ class AN551604 extends FiberhomeService
             $serial = self::$serials[$i];
 
             try {
-                $response = self::$connection->exec("LST-ONULANINFO::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;");
+                $command = "LST-ONULANINFO::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -215,6 +228,7 @@ class AN551604 extends FiberhomeService
 
                         $ontsLanInfo[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'interface' => $interface,
@@ -234,6 +248,7 @@ class AN551604 extends FiberhomeService
 
                 $ontsLanInfo[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [
                         'interface' => $interface,
@@ -258,7 +273,8 @@ class AN551604 extends FiberhomeService
             $portInterface = $portInterfaces[$i];
 
             try {
-                $response = self::$connection->exec("LST-LANPERF::OLTID=$ipOlt,PORTID=$portInterface,PORTID=NA-NA-NA-NA:CTAG::;");
+                $command = "LST-LANPERF::OLTID=$ipOlt,PORTID=$portInterface,PORTID=NA-NA-NA-NA:CTAG::;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -279,6 +295,7 @@ class AN551604 extends FiberhomeService
 
                         $oltUplinksLanPerf[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'portInterface' => $portInterface,
@@ -297,6 +314,7 @@ class AN551604 extends FiberhomeService
 
                 $oltUplinksLanPerf[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
                 ];
@@ -315,7 +333,8 @@ class AN551604 extends FiberhomeService
         $unregOnts = [];
 
         try {
-            $response = self::$connection->exec("LST-UNREGONU::OLTID=$ipOlt:CTAG::;");
+            $command = "LST-UNREGONU::OLTID=$ipOlt:CTAG::;";
+            $response = self::$connection->exec($command);
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -330,6 +349,7 @@ class AN551604 extends FiberhomeService
                     if ($numOnts === 0) {
                         $unregOnts[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [],
                         ];
@@ -349,6 +369,7 @@ class AN551604 extends FiberhomeService
 
                         $unregOnts[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'slot' => $slot ?? null,
@@ -386,7 +407,8 @@ class AN551604 extends FiberhomeService
         $regOnts = [];
 
         try {
-            $response = self::$connection->exec("LST-ONU::OLTID=$ipOlt:CTAG::;");
+            $command = "LST-ONU::OLTID=$ipOlt:CTAG::;";
+            $response = self::$connection->exec($command);
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -401,6 +423,7 @@ class AN551604 extends FiberhomeService
                     if ($numOnts === 0) {
                         $regOnts[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [],
                         ];
@@ -423,6 +446,7 @@ class AN551604 extends FiberhomeService
 
                         $regOnts[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'oltId' => $oltId ?? null,
@@ -469,7 +493,8 @@ class AN551604 extends FiberhomeService
             $pppoeUsername = $pppoeUsernames[$i];
 
             try {
-                $response = self::$connection->exec("ADD-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;");
+                $command = "ADD-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -477,6 +502,7 @@ class AN551604 extends FiberhomeService
 
                 $authResponse[] = [
                     'success' => true,
+                    'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
                 ];
@@ -485,6 +511,7 @@ class AN551604 extends FiberhomeService
 
                 $authResponse[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
                 ];
@@ -507,7 +534,8 @@ class AN551604 extends FiberhomeService
             $serial = self::$serials[$i];
 
             try {
-                $response = self::$connection->exec("DEL-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;");
+                $command = "DEL-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -515,6 +543,7 @@ class AN551604 extends FiberhomeService
 
                 $delResponse[] = [
                     'success' => true,
+                    'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
                 ];
@@ -523,6 +552,7 @@ class AN551604 extends FiberhomeService
 
                 $delResponse[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
                 ];
@@ -533,9 +563,9 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Configure ONT's Vlan
+     * Configure ONT's VLAN
      */
-    public static function cfgLanPortVlan($portInterfaces, $vlans, $ccoss): ?array
+    public static function cfgLanPortVlan($portInterface, LanServiceConfig $config): ?array
     {
         $ipOlt = self::$ipOlt;
         $configVlanResponse = [];
@@ -543,12 +573,12 @@ class AN551604 extends FiberhomeService
         for ($i = 0; $i < count(self::$interfaces); $i++) {
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
-            $portInterface = $portInterfaces[$i];
-            $vlan = $vlans[$i];
-            $ccos = $ccoss[$i];
 
             try {
-                $response = self::$connection->exec("CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::CVLAN=$vlan,CCOS=$ccos;");
+                $lanServiceCommand = $config->buildCommand();
+
+                $command = "CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$lanServiceCommand;";
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -556,6 +586,7 @@ class AN551604 extends FiberhomeService
 
                 $configVlanResponse[] = [
                     'success' => true,
+                    'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
                 ];
@@ -564,6 +595,7 @@ class AN551604 extends FiberhomeService
 
                 $configVlanResponse[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
                 ];
@@ -574,9 +606,9 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Configure ONT's Veip and Vlan
+     * Configure ONT's VEIP
      */
-    public static function cfgVeipService($portInterfaces, $serviceIds, $vlans, $serviceModelProfiles, $serviceTypes): ?array
+    public static function cfgVeipService(string $portInterface, VeipServiceConfig $config): ?array
     {
         $ipOlt = self::$ipOlt;
         $cfgVeipVlanResponses = [];
@@ -584,15 +616,13 @@ class AN551604 extends FiberhomeService
         for ($i = 0; $i < count(self::$interfaces); $i++) {
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
-            $portInterface = $portInterfaces[$i];
-            $serviceId = $serviceIds[$i];
-            $vlan = $vlans[$i];
-            $serviceModelProfile = $serviceModelProfiles[$i];
-            $serviceType = $serviceTypes[$i];
 
             try {
-                $response = self::$connection->exec("CFG-VEIPSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::ServiceId=$serviceId,
-                CVLANID=$vlan,ServiceModelProfile=$serviceModelProfile,ServiceType=$serviceType;");
+                $veipServiceCommand = $config->buildCommand();
+
+                $command = "CFG-VEIPSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$veipServiceCommand;";
+
+                $response = self::$connection->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -600,6 +630,7 @@ class AN551604 extends FiberhomeService
 
                 $cfgVeipVlanResponses[] = [
                     'success' => true,
+                    'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
                 ];
@@ -608,6 +639,7 @@ class AN551604 extends FiberhomeService
 
                 $cfgVeipVlanResponses[] = [
                     'success' => false,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
                 ];
@@ -615,5 +647,49 @@ class AN551604 extends FiberhomeService
         }
 
         return $cfgVeipVlanResponses;
+    }
+
+    /**
+     * Set ONT's WAN Service
+     */
+    public static function setWanService(WanServiceConfig $config): ?array
+    {
+        $ipOlt = self::$ipOlt;
+        $setWanServiceResponses = [];
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            try {
+                $wanServiceCommand = $config->buildCommand();
+
+                $command = "SET-WANSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::$wanServiceCommand;";
+
+                $response = self::$connection->exec($command);
+
+                if (! str_contains($response, 'M  CTAG COMPLD')) {
+                    throw new \Exception($response);
+                }
+
+                $setWanServiceResponses[] = [
+                    'success' => true,
+                    'command' => $command,
+                    'errorInfo' => null,
+                    'result' => [],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $setWanServiceResponses[] = [
+                    'success' => false,
+                    'command' => $command,
+                    'errorInfo' => $errorInfo,
+                    'result' => [],
+                ];
+            }
+        }
+
+        return $setWanServiceResponses;
     }
 }
