@@ -3,20 +3,25 @@
 namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
 use Exception;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
 use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 class FX16 extends NokiaService
 {
     /**
-     * Returns the ONT's optical details
+     * Returns the ONT's equipment optics
      */
     public static function showEquipmentOntOptics(): ?array
     {
         $ontsDetail = [];
 
+        var_dump(self::$interfaces);
         foreach (self::$interfaces as $interface) {
             try {
-                $response = self::$telnetConn->exec("show equipment ont optics $interface detail");
+                $command = "show equipment ont optics $interface detail";
+                $response = self::$telnetConn->exec($command);
 
                 if (! str_contains($response, 'tx-signal-level')) {
                     throw new \Exception($response);
@@ -48,9 +53,10 @@ class FX16 extends NokiaService
 
                 $ontsDetail[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'command' => $command,
                     'errorInfo' => null,
                     'result' => [
-                        'interface' => $interface,
                         'txSignalLevel' => $txSignalLevel ?? null,
                         'ontVoltage' => $ontVoltage ?? null,
                         'oltRxSigLevel' => $oltRxSigLevel ?? null,
@@ -64,10 +70,10 @@ class FX16 extends NokiaService
 
                 $ontsDetail[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                    ],
+                    'result' => [],
                 ];
             }
         }
@@ -86,7 +92,8 @@ class FX16 extends NokiaService
             $formattedSerial = substr_replace($serial, ':', 4, 0);
 
             try {
-                $response = self::$telnetConn->exec("show equipment ont index sn:$formattedSerial detail");
+                $command = "show equipment ont index sn:$formattedSerial detail";
+                $response = self::$telnetConn->exec($command);
 
                 if (! str_contains($response, 'ont-idx')) {
                     throw new \Exception($response);
@@ -98,9 +105,10 @@ class FX16 extends NokiaService
 
                 $ontsInterface[] = [
                     'success' => true,
+                    'serial' => $serial,
+                    'command' => $command,
                     'errorInfo' => null,
                     'result' => [
-                        'serial' => $serial,
                         'interface' => $interface ?? null,
                     ],
                 ];
@@ -109,10 +117,10 @@ class FX16 extends NokiaService
 
                 $ontsInterface[] = [
                     'success' => false,
+                    'serial' => $serial,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
-                    'result' => [
-                        'serial' => $serial,
-                    ],
+                    'result' => [],
                 ];
             }
         }
@@ -174,14 +182,16 @@ class FX16 extends NokiaService
     }
 
     /**
-     * Returns the ONT's optical details
+     * Returns the ONT's unprovisioned
      */
     public static function showPonUnprovisionOnu(): ?array
     {
         $unregOnts = [];
 
         try {
-            $response = self::$telnetConn->exec('show pon unprovision-onu');
+            $command = 'show pon unprovision-onu';
+
+            $response = self::$telnetConn->exec($command);
 
             if (! str_contains($response, 'gpon-index')) {
                 throw new \Exception($response);
@@ -196,6 +206,7 @@ class FX16 extends NokiaService
                     if ($numOnts === 0) {
                         $unregOnts[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [],
                         ];
@@ -210,6 +221,7 @@ class FX16 extends NokiaService
 
                         $unregOnts[] = [
                             'success' => true,
+                            'command' => $command,
                             'errorInfo' => null,
                             'result' => [
                                 'alarmIdx' => $alarmIdx ?? null,
@@ -225,6 +237,7 @@ class FX16 extends NokiaService
 
             $unregOnts[] = [
                 'success' => false,
+                'command' => $command,
                 'errorInfo' => $errorInfo,
                 'result' => [],
             ];
@@ -236,133 +249,203 @@ class FX16 extends NokiaService
     /**
      * Provision ONT's
      */
-    public static function entOnt(array $tid, array $ctag, array $ontNblk): ?array
+    public static function entOnts(EntOntConfig $config): ?array
     {
-        $provisionedOnt = [];
+        $provisionedOnts = [];
 
-        $interface = self::$interfaces[0];
-        $formattedInterface = str_replace('/', '-', $interface);
-        $serial = self::$serials[0];
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $formattedInterface = str_replace('/', '-', $interface);
 
-        $command = self::formatCommandEntOnt($tid, $formattedInterface, $ctag, $ontNblk);
-        $command .= ",SERNUM=\"$serial\";";
+            try {
+                $entOntCommand = $config->buildCommand();
 
-        var_dump($command);
+                $command = "ENT-ONT::ONT-$formattedInterface::::$entOntCommand;";
+                self::$tl1Conn->exec($command);
 
-        // $pppoeUsername = $pppoeUsernames[$i];
-        // $swVerPlnd = $swVerPlnds[$i];
-        // $opticShist = $opticShists[$i] ?? null;
-        // $plndCfgfile1 = $plndCfgfiles1[$i] ?? null;
-        // $dlCfgfile1 = $dlCfgfiles1[$i] ?? null;
-        // $voidAllowed = $voidAlloweds[$i] ?? null;
-
-        // $command = "ENT-ONT::ONT-$formattedInterface::::DESC1=\"$pppoeUsername\",DESC2=\"$pppoeUsername\",SERNUM=$serial,SWVERPLND=$swVerPlnd;";
-
-        // $optionalParts = array_filter([$opticShist, $plndCfgfile1, $dlCfgfile1, $voidAllowed]);
-
-        // if (!empty($optionalParts)) {
-        //     $command .= "," . implode(",", $optionalParts) . ";";
-        // } else {
-        //     $command .= ";";
-        // }
-
-        try {
-            self::$tl1Conn->exec($command);
-
-            $provisionedOnt[] = [
-                'success' => true,
-                'errorInfo' => null,
-                'result' => [
+                $provisionedOnts[] = [
+                    'success' => true,
                     'interface' => $interface,
-                ],
-            ];
-        } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
+                    'command' => $command,
+                    'errorInfo' => null,
+                    'result' => [],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
 
-            $provisionedOnt[] = [
-                'success' => false,
-                'errorInfo' => $errorInfo,
-                'result' => [
+                $provisionedOnts[] = [
+                    'success' => false,
                     'interface' => $interface,
-                ],
-            ];
+                    'command' => $command,
+                    'errorInfo' => $errorInfo,
+                    'result' => [],
+                ];
+            }
+
         }
 
-        return $provisionedOnt;
+        return $provisionedOnts;
+    }
+
+    /**
+     * Edit provisioned ONT's
+     */
+    public static function edOnts(EdOntConfig $config): ?array
+    {
+        $editedOnts = [];
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $formattedInterface = str_replace('/', '-', $interface);
+
+            try {
+                $edOntCommand = $config->buildCommand();
+
+                $command = "ED-ONT::ONT-$formattedInterface::::$edOntCommand:IS;";
+                self::$tl1Conn->exec($command);
+
+                $editedOnts[] = [
+                    'success' => true,
+                    'interface' => $interface,
+                    'command' => $command,
+                    'errorInfo' => null,
+                    'result' => [],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $editedOnts[] = [
+                    'success' => false,
+                    'interface' => $interface,
+                    'command' => $command,
+                    'errorInfo' => $errorInfo,
+                    'result' => [],
+                ];
+            }
+
+        }
+
+        return $editedOnts;
+    }
+
+    /**
+     * Plans a new ONT card at ONT's
+     */
+    public static function entOntsCard(EntOntCardConfig $config): ?array
+    {
+        $ontsCard = [];
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $formattedInterface = str_replace('/', '-', $interface);
+
+            try {
+                $entOntCardConfigCommand = $config->buildCommand();
+
+                $command = "ENT-ONTCARD::ONTCARD-$formattedInterface-$entOntCardConfigCommand::IS;";
+                self::$tl1Conn->exec($command);
+
+                $ontsCard[] = [
+                    'success' => true,
+                    'interface' => $interface,
+                    'command' => $command,
+                    'errorInfo' => null,
+                    'result' => [],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $ontsCard[] = [
+                    'success' => false,
+                    'interface' => $interface,
+                    'command' => $command,
+                    'errorInfo' => $errorInfo,
+                    'result' => [],
+                ];
+            }
+
+        }
+
+        return $ontsCard;
     }
 
     /**
      * Get ONT's info by pon interfaces
      */
-    public static function showEquipmentOntStatusPon($ponInterfaces): ?array
+    public static function showEquipmentOntStatusPon(string $ponInterface): ?array
     {
+        $response = [];
         $onts = [];
 
-        foreach ($ponInterfaces as $ponInterface) {
-            try {
-                $response = self::$telnetConn->exec("show equipment ont status pon $ponInterface");
+        try {
+            $command = "show equipment ont status pon $ponInterface";
+            $response = self::$telnetConn->exec($command);
 
-                if (! str_contains($response, 'sernum')) {
-                    throw new \Exception($response);
-                }
-
-                $response = preg_split("/\r\n|\n|\r/", $response);
-
-                foreach ($response as $key => $column) {
-                    if (preg_match('/sernum/', $column)) {
-                        $numOnts = count($response) - $key - 5;
-
-                        if ($numOnts === 0) {
-                            $onts[] = [
-                                'success' => true,
-                                'errorInfo' => null,
-                                'result' => [
-                                    'ponInterface' => $ponInterface,
-                                ],
-                            ];
-                        }
-
-                        for ($i = 1; $i <= $numOnts; $i++) {
-                            $splitted = preg_split('/\s+/', $response[$key + $i + 1]);
-
-                            $ponInterface = $splitted[0];
-                            $interface = $splitted[1];
-                            $serial = $splitted[2];
-                            $adminStatus = $splitted[3];
-                            $operStatus = $splitted[4];
-                            $oltRxSigLevel = $splitted[5];
-                            $ontOltDistance = $splitted[6];
-
-                            $onts[] = [
-                                'success' => true,
-                                'errorInfo' => null,
-                                'result' => [
-                                    'ponInterface' => $ponInterface,
-                                    'interface' => $interface ?? null,
-                                    'serial' => $serial ?? null,
-                                    'adminStatus' => $adminStatus ?? null,
-                                    'operStatus' => $operStatus ?? null,
-                                    'oltRxSigLevel' => $oltRxSigLevel ?? null,
-                                    'ontOltDistance' => $ontOltDistance ?? null,
-                                ],
-                            ];
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $onts[] = [
-                    'success' => false,
-                    'errorInfo' => $errorInfo,
-                    'result' => [
-                        'ponInterface' => $ponInterface,
-                    ],
-                ];
+            if (! str_contains($response, 'sernum')) {
+                throw new \Exception($response);
             }
+
+            $response = preg_split("/\r\n|\n|\r/", $response);
+
+            foreach ($response as $key => $column) {
+                if (preg_match('/sernum/', $column)) {
+                    $numOnts = count($response) - $key - 5;
+
+                    if ($numOnts === 0) {
+                        $response = [
+                            'success' => true,
+                            'ponInterface' => $ponInterface,
+                            'command' => $command,
+                            'errorInfo' => null,
+                            'result' => [],
+                        ];
+
+                        break;
+                    }
+
+                    for ($i = 1; $i <= $numOnts; $i++) {
+                        $splitted = preg_split('/\s+/', $response[$key + $i + 1]);
+
+                        $ponInterface = $splitted[0];
+                        $interface = $splitted[1];
+                        $serial = $splitted[2];
+                        $adminStatus = $splitted[3];
+                        $operStatus = $splitted[4];
+                        $oltRxSigLevel = $splitted[5];
+                        $ontOltDistance = $splitted[6];
+
+                        $onts[] = [
+                            'interface' => $interface ?? null,
+                            'serial' => $serial ?? null,
+                            'adminStatus' => $adminStatus ?? null,
+                            'operStatus' => $operStatus ?? null,
+                            'oltRxSigLevel' => $oltRxSigLevel ?? null,
+                            'ontOltDistance' => $ontOltDistance ?? null,
+                        ];
+                    }
+
+                    $response = [
+                        'success' => true,
+                        'ponInterface' => $ponInterface,
+                        'command' => $command,
+                        'errorInfo' => null,
+                        'result' => $onts,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            $errorInfo = $e->getMessage();
+
+            $response = [
+                'success' => false,
+                'ponInterface' => $ponInterface,
+                'command' => $command,
+                'errorInfo' => $errorInfo,
+                'result' => [],
+            ];
         }
 
-        return $onts;
+        return $response;
     }
 
     /**

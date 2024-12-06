@@ -3,6 +3,9 @@
 namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
@@ -101,14 +104,14 @@ class NokiaService
 
     private function validateInterfaces()
     {
-        if (empty(self::$interfaces)) {
+        if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
             throw new Exception('Interface(s) not found.');
         }
     }
 
     private function validateSerials()
     {
-        if (empty(self::$serials)) {
+        if (empty(self::$serials) || count(array_filter(self::$serials)) < count(self::$serials)) {
             throw new Exception('Serial(s) not found.');
         }
     }
@@ -124,23 +127,14 @@ class NokiaService
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
-    public function ontsInterface(): ?array
-    {
-        $this->validateSerials();
-
-        if (self::$model === 'FX16') {
-            return FX16::showEquipmentOntIndex();
-        }
-
-        throw new Exception('Model '.self::$model.' is not supported.');
-    }
-
     public function ontsDetailBySerials(): ?array
     {
         $this->validateSerials();
 
         $ontsDetail = [];
         $serials = self::$serials;
+
+        var_dump($serials);
 
         foreach ($serials as $serial) {
             $this->serials([$serial]);
@@ -157,6 +151,17 @@ class NokiaService
         }
 
         return $ontsDetail;
+    }
+
+    public function ontsInterface(): ?array
+    {
+        $this->validateSerials();
+
+        if (self::$model === 'FX16') {
+            return FX16::showEquipmentOntIndex();
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
     }
 
     public function ontsPortDetail(): ?array
@@ -179,14 +184,14 @@ class NokiaService
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
-    public function ontsByPonInterfaces(array $ponInterfaces): ?array
+    public function ontsByPonInterface(string $ponInterface): ?array
     {
-        if (empty($ponInterfaces)) {
+        if (empty($ponInterface)) {
             throw new Exception('Pon Interface(s) not provided.');
         }
 
         if (self::$model === 'FX16') {
-            return FX16::showEquipmentOntStatusPon($ponInterfaces);
+            return FX16::showEquipmentOntStatusPon($ponInterface);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');
@@ -195,15 +200,33 @@ class NokiaService
     public function getNextOntIndex(string $ponInterface): ?int
     {
         if (empty($ponInterface)) {
-            throw new Exception('Pon Interface(s) not provided.');
+            throw new Exception('PON Interface not provided.');
         }
 
-        $onts = $this->ontsByPonInterfaces([$ponInterface]);
+        $response = $this->ontsByPonInterface($ponInterface);
 
-        $lastOntInterface = $onts[count($onts) - 1]['result']['interface'];
-        $lastIndex = (int) array_slice(explode('/', $lastOntInterface), -1, 1)[0];
+        if ($response['success'] === false) {
+            throw new Exception('Provided PON Interface is not valid.');
+        }
 
-        return $lastIndex + 1;
+        $onts = $response['result'];
+
+        $lastSegments = array_map(function ($item) {
+            $parts = explode('/', $item['interface']);
+
+            return (int) end($parts);
+        }, $onts);
+
+        $nextPosition = 1;
+        foreach ($lastSegments as $segment) {
+            if ($segment != $nextPosition) {
+                return $nextPosition;
+            }
+
+            $nextPosition++;
+        }
+
+        return $nextPosition;
     }
 
     public function removeOnts(): ?array
@@ -237,32 +260,52 @@ class NokiaService
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
-    public function provisionOnt(array $tid, array $ctag, array $ontNblk): ?array
+    /**
+     * Provision ONT's
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  EntOntConfig  $config  Provision configuration parameters
+     * @return array Info about each ONT provision
+     */
+    public function provisionOnts(EntOntConfig $config): ?array
     {
-        if (count(self::$interfaces) !== 1 || count(self::$serials) !== 1) {
-            throw new Exception('Number of interfaces and serials must be one.');
-        }
-
         if (self::$model === 'FX16') {
-            return FX16::entOnt($tid, $ctag, $ontNblk);
+            return FX16::entOnts($config);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
-    public function editProvisionOnts(array $pppoeUsernames, array $swVerPlnds, array $opticShists = [], array $plndCfgfiles1 = [], array $dlCfgfiles1 = [], array $voidAlloweds = []): ?array
+    /**
+     * Edit provisioned ONT's
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  EdOntConfig  $config  Provision configuration parameters
+     * @return array Info about each ONT provision
+     */
+    public function editProvisionedOnts(EdOntConfig $config): ?array
     {
-        $this->validateParameters([
-            'pppoeUsernames' => $pppoeUsernames,
-            'swVerPlnds' => $swVerPlnds,
-        ]);
-
-        if (! $this->assertSameLength([$pppoeUsernames, $swVerPlnds])) {
-            throw new Exception('The number of parameters arrays are not the same.');
+        if (self::$model === 'FX16') {
+            return FX16::edOnts($config);
         }
 
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Plan ONT card to ONT's
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  EntOntCardConfig  $config  ONT card configuration parameters
+     * @return array Info about each ONT planned
+     */
+    public function planOntCardToOnts(EntOntCardConfig $config): ?array
+    {
         if (self::$model === 'FX16') {
-            return FX16::entOnt($pppoeUsernames, $swVerPlnds, $opticShists, $plndCfgfiles1, $dlCfgfiles1, $voidAlloweds);
+            return FX16::entOntsCard($config);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');
