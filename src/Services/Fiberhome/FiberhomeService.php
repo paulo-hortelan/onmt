@@ -3,9 +3,9 @@
 namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\TL1;
@@ -77,11 +77,11 @@ class FiberhomeService
 
     private function validateInterfacesSerials()
     {
-        if (empty(self::$interfaces)) {
+        if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
             throw new Exception('Interface(s) not found.');
         }
 
-        if (empty(self::$serials)) {
+        if (empty(self::$serials) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
             throw new Exception('Serial(s) not found.');
         }
 
@@ -224,10 +224,10 @@ class FiberhomeService
      * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  array  $portInface  Port interface. Example: 'NA-NA-NA-1'
-     * @param  LanServiceConfig  $config  LAN service configuration parameters
+     * @param  LanConfig  $config  LAN service configuration parameters
      * @return array Info about each ONT configuration
      */
-    public function configureLanOnts(string $portInterface, LanServiceConfig $config): ?array
+    public function configureLanOnts(string $portInterface, LanConfig $config): ?array
     {
         $this->validateInterfacesSerials();
 
@@ -244,10 +244,10 @@ class FiberhomeService
      * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
-     * @param  VeipServiceConfig  $config  VEIP service configuration parameters
+     * @param  VeipConfig  $config  VEIP service configuration parameters
      * @return array Info about each ONT configuration
      */
-    public function configureVeipOnts(string $portInterface, VeipServiceConfig $config): ?array
+    public function configureVeipOnts(string $portInterface, VeipConfig $config): ?array
     {
         $this->validateInterfacesSerials();
 
@@ -263,10 +263,10 @@ class FiberhomeService
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  WanServiceConfig  $config  WAN service configurations parameters
+     * @param  WanConfig  $config  WAN service configurations parameters
      * @return array Info about each ONT configuration
      */
-    public function configureWanOnts(WanServiceConfig $config): ?array
+    public function configureWanOnts(WanConfig $config): ?array
     {
         $this->validateInterfacesSerials();
 
@@ -285,10 +285,10 @@ class FiberhomeService
      * @param  string  $ontType  ONT's type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
-     * @param  VeipServiceConfig  $veipConfig  VEIP service configuration parameters
+     * @param  VeipConfig  $veipConfig  VEIP service configuration parameters
      * @return array Info about each ONT configuration
      */
-    public function provisionRouterVeipOnts(string $ontType, string $pppoeUsername, string $portInterface, VeipServiceConfig $veipConfig): ?array
+    public function provisionRouterVeipOnts(string $ontType, string $pppoeUsername, string $portInterface, VeipConfig $veipConfig): ?array
     {
         $this->validateInterfacesSerials();
 
@@ -305,7 +305,7 @@ class FiberhomeService
             $interface = $interfaces[$i];
             $serial = $serials[$i];
 
-            self::interfaces([$interface])->serials([$serial]);
+            $this->interfaces([$interface])->serials([$serial]);
 
             if (self::$model === 'AN551604') {
                 $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
@@ -322,6 +322,8 @@ class FiberhomeService
             }
         }
 
+        $this->interfaces([$interfaces])->serials([$serials]);
+
         return $provisionResult;
     }
 
@@ -332,10 +334,10 @@ class FiberhomeService
      *
      * @param  string  $ontType  ONT's type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
-     * @param  WanServiceConfig  $wanConfig  WAN service configuration parameters
+     * @param  WanConfig  $wanConfig  WAN service configuration parameters
      * @return array Info about each ONT configuration
      */
-    public function provisionRouterWanOnts(string $ontType, string $pppoeUsername, WanServiceConfig $wanConfig): ?array
+    public function provisionRouterWanOnts(string $ontType, string $pppoeUsername, WanConfig $wanConfig): ?array
     {
         $this->validateInterfacesSerials();
 
@@ -352,7 +354,7 @@ class FiberhomeService
             $interface = $interfaces[$i];
             $serial = $serials[$i];
 
-            self::interfaces([$interface])->serials([$serial]);
+            $this->interfaces([$interface])->serials([$serial]);
 
             if (self::$model === 'AN551604') {
                 $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
@@ -401,6 +403,8 @@ class FiberhomeService
             }
         }
 
+        $this->interfaces([$interfaces])->serials([$serials]);
+
         return $provisionResult;
     }
 
@@ -412,10 +416,10 @@ class FiberhomeService
      * @param  string  $ontType  ONT's type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
-     * @param  LanServiceConfig  $lanConfig  LAN service configuration parameters
+     * @param  LanConfig  $lanConfig  LAN service configuration parameters
      * @return array Info about each ONT configuration
      */
-    public function provisionBridgeOnts(string $ontType, string $pppoeUsername, string $portInterface, LanServiceConfig $lanConfig): ?array
+    public function provisionBridgeOnts(string $ontType, string $pppoeUsername, string $portInterface, LanConfig $lanConfig): ?array
     {
         $this->validateInterfacesSerials();
 
@@ -432,7 +436,7 @@ class FiberhomeService
             $interface = $interfaces[$i];
             $serial = $serials[$i];
 
-            self::interfaces([$interface])->serials([$serial]);
+            $this->interfaces([$interface])->serials([$serial]);
 
             if (self::$model === 'AN551604') {
                 $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
@@ -448,6 +452,8 @@ class FiberhomeService
                 $provisionResult[] = $configuredOnt[0];
             }
         }
+
+        $this->interfaces([$interfaces])->serials([$serials]);
 
         return $provisionResult;
     }

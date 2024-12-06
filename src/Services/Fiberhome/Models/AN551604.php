@@ -2,9 +2,9 @@
 
 namespace PauloHortelan\Onmt\Services\Fiberhome\Models;
 
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 
 class AN551604 extends FiberhomeService
@@ -569,7 +569,7 @@ class AN551604 extends FiberhomeService
     /**
      * Configure ONT's VLAN
      */
-    public static function cfgLanPortVlan($portInterface, LanServiceConfig $config): ?array
+    public static function cfgLanPortVlan($portInterface, LanConfig $config): ?array
     {
         $ipOlt = self::$ipOlt;
         $configVlanResponse = [];
@@ -616,7 +616,7 @@ class AN551604 extends FiberhomeService
     /**
      * Configure ONT's VEIP
      */
-    public static function cfgVeipService(string $portInterface, VeipServiceConfig $config): ?array
+    public static function cfgVeipService(string $portInterface, VeipConfig $config): ?array
     {
         $ipOlt = self::$ipOlt;
         $cfgVeipVlanResponses = [];
@@ -664,7 +664,7 @@ class AN551604 extends FiberhomeService
     /**
      * Set ONT's WAN Service
      */
-    public static function setWanService(WanServiceConfig $config): ?array
+    public static function setWanService(WanConfig $config): ?array
     {
         $ipOlt = self::$ipOlt;
         $setWanServiceResponses = [];

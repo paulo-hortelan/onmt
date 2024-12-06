@@ -1,8 +1,8 @@
 <?php
 
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Facades\Fiberhome;
 
 uses()->group('Fiberhome');
@@ -46,7 +46,7 @@ describe('Fiberhome Configure Onts LAN', function () {
     it('can configure onts lan', function () {
         $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
 
-        $lanConfig = new LanServiceConfig(
+        $lanConfig = new LanConfig(
             cVlan: 110,
             cCos: 0,
         );
@@ -62,7 +62,7 @@ describe('Fiberhome Configure Onts VEIP', function () {
     it('can configure onts veip', function () {
         $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
 
-        $veipConfig = new VeipServiceConfig(
+        $veipConfig = new VeipConfig(
             serviceId: 1,
             cVlanId: 110,
             serviceModelProfile: 'AonetVEIP',
@@ -80,7 +80,7 @@ describe('Fiberhome Configure Onts WAN', function () {
     it('can configure onts wan', function () {
         $this->fiberhome->interfaces([$this->interfaceFHTT])->serials([$this->serialFHTT]);
 
-        $wanServiceConfig = new WanServiceConfig(
+        $WanConfig = new WanConfig(
             status: 1,
             mode: 2,
             connType: 2,
@@ -98,7 +98,7 @@ describe('Fiberhome Configure Onts WAN', function () {
             ssdId: null
         );
 
-        $configuredOnts = $this->fiberhome->configureWanOnts($wanServiceConfig);
+        $configuredOnts = $this->fiberhome->configureWanOnts($WanConfig);
 
         expect($configuredOnts)->toBeArray();
         expect($configuredOnts[0]['success'])->toBeTrue();

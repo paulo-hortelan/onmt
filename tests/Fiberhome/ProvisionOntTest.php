@@ -1,8 +1,8 @@
 <?php
 
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipServiceConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanServiceConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Facades\Fiberhome;
 
 uses()->group('Fiberhome');
@@ -39,7 +39,7 @@ describe('Fiberhome Provision Onts Router-Nokia', function () {
     it('can provision onts', function () {
         $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
 
-        $veipConfig = new VeipServiceConfig(
+        $veipConfig = new VeipConfig(
             serviceId: 1,
             cVlanId: 110,
             serviceModelProfile: 'AonetVEIP',
@@ -57,7 +57,7 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
     it('can provision onts', function () {
         $this->fiberhome->interfaces([$this->interfaceFHTT])->serials([$this->serialFHTT]);
 
-        $wanServiceConfig = new WanServiceConfig(
+        $WanConfig = new WanConfig(
             status: 1,
             mode: 2,
             connType: 2,
@@ -75,7 +75,7 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
             ssdId: null
         );
 
-        $provisionedOnts = $this->fiberhome->provisionRouterWanOnts($this->ontTypeFHTT, $this->pppoeUsername, $wanServiceConfig);
+        $provisionedOnts = $this->fiberhome->provisionRouterWanOnts($this->ontTypeFHTT, $this->pppoeUsername, $WanConfig);
 
         expect($provisionedOnts)->toBeArray();
         expect($provisionedOnts[0]['success'])->toBeTrue();
@@ -86,12 +86,12 @@ describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
     it('can provision onts', function () {
         $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
 
-        $lanServiceConfig = new LanServiceConfig(
+        $LanConfig = new LanConfig(
             cVlan: 110,
             cCos: 0,
         );
 
-        $provisionedOnts = $this->fiberhome->provisionBridgeOnts($this->ontTypeCMSZ, $this->pppoeUsername, $this->portInterfaceCMSZ, $lanServiceConfig);
+        $provisionedOnts = $this->fiberhome->provisionBridgeOnts($this->ontTypeCMSZ, $this->pppoeUsername, $this->portInterfaceCMSZ, $LanConfig);
 
         expect($provisionedOnts)->toBeArray();
         expect($provisionedOnts[0]['success'])->toBeTrue();
