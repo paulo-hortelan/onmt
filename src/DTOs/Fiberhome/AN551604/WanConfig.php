@@ -2,7 +2,7 @@
 
 namespace PauloHortelan\Onmt\DTOs\Fiberhome\AN551604;
 
-class WanServiceConfig
+class WanConfig
 {
     public int $status;
 
@@ -70,49 +70,29 @@ class WanServiceConfig
 
     public function buildCommand(): string
     {
+        $parameters = [
+            'STATUS' => $this->status ?? null,
+            'MODE' => $this->mode ?? null,
+            'CONNTYPE' => $this->connType ?? null,
+            'VLAN' => $this->vlan ?? null,
+            'COS' => $this->cos ?? null,
+            'NAT' => $this->nat ?? null,
+            'IPMODE' => $this->ipMode ?? null,
+            'PPPOEPROXY' => $this->pppoeProxy ?? null,
+            'PPPOEUSER' => $this->pppoeUser ?? null,
+            'PPPOEPASSWD' => $this->pppoePasswd ?? null,
+            'PPPOENAME' => $this->pppoeName ?? null,
+            'PPPOEMODE' => $this->pppoeMode ?? null,
+            'UPORT' => $this->uPort ?? null,
+            'SSID' => $this->ssdId ?? null,
+        ];
+
         $command = '';
 
-        if (isset($this->status)) {
-            $command .= 'STATUS='.$this->status.',';
-        }
-        if (isset($this->mode)) {
-            $command .= 'MODE='.$this->mode.',';
-        }
-        if (isset($this->connType)) {
-            $command .= 'CONNTYPE='.$this->connType.',';
-        }
-        if (isset($this->vlan)) {
-            $command .= 'VLAN='.$this->vlan.',';
-        }
-        if (isset($this->cos)) {
-            $command .= 'COS='.$this->cos.',';
-        }
-        if (isset($this->nats)) {
-            $command .= 'NAT='.$this->nat.',';
-        }
-        if (isset($this->ipMode)) {
-            $command .= 'IPMODE='.$this->ipMode.',';
-        }
-        if (isset($this->pppoeProxy)) {
-            $command .= 'PPPOEPROXY='.$this->pppoeProxy.',';
-        }
-        if (isset($this->pppoeUser)) {
-            $command .= 'PPPOEUSER='.$this->pppoeUser.',';
-        }
-        if (isset($this->pppoePasswd)) {
-            $command .= 'PPPOEPASSWD='.$this->pppoePasswd.',';
-        }
-        if (isset($this->pppoeName)) {
-            $command .= 'PPPOENAME='.$this->pppoeName.',';
-        }
-        if (isset($this->pppoeMode)) {
-            $command .= 'PPPOEMODE='.$this->pppoeMode.',';
-        }
-        if (isset($this->uPort)) {
-            $command .= 'UPORT='.$this->uPort.',';
-        }
-        if (isset($this->ssdId)) {
-            $command .= 'SSID='.$this->ssdId.',';
+        foreach ($parameters as $key => $value) {
+            if (isset($value)) {
+                $command .= "$key=$value,";
+            }
         }
 
         $command = rtrim($command, ',');

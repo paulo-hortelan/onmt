@@ -2,7 +2,7 @@
 
 namespace PauloHortelan\Onmt\DTOs\Fiberhome\AN551604;
 
-class LanServiceConfig
+class LanConfig
 {
     public int $cVlan;
 
@@ -18,13 +18,17 @@ class LanServiceConfig
 
     public function buildCommand(): string
     {
+        $parameters = [
+            'CVLAN' => $this->cVlan ?? null,
+            'CCOS' => $this->cCos ?? null,
+        ];
+
         $command = '';
 
-        if (! empty($this->cVlan)) {
-            $command .= 'CVLAN='.$this->cVlan.',';
-        }
-        if (! empty($this->cCos)) {
-            $command .= 'CCOS='.$this->cCos.',';
+        foreach ($parameters as $key => $value) {
+            if (! empty($value)) {
+                $command .= "$key=$value,";
+            }
         }
 
         $command = rtrim($command, ',');

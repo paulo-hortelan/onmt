@@ -2,7 +2,7 @@
 
 namespace PauloHortelan\Onmt\DTOs\Fiberhome\AN551604;
 
-class VeipServiceConfig
+class VeipConfig
 {
     public int $serviceId;
 
@@ -26,19 +26,19 @@ class VeipServiceConfig
 
     public function buildCommand(): string
     {
+        $parameters = [
+            'ServiceId' => $this->serviceId ?? null,
+            'CVLANID' => $this->cVlanId ?? null,
+            'ServiceModelProfile' => $this->serviceModelProfile ?? null,
+            'ServiceType' => $this->serviceType ?? null,
+        ];
+
         $command = '';
 
-        if (! empty($this->serviceId)) {
-            $command .= 'ServiceId='.$this->serviceId.',';
-        }
-        if (! empty($this->cVlanId)) {
-            $command .= 'CVLANID='.$this->cVlanId.',';
-        }
-        if (! empty($this->serviceModelProfile)) {
-            $command .= 'ServiceModelProfile='.$this->serviceModelProfile.',';
-        }
-        if (! empty($this->serviceType)) {
-            $command .= 'ServiceType='.$this->serviceType.',';
+        foreach ($parameters as $key => $value) {
+            if (! empty($value)) {
+                $command .= "$key=$value,";
+            }
         }
 
         $command = rtrim($command, ',');
