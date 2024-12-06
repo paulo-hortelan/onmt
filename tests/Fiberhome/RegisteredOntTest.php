@@ -10,14 +10,6 @@ beforeEach(function () {
     $username = env('FIBERHOME_OLT_USERNAME');
     $password = env('FIBERHOME_OLT_PASSWORD');
 
-    $this->serial1 = env('FIBERHOME_SERIAL_1');
-    $this->serial2 = env('FIBERHOME_SERIAL_2');
-    $this->serial3 = env('FIBERHOME_SERIAL_3');
-
-    $this->interface1 = env('FIBERHOME_INTERFACE_1');
-    $this->interface2 = env('FIBERHOME_INTERFACE_2');
-    $this->interface3 = env('FIBERHOME_INTERFACE_3');
-
     $this->fiberhome = Fiberhome::connect($ipOlt, $username, $password, 3337, $ipServer);
 });
 

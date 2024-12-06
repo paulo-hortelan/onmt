@@ -27,39 +27,16 @@ beforeEach(function () {
 
     $this->pppoeUsername = env('FIBERHOME_PPPOE_USERNAME');
 
+    $this->portInterfaceALCL = env('FIBERHOME_PORT_INTERFACE_ALCL');
+    $this->portInterfaceCMSZ = env('FIBERHOME_PORT_INTERFACE_CMSZ');
+    $this->portInterfaceFHTT = env('FIBERHOME_PORT_INTERFACE_FHTT');
+
     $this->fiberhome = Fiberhome::timeout(5, 10)->connect($ipOlt, $username, $password, 3337, $ipServer);
 
 });
 
-describe('Fiberhome Authorize Onts', function () {
-    it('can authorize onts', function () {
-        $this->fiberhome->interfaces([$this->interfaceALCL, $this->interfaceCMSZ])->serials([$this->serialALCL, $this->serialCMSZ]);
-
-        $configuredOnts = $this->fiberhome->authorizeOnts($this->ontTypeALCL, $this->pppoeUsername);
-
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
-    });
-})->skip();
-
-describe('Fiberhome Configure Onts LAN', function () {
-    it('can configure onts lan', function () {
-        $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
-
-        $lanConfig = new LanServiceConfig(
-            cVlan: 110,
-            cCos: 0,
-        );
-
-        $configuredOnts = $this->fiberhome->configureLanOnts($this->portInterfaceCMSZ, $lanConfig);
-
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
-    });
-})->skip();
-
-describe('Fiberhome Configure Onts VEIP', function () {
-    it('can configure onts veip', function () {
+describe('Fiberhome Provision Onts Router-Nokia', function () {
+    it('can provision onts', function () {
         $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
 
         $veipConfig = new VeipServiceConfig(
@@ -69,15 +46,15 @@ describe('Fiberhome Configure Onts VEIP', function () {
             serviceType: 'DATA',
         );
 
-        $configuredOnts = $this->fiberhome->configureVeipOnts($this->portInterfaceALCL, $veipConfig);
+        $provisionedOnts = $this->fiberhome->provisionRouterVeipOnts($this->ontTypeALCL, $this->pppoeUsername, $this->portInterfaceALCL, $veipConfig);
 
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
+        expect($provisionedOnts)->toBeArray();
+        expect($provisionedOnts[0]['success'])->toBeTrue();
     });
 })->skip();
 
-describe('Fiberhome Configure Onts WAN', function () {
-    it('can configure onts wan', function () {
+describe('Fiberhome Provision Onts Router-Fiberhome', function () {
+    it('can provision onts', function () {
         $this->fiberhome->interfaces([$this->interfaceFHTT])->serials([$this->serialFHTT]);
 
         $wanServiceConfig = new WanServiceConfig(
@@ -98,21 +75,25 @@ describe('Fiberhome Configure Onts WAN', function () {
             ssdId: null
         );
 
-        $configuredOnts = $this->fiberhome->configureWanOnts($wanServiceConfig);
+        $provisionedOnts = $this->fiberhome->provisionRouterWanOnts($this->ontTypeFHTT, $this->pppoeUsername, $wanServiceConfig);
 
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
+        expect($provisionedOnts)->toBeArray();
+        expect($provisionedOnts[0]['success'])->toBeTrue();
     });
 })->skip();
 
-describe('Fiberhome Remove Onts', function () {
-    it('can remove onts', function () {
-        $this->fiberhome->interfaces([$this->interfaceALCL, $this->interfaceCMSZ, $this->interfaceFHTT])
-            ->serials([$this->serialALCL, $this->serialCMSZ, $this->serialFHTT]);
+describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
+    it('can provision onts', function () {
+        $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
 
-        $removedOnts = $this->fiberhome->removeOnts();
+        $lanServiceConfig = new LanServiceConfig(
+            cVlan: 110,
+            cCos: 0,
+        );
 
-        expect($removedOnts)->toBeArray();
-        expect($removedOnts[0]['success'])->toBeTrue();
+        $provisionedOnts = $this->fiberhome->provisionBridgeOnts($this->ontTypeCMSZ, $this->pppoeUsername, $this->portInterfaceCMSZ, $lanServiceConfig);
+
+        expect($provisionedOnts)->toBeArray();
+        expect($provisionedOnts[0]['success'])->toBeTrue();
     });
-})->only();
+})->skip();

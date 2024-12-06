@@ -64,14 +64,14 @@
         <env name="FIBERHOME_IP_SERVER" value=""/>
         <env name="FIBERHOME_OLT_USERNAME" value=""/>
         <env name="FIBERHOME_OLT_PASSWORD" value=""/>
-        <env name="FIBERHOME_SERIAL_1" value=""/>
+        <env name="FIBERHOME_SERIAL_ALCL" value=""/>
         <env name="FIBERHOME_SERIAL_2" value=""/>
         <env name="FIBERHOME_SERIAL_3" value=""/>
-        <env name="FIBERHOME_INTERFACE_1" value=""/>
+        <env name="FIBERHOME_INTERFACE_ALCL" value=""/>
         <env name="FIBERHOME_INTERFACE_2" value=""/>
         <env name="FIBERHOME_INTERFACE_3" value=""/> 
         <env name="FIBERHOME_MODEL_TYPE_1" value=""/>
-        <env name="FIBERHOME_ONT_TYPE_1" value=""/>
+        <env name="FIBERHOME_ONT_TYPE_ALCL" value=""/>
         <env name="FIBERHOME_ONT_TYPE_2" value=""/>
         <env name="FIBERHOME_PPPOE_USERNAME_1" value=""/>
         <env name="FIBERHOME_PPPOE_USERNAME_2" value=""/>

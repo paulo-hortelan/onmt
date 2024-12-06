@@ -72,46 +72,46 @@ class WanServiceConfig
     {
         $command = '';
 
-        if (! empty($this->status)) {
+        if (isset($this->status)) {
             $command .= 'STATUS='.$this->status.',';
         }
-        if (! empty($this->mode)) {
+        if (isset($this->mode)) {
             $command .= 'MODE='.$this->mode.',';
         }
-        if (! empty($this->connType)) {
+        if (isset($this->connType)) {
             $command .= 'CONNTYPE='.$this->connType.',';
         }
-        if (! empty($this->vlan)) {
+        if (isset($this->vlan)) {
             $command .= 'VLAN='.$this->vlan.',';
         }
-        if (! empty($this->cos)) {
+        if (isset($this->cos)) {
             $command .= 'COS='.$this->cos.',';
         }
-        if (! empty($this->nats)) {
+        if (isset($this->nats)) {
             $command .= 'NAT='.$this->nat.',';
         }
-        if (! empty($this->ipMode)) {
+        if (isset($this->ipMode)) {
             $command .= 'IPMODE='.$this->ipMode.',';
         }
-        if (! empty($this->pppoeProxy)) {
+        if (isset($this->pppoeProxy)) {
             $command .= 'PPPOEPROXY='.$this->pppoeProxy.',';
         }
-        if (! empty($this->pppoeUser)) {
+        if (isset($this->pppoeUser)) {
             $command .= 'PPPOEUSER='.$this->pppoeUser.',';
         }
-        if (! empty($this->pppoePasswd)) {
+        if (isset($this->pppoePasswd)) {
             $command .= 'PPPOEPASSWD='.$this->pppoePasswd.',';
         }
-        if (! empty($this->pppoeName)) {
+        if (isset($this->pppoeName)) {
             $command .= 'PPPOENAME='.$this->pppoeName.',';
         }
-        if (! empty($this->pppoeMode)) {
+        if (isset($this->pppoeMode)) {
             $command .= 'PPPOEMODE='.$this->pppoeMode.',';
         }
-        if (! empty($this->uPort)) {
+        if (isset($this->uPort)) {
             $command .= 'UPORT='.$this->uPort.',';
         }
-        if (! empty($this->ssdId)) {
+        if (isset($this->ssdId)) {
             $command .= 'SSID='.$this->ssdId.',';
         }
 

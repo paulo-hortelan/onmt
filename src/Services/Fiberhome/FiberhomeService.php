@@ -93,7 +93,7 @@ class FiberhomeService
     /**
      * Gets ONT's optical power
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  array  $interfaces  Interfaces list in the format 'NA-NA-{SLOT}-{PON}'
      * @param  array  $serials  Serials list. Example: ['CMSZ123456']
@@ -113,7 +113,7 @@ class FiberhomeService
     /**
      * Gets ONT's state info
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  array  $interfaces  Interface list in the format 'NA-NA-{SLOT}-{PON}'
      * @param  array  $serials  Serial list. Example: ['CMSZ123456']
@@ -133,7 +133,7 @@ class FiberhomeService
     /**
      * Gets ONT's port info
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  array  $interfaces  Interface list in the format 'NA-NA-{SLOT}-{PON}'
      * @param  array  $serials  Serial list. Example: ['CMSZ123456']
@@ -184,6 +184,11 @@ class FiberhomeService
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
+    /**
+     * List registered ONT's
+     *
+     * @return array Info about each registered ONT
+     */
     public function registeredOnts(): ?array
     {
         if (self::$model === 'AN551604') {
@@ -193,16 +198,21 @@ class FiberhomeService
         throw new Exception('Model '.self::$model.' is not supported.');
     }
 
-    public function authorizeOnts(array $ontTypes = [], array $pppoeUsernames = []): ?array
+    /**
+     * Authorize ONT's
+     *
+     * Parameters 'interfaces' and 'serials' must already be provided
+     *
+     * @param  string  $ontType  ONT's type. Example: 'HG260'
+     * @param  string  $pppoeUsername  PPPOE username.
+     * @return array Info about each ONT authorization
+     */
+    public function authorizeOnts(string $ontType, string $pppoeUsername): ?array
     {
         $this->validateInterfacesSerials();
 
-        if (! $this->assertSameLength([self::$interfaces, self::$serials, $ontTypes, $pppoeUsernames])) {
-            throw new Exception('The number of interfaces, serials, ontTypes and pppoeUsernames are not the same.');
-        }
-
         if (self::$model === 'AN551604') {
-            return AN551604::addOnu($ontTypes, $pppoeUsernames);
+            return AN551604::addOnu($ontType, $pppoeUsername);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');
@@ -211,7 +221,7 @@ class FiberhomeService
     /**
      * Configure ONT's LAN service
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  array  $portInface  Port interface. Example: 'NA-NA-NA-1'
      * @param  LanServiceConfig  $config  LAN service configuration parameters
@@ -231,9 +241,9 @@ class FiberhomeService
     /**
      * Configure ONT's VEIP service
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  array  $portInface  Port interface. Example: 'NA-NA-NA-1'
+     * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
      * @param  VeipServiceConfig  $config  VEIP service configuration parameters
      * @return array Info about each ONT configuration
      */
@@ -251,7 +261,7 @@ class FiberhomeService
     /**
      * Configure ONT's WAN service
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  WanServiceConfig  $config  WAN service configurations parameters
      * @return array Info about each ONT configuration
@@ -268,9 +278,184 @@ class FiberhomeService
     }
 
     /**
+     * Provision ONT's Router with VEIP
+     *
+     * Parameters 'interfaces' and 'serials' must already be provided
+     *
+     * @param  string  $ontType  ONT's type. Example: 'HG260'
+     * @param  string  $pppoeUsername  PPPOE username.
+     * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
+     * @param  VeipServiceConfig  $veipConfig  VEIP service configuration parameters
+     * @return array Info about each ONT configuration
+     */
+    public function provisionRouterVeipOnts(string $ontType, string $pppoeUsername, string $portInterface, VeipServiceConfig $veipConfig): ?array
+    {
+        $this->validateInterfacesSerials();
+
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $provisionResult = [];
+
+        $interfaces = self::$interfaces;
+        $serials = self::$serials;
+
+        for ($i = 0; $i < count($interfaces); $i++) {
+            $interface = $interfaces[$i];
+            $serial = $serials[$i];
+
+            self::interfaces([$interface])->serials([$serial]);
+
+            if (self::$model === 'AN551604') {
+                $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
+
+                if (! $authorizedOnt[0]['success']) {
+                    $provisionResult[] = $authorizedOnt[0];
+
+                    continue;
+                }
+
+                $configuredOnt = AN551604::cfgVeipService($portInterface, $veipConfig);
+
+                $provisionResult[] = $configuredOnt[0];
+            }
+        }
+
+        return $provisionResult;
+    }
+
+    /**
+     * Provision ONT's Router with WAN
+     *
+     * Parameters 'interfaces' and 'serials' must already be provided
+     *
+     * @param  string  $ontType  ONT's type. Example: 'HG260'
+     * @param  string  $pppoeUsername  PPPOE username.
+     * @param  WanServiceConfig  $wanConfig  WAN service configuration parameters
+     * @return array Info about each ONT configuration
+     */
+    public function provisionRouterWanOnts(string $ontType, string $pppoeUsername, WanServiceConfig $wanConfig): ?array
+    {
+        $this->validateInterfacesSerials();
+
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $provisionResult = [];
+
+        $interfaces = self::$interfaces;
+        $serials = self::$serials;
+
+        for ($i = 0; $i < count($interfaces); $i++) {
+            $interface = $interfaces[$i];
+            $serial = $serials[$i];
+
+            self::interfaces([$interface])->serials([$serial]);
+
+            if (self::$model === 'AN551604') {
+                $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
+
+                if (! $authorizedOnt[0]['success']) {
+                    $provisionResult[] = $authorizedOnt[0];
+
+                    continue;
+                }
+
+                $wanConfig->uPort = 0;
+                $wanConfig->ssdId = null;
+
+                // UPORT = 0
+                $configuredOnt = AN551604::setWanService($wanConfig);
+
+                if (! $configuredOnt[0]['success']) {
+                    $provisionResult[] = $configuredOnt[0];
+
+                    continue;
+                }
+
+                $wanConfig->uPort = null;
+                $wanConfig->ssdId = 1;
+
+                // SSDID = 0
+                $configuredOnt = AN551604::setWanService($wanConfig);
+
+                if (! $configuredOnt[0]['success']) {
+                    $provisionResult[] = $configuredOnt[0];
+
+                    continue;
+                }
+
+                $wanConfig->ssdId = 5;
+
+                $configuredOnt = AN551604::setWanService($wanConfig);
+
+                if (! $configuredOnt[0]['success']) {
+                    $provisionResult[] = $configuredOnt[0];
+
+                    continue;
+                }
+
+                $provisionResult[] = $configuredOnt[0];
+            }
+        }
+
+        return $provisionResult;
+    }
+
+    /**
+     * Provision ONT's Bridge
+     *
+     * Parameters 'interfaces' and 'serials' must already be provided
+     *
+     * @param  string  $ontType  ONT's type. Example: 'HG260'
+     * @param  string  $pppoeUsername  PPPOE username.
+     * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
+     * @param  LanServiceConfig  $lanConfig  LAN service configuration parameters
+     * @return array Info about each ONT configuration
+     */
+    public function provisionBridgeOnts(string $ontType, string $pppoeUsername, string $portInterface, LanServiceConfig $lanConfig): ?array
+    {
+        $this->validateInterfacesSerials();
+
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $provisionResult = [];
+
+        $interfaces = self::$interfaces;
+        $serials = self::$serials;
+
+        for ($i = 0; $i < count($interfaces); $i++) {
+            $interface = $interfaces[$i];
+            $serial = $serials[$i];
+
+            self::interfaces([$interface])->serials([$serial]);
+
+            if (self::$model === 'AN551604') {
+                $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
+
+                if (! $authorizedOnt[0]['success']) {
+                    $provisionResult[] = $authorizedOnt[0];
+
+                    continue;
+                }
+
+                $configuredOnt = AN551604::cfgLanPortVlan($portInterface, $lanConfig);
+
+                $provisionResult[] = $configuredOnt[0];
+            }
+        }
+
+        return $provisionResult;
+    }
+
+    /**
      * Remove/Deletes ONT's
      *
-     * Parameters 'interfaces' and 'serials' must be already provided
+     * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @return array Info about each ONT delete result
      */

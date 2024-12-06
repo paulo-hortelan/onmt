@@ -11,8 +11,6 @@ beforeEach(function () {
     $this->ipServer = env('FIBERHOME_IP_SERVER');
     $this->username = env('FIBERHOME_OLT_USERNAME');
     $this->password = env('FIBERHOME_OLT_PASSWORD');
-
-    $this->serial1 = env('FIBERHOME_SERIAL_1');
 });
 
 describe('Fiberhome Connection TL1', function () {

@@ -155,8 +155,6 @@ class AN551604 extends FiberhomeService
 
                 $response = preg_split("/\r\n|\n|\r/", $response);
 
-                var_dump($response);
-
                 foreach ($response as $key => $column) {
                     if (preg_match('/ONUIP/', $column)) {
                         $splitted = preg_split('/\\t/', $response[$key + 1]);
@@ -481,7 +479,7 @@ class AN551604 extends FiberhomeService
     /**
      * Authorize ONT's
      */
-    public static function addOnu($ontTypes, $pppoeUsernames): ?array
+    public static function addOnu($ontType, $pppoeUsername): ?array
     {
         $ipOlt = self::$ipOlt;
         $authResponse = [];
@@ -489,8 +487,6 @@ class AN551604 extends FiberhomeService
         for ($i = 0; $i < count(self::$interfaces); $i++) {
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
-            $ontType = $ontTypes[$i];
-            $pppoeUsername = $pppoeUsernames[$i];
 
             try {
                 $command = "ADD-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
@@ -502,6 +498,8 @@ class AN551604 extends FiberhomeService
 
                 $authResponse[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
@@ -511,6 +509,8 @@ class AN551604 extends FiberhomeService
 
                 $authResponse[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
@@ -543,6 +543,8 @@ class AN551604 extends FiberhomeService
 
                 $delResponse[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
@@ -552,6 +554,8 @@ class AN551604 extends FiberhomeService
 
                 $delResponse[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
@@ -586,6 +590,8 @@ class AN551604 extends FiberhomeService
 
                 $configVlanResponse[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
@@ -595,6 +601,8 @@ class AN551604 extends FiberhomeService
 
                 $configVlanResponse[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
@@ -630,6 +638,8 @@ class AN551604 extends FiberhomeService
 
                 $cfgVeipVlanResponses[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
@@ -639,6 +649,8 @@ class AN551604 extends FiberhomeService
 
                 $cfgVeipVlanResponses[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
@@ -674,6 +686,8 @@ class AN551604 extends FiberhomeService
 
                 $setWanServiceResponses[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => null,
                     'result' => [],
@@ -683,6 +697,8 @@ class AN551604 extends FiberhomeService
 
                 $setWanServiceResponses[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'serial' => $serial,
                     'command' => $command,
                     'errorInfo' => $errorInfo,
                     'result' => [],
