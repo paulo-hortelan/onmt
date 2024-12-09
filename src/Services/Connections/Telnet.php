@@ -560,20 +560,16 @@ class Telnet
             return self::TELNET_OK;
         }
 
-        $c = $this->getc();
-        if ($c != $this->IAC) {
-            if (($c == $this->DO) || ($c == $this->DONT)) {
-                $opt = $this->getc();
-                fwrite(self::$socket, $this->IAC.$this->WONT.$opt);
-            } elseif (($c == $this->WILL) || ($c == $this->WONT)) {
-                $opt = $this->getc();
-                fwrite(self::$socket, $this->IAC.$this->DONT.$opt);
-            } else {
-                throw new \Exception('Error: unknown control character '.ord(strval($c)));
-            }
-        } else {
-            throw new \Exception('Error: Something Wicked Happened');
-        }
+        $controlChar = $this->getc();
+        $opt = $this->getc();
+
+        $response = match ($controlChar) {
+            $this->DO, $this->DONT => $this->WONT,
+            $this->WILL, $this->WONT => $this->DONT,
+            default => throw new \Exception('Unknown control character: '.ord($controlChar))
+        };
+
+        fwrite(self::$socket, $this->IAC.$response.$opt);
 
         return self::TELNET_OK;
     }
