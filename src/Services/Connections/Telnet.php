@@ -60,7 +60,7 @@ class Telnet
 
     protected string $SE;
 
-    protected \SplFileObject $global_buffer;
+    protected \SplFileObject $globalBuffer;
 
     const TELNET_ERROR = false;
 
@@ -87,7 +87,17 @@ class Telnet
         $this->timeout = $timeout;
         $this->setStreamTimeout($streamTimeout);
 
-        // set some telnet special characters
+        $this->setSpecialCharacters();
+
+        // open global buffer stream
+        $this->globalBuffer = new \SplFileObject('php://temp', 'r+b');
+
+        $this->connect();
+        $this->login($username, $password, $hostType);
+    }
+
+    private function setSpecialCharacters()
+    {
         $this->NULL = chr(0);
         $this->DC1 = chr(17);
         $this->WILL = chr(251);
@@ -98,12 +108,6 @@ class Telnet
         $this->DO = chr(253);
         $this->DONT = chr(254);
         $this->IAC = chr(255);
-
-        // open global buffer stream
-        $this->global_buffer = new \SplFileObject('php://temp', 'r+b');
-
-        $this->connect();
-        $this->login($username, $password, $hostType);
     }
 
     /**
@@ -426,7 +430,7 @@ class Telnet
     {
         stream_set_timeout(self::$socket, $this->stream_timeout_sec, $this->stream_timeout_usec);
         $c = fgetc(self::$socket);
-        $this->global_buffer->fwrite(strval($c));
+        $this->globalBuffer->fwrite(strval($c));
 
         return $c;
     }
@@ -517,7 +521,7 @@ class Telnet
             $buffer .= $this->eol;
         }
 
-        $this->global_buffer->fwrite($buffer);
+        $this->globalBuffer->fwrite($buffer);
 
         if (! fwrite(self::$socket, $buffer) < 0) {
             throw new \Exception('Error writing to socket');
