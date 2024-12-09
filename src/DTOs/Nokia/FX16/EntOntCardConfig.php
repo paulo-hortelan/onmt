@@ -4,8 +4,6 @@ namespace PauloHortelan\Onmt\DTOs\Nokia\FX16;
 
 class EntOntCardConfig
 {
-    public int $ontCardHolderSlot;
-
     public string $planCardType;
 
     public int $plndNumDataPorts;
@@ -13,12 +11,10 @@ class EntOntCardConfig
     public int $plndNumVoicePorts;
 
     public function __construct(
-        int $ontCardHolderSlot,
         string $planCardType,
         int $plndNumDataPorts,
         int $plndNumVoicePorts
     ) {
-        $this->ontCardHolderSlot = $ontCardHolderSlot;
         $this->planCardType = $planCardType;
         $this->plndNumDataPorts = $plndNumDataPorts;
         $this->plndNumVoicePorts = $plndNumVoicePorts;
@@ -28,8 +24,27 @@ class EntOntCardConfig
     {
         $command = '';
 
-        $command .= $this->ontCardHolderSlot.':::';
         $command .= $this->planCardType.','.$this->plndNumDataPorts.','.$this->plndNumVoicePorts;
+
+        $command = rtrim($command, ',');
+
+        return $command;
+    }
+
+    /**
+     * Build the ONT identifier
+     *
+     * @param  string  $interface  rack/shelf/lt_slot/pon_port/ont
+     * @param  int  $ontCardHolderSlot  ONT card holder (1.. 14)
+     * @return string Identifier command
+     */
+    public function buildIdentifier(string $interface, int $ontCardHolderSlot): string
+    {
+        $formattedInterface = str_replace('/', '-', $interface);
+
+        $command = '';
+
+        $command .= "ONTCARD-$formattedInterface-$ontCardHolderSlot";
 
         $command = rtrim($command, ',');
 
