@@ -4,8 +4,13 @@ namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\QosUsQueueConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
@@ -41,9 +46,10 @@ class NokiaService
         }
 
         self::$ipOlt = $ipOlt;
-        self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-'.self::$model);
+        self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
         self::$telnetConn->stripPromptFromBuffer(true);
-        self::$telnetConn->exec('environment inhibit-alarms');
+        self::$telnetConn->authenticate($username, $password, 'Nokia-'.self::$model);
+        $this->inhibitAlarms();
 
         return $this;
     }
@@ -57,20 +63,67 @@ class NokiaService
         }
 
         self::$ipOlt = $ipOlt;
-        self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Nokia-'.self::$model);
+        self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
         self::$tl1Conn->stripPromptFromBuffer(true);
+        self::$tl1Conn->authenticate($username, $password, 'Nokia-'.self::$model);
+        $this->inhibitAlarms();
 
         return $this;
     }
 
     public function disconnect(): void
     {
-        if (empty(self::$telnetConn) && empty(self::$tl1Conn)) {
-            throw new Exception('No connection established.');
+        if (isset(self::$telnetConn)) {
+            self::$telnetConn->destroy();
+
+            return;
         }
 
-        self::$telnetConn->destroy();
-        self::$tl1Conn->destroy();
+        if (isset(self::$tl1Conn)) {
+            self::$tl1Conn->destroy();
+
+            return;
+        }
+
+        throw new Exception('No connection established.');
+    }
+
+    public function inhibitAlarms(): ?array
+    {
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        if (isset(self::$telnetConn)) {
+            if (self::$model === 'FX16') {
+                return FX16::environmentInhibitAlarms();
+            }
+        }
+
+        if (isset(self::$tl1Conn)) {
+            if (self::$model === 'FX16') {
+                return FX16::inhMsgAll();
+            }
+        }
+
+        throw new Exception('No connection established.');
+    }
+
+    public function enableDebug(): void
+    {
+        if (isset(self::$telnetConn)) {
+            self::$telnetConn->enableDebug();
+
+            return;
+        }
+
+        if (isset(self::$tl1Conn)) {
+            self::$tl1Conn->enableDebug();
+
+            return;
+        }
+
+        throw new Exception('No connection established.');
     }
 
     public function model(string $model): object
@@ -133,8 +186,6 @@ class NokiaService
 
         $ontsDetail = [];
         $serials = self::$serials;
-
-        var_dump($serials);
 
         foreach ($serials as $serial) {
             $this->serials([$serial]);
@@ -295,17 +346,102 @@ class NokiaService
     }
 
     /**
-     * Plan ONT card to ONT's
+     * Plan ONT card
      *
      * Parameter 'interfaces' must already be provided
      *
      * @param  EntOntCardConfig  $config  ONT card configuration parameters
      * @return array Info about each ONT planned
      */
-    public function planOntCardToOnts(EntOntCardConfig $config): ?array
+    public function planOntCard(EntOntCardConfig $config): ?array
     {
         if (self::$model === 'FX16') {
             return FX16::entOntsCard($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Creates a logical port on an LT
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  EntLogPortConfig  $config  Logical port configuration parameters
+     * @return array Info about each created ONT logical port
+     */
+    public function createLogicalPortOnLT(EntLogPortConfig $config): ?array
+    {
+        if (self::$model === 'FX16') {
+            return FX16::entLogPort($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Edit the VEIP on ONT's
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  EdOntVeipConfig  $config  ONT VEIP configuration parameters
+     * @return array Info about each edited ONT
+     */
+    public function editVeipOnts(EdOntVeipConfig $config): ?array
+    {
+        if (self::$model === 'FX16') {
+            return FX16::edOntVeip($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Configures an upstream queue
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  QosUsQueueConfig  $config  QOS us queue configuration parameters
+     * @return array Info about each configured ONT
+     */
+    public function configureUpstreamQueue(QosUsQueueConfig $config): ?array
+    {
+        if (self::$model === 'FX16') {
+            return FX16::setQosUsQueue($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Bounds a bridge port to the VLAN
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  VlanPortConfig  $config  VLAN port configuration parameters
+     * @return array Info about each configured VLAN ONT
+     */
+    public function boundBridgePortToVlan(VlanPortConfig $config): ?array
+    {
+        if (self::$model === 'FX16') {
+            return FX16::setVlanPort($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Adds a egress port to the VLAN
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  VlanEgPortConfig  $config  VLAN egress port configuration parameters
+     * @return array Info about each configured VLAN ONT
+     */
+    public function addEgressPortToVlan(VlanEgPortConfig $config): ?array
+    {
+        if (self::$model === 'FX16') {
+            return FX16::entVlanEgPort($config);
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');
