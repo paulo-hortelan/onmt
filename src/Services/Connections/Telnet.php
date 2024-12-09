@@ -8,33 +8,39 @@ namespace PauloHortelan\Onmt\Services\Connections;
  * Used to execute remote commands via telnet connection
  * Usess sockets functions and fgetc() to process result
  *
- * All methods throw Exceptions on error
+ * All methods throws Exceptions on error
  */
 class Telnet
 {
-    protected static string $host;
+    private bool $debug = false;
 
-    protected static int $port;
+    private static mixed $instance = null;
+
+    protected string $host;
+
+    protected int $port;
+
+    protected string $username;
+
+    protected string $password;
+
+    protected string $hostType;
 
     protected int $timeout;
 
-    protected mixed $stream_timeout_sec;
+    protected int $streamTimeoutSec;
 
-    protected mixed $stream_timeout_usec;
+    protected int $streamTimeoutUsec;
 
-    private static mixed $instance;
+    protected bool $isAuthenticated = false;
 
-    protected static mixed $socket = null;
+    protected $socket = null;
 
-    protected mixed $buffer = null;
+    protected string $buffer = '';
 
-    protected string $prompt;
+    protected string $prompt = '';
 
-    protected mixed $errno;
-
-    protected mixed $errstr;
-
-    protected bool $strip_prompt = true;
+    protected bool $stripPrompt = true;
 
     protected string $eol = "\r\n";
 
@@ -74,29 +80,32 @@ class Telnet
      * @param  int  $port  TCP port number
      * @param  int  $timeout  Connection timeout in seconds
      * @param  float  $streamTimeout  Stream timeout in decimal seconds
-     * @param  string  $username  Login username
-     * @param  string  $password  Login password
-     * @param  string  $hostType  Host type
      *
      * @throws \Exception
      */
-    public function __construct($host = '127.0.0.1', $port = 23, $timeout = 10, $streamTimeout = 1.0, $username = '', $password = '', $hostType = '')
-    {
-        self::$host = $host;
-        self::$port = $port;
+    public function __construct(
+        string $host,
+        int $port,
+        int $timeout,
+        float $streamTimeout,
+    ) {
+        $this->host = $host;
+        $this->port = $port;
         $this->timeout = $timeout;
-        $this->setStreamTimeout($streamTimeout);
 
         $this->setSpecialCharacters();
+        $this->setStreamTimeout($streamTimeout);
 
         // open global buffer stream
         $this->globalBuffer = new \SplFileObject('php://temp', 'r+b');
 
         $this->connect();
-        $this->login($username, $password, $hostType);
     }
 
-    private function setSpecialCharacters()
+    /**
+     * Set special characters
+     */
+    private function setSpecialCharacters(): void
     {
         $this->NULL = chr(0);
         $this->DC1 = chr(17);
@@ -111,82 +120,154 @@ class Telnet
     }
 
     /**
-     * Creates a new class instance in case it doesn't exist
-     *
-     * @param  string  $host  Host name or IP address
-     * @param  int  $port  TCP port number
-     * @param  int  $timeout  Connection timeout in seconds
-     * @param  float  $streamTimeout  Stream timeout in decimal seconds
-     * @param  string  $username  Login username
-     * @param  string  $password  Login password
-     * @param  string  $hostType  Host type
-     * @return Telnet
+     * Sets the stream timeout.
      */
-    public static function getInstance($host, $port, $timeout, $streamTimeout, $username, $password, $hostType)
+    private function setStreamTimeout(float $timeout): void
     {
-        if (! isset(self::$instance) || $host !== self::$host || $port !== self::$port) {
-            self::$instance = new self($host, $port, $timeout, $streamTimeout, $username, $password, $hostType);
+        $this->streamTimeoutSec = (int) $timeout;
+        $this->streamTimeoutUsec = (int) (fmod($timeout, 1) * 1000000);
+    }
+
+    /**
+     * Gets the static class instance
+     */
+    public static function getInstance(
+        string $host,
+        int $port,
+        int $timeout,
+        float $streamTimeout,
+    ): self {
+        if (self::$instance === null) {
+            self::$instance = new self($host, $port, $timeout, $streamTimeout);
+        }
+
+        if (! self::$instance->isConnectionAlive()) {
+            self::$instance->connect();
         }
 
         return self::$instance;
     }
 
-    private function __clone() {}
-
-    /**
-     * Destroy instance, cleans up socket connection and command buffer
-     */
-    public function destroy(): void
+    public function connect(int $retries = 3): void
     {
-        self::$instance = null;
-        $this->disconnect();
-        $this->buffer = null;
-    }
+        for ($attempt = 0; $attempt < $retries; $attempt++) {
+            $this->socket = @fsockopen($this->host, $this->port, $errno, $errstr, $this->timeout);
 
-    public function connect(): self
-    {
-        // check if we need to convert host to IP
-        if (! preg_match('/([0-9]{1,3}\\.){3,3}[0-9]{1,3}/', self::$host)) {
-            $ip = gethostbyname(self::$host);
+            if ($this->socket) {
+                $this->isAuthenticated = false;
 
-            if (self::$host == $ip) {
-                throw new \Exception('Cannot resolve '.self::$host);
-            } else {
-                self::$host = $ip;
+                return;
             }
+
+            sleep(2 ** $attempt);
         }
 
-        // attempt connection - suppress warnings
-        self::$socket = @fsockopen(self::$host, self::$port, $this->errno, $this->errstr, $this->timeout);
+        throw new \Exception("Unable to connect to {$this->host}:{$this->port}");
+    }
 
-        if (! self::$socket) {
-            throw new \Exception('Cannot connect to '.self::$host.'on port'.self::$port);
+    public function isConnectionAlive(): bool
+    {
+        if ($this->socket) {
+            $result = @fwrite($this->socket, '');
+
+            return $result !== false;
         }
 
-        if (! empty($this->prompt)) {
-            $this->waitPrompt();
+        return false;
+    }
+
+    public function authenticate(string $username, string $password, string $hostType): void
+    {
+        if ($this->isAuthenticated) {
+            return;
         }
 
-        return $this;
+        if (! $this->socket) {
+            $this->connect();
+        }
+
+        $this->login($username, $password, $hostType);
+        $this->isAuthenticated = true;
     }
 
     /**
-     * Closes IP socket
+     * Attempts login to remote host.
+     * This method is a wrapper for lower level private methods and should be
+     * modified to reflect telnet implementation details like login/password
+     * and line prompts. Defaults to standard unix non-root prompts
      *
+     * @param  string  $username  Username
+     * @param  string  $password  Password
+     * @param  string  $hostType  Type of destination host
      * @return $this
      *
      * @throws \Exception
      */
-    public function disconnect()
+    public function login($username, $password, $hostType = 'linux'): void
     {
-        if (self::$socket) {
-            if (! fclose(self::$socket)) {
-                throw new \Exception('Error while closing telnet socket');
-            }
-            self::$socket = null;
+        $userPrompt = '';
+        $passPrompt = '';
+        $promptRegex = '';
+
+        switch ($hostType) {
+            case 'linux': // General Linux/UNIX
+                $userPrompt = 'login:';
+                $passPrompt = 'Password:';
+                $promptRegex = '\$';
+                break;
+
+            case 'ZTE-C300':
+            case 'ZTE-C600':
+                $userPrompt = 'Username:';
+                $passPrompt = 'Password:';
+                $promptRegex = '[>#]';
+                break;
+
+            case 'Nokia-FX16':
+                $userPrompt = 'login: ';
+                $passPrompt = 'password: ';
+                $promptRegex = '[#]';
+                break;
+
+            case 'ios': // Cisco IOS, IOS-XE, IOS-XR
+                $userPrompt = 'Username:';
+                $passPrompt = 'Password:';
+                $promptRegex = '[>#]';
+                break;
+
+            case 'digistar':
+                $passPrompt = 'Password: ';
+                $promptRegex = '[>]';
+                break;
+
+            case 'phyhome':
+                $userPrompt = 'Username(1-32 chars):';
+                $passPrompt = 'Password(1-16 chars):';
+                $promptRegex = '[>]';
+                break;
         }
 
-        return $this;
+        try {
+            $this->writeCommand($userPrompt, $username);
+            $this->writeCommand($passPrompt, $password);
+
+            $this->setRegexPrompt($promptRegex);
+            $this->waitPrompt();
+        } catch (\Exception $e) {
+            throw new \Exception('Login failed. '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Closes IP socket
+     */
+    public function disconnect(): void
+    {
+        if ($this->socket) {
+            fclose($this->socket);
+            $this->socket = null;
+            $this->isAuthenticated = false;
+        }
     }
 
     /**
@@ -194,12 +275,16 @@ class Telnet
      * This method is a wrapper for lower level private methods
      *
      * @param  string  $command  Command to execute
-     * @param  bool  $add_newline  Default true, adds newline to the command
+     * @param  bool  $addNewline  Default true, adds newline to the command
      * @return string Command result
      */
-    public function exec($command, $add_newline = true)
+    public function exec($command, $addNewline = true)
     {
-        $this->write($command, $add_newline);
+        if (! $this->isConnectionAlive()) {
+            $this->connect();
+        }
+
+        $this->write($command, $addNewline);
         $this->waitPrompt();
 
         return $this->getBuffer();
@@ -210,11 +295,11 @@ class Telnet
      * This method is a wrapper for lower level private methods
      *
      * @param  string  $command  Command to execute
-     * @param  bool  $add_newline  Default true, adds newline to the command
+     * @param  bool  $addNewline  Default true, adds newline to the command
      */
-    public function execWithoutResponse($command, $add_newline = true): bool
+    public function execWithoutResponse($command, $addNewline = true): bool
     {
-        $this->write($command, $add_newline);
+        $this->write($command, $addNewline);
 
         return true;
     }
@@ -250,7 +335,7 @@ class Telnet
      */
     public function disableStripPrompt()
     {
-        $this->strip_prompt = false;
+        $this->stripPrompt = false;
 
         return $this;
     }
@@ -262,7 +347,7 @@ class Telnet
      */
     public function enableStripPrompt()
     {
-        $this->strip_prompt = true;
+        $this->stripPrompt = true;
 
         return $this;
     }
@@ -291,84 +376,11 @@ class Telnet
         return $this;
     }
 
-    /**
-     * Attempts login to remote host.
-     * This method is a wrapper for lower level private methods and should be
-     * modified to reflect telnet implementation details like login/password
-     * and line prompts. Defaults to standard unix non-root prompts
-     *
-     * @param  string  $username  Username
-     * @param  string  $password  Password
-     * @param  string  $host_type  Type of destination host
-     * @return $this
-     *
-     * @throws \Exception
-     */
-    public function login($username, $password, $host_type = 'linux')
+    protected function writeCommand(string $prompt, string $input): void
     {
-        $user_prompt = '';
-        $pass_prompt = '';
-        $prompt_reg = '';
-
-        switch ($host_type) {
-            case 'linux': // General Linux/UNIX
-                $user_prompt = 'login:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '\$';
-                break;
-
-            case 'ZTE-C300':
-            case 'ZTE-C600':
-                $user_prompt = 'Username:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[>#]';
-                break;
-
-            case 'Nokia-FX16':
-                $user_prompt = 'login: ';
-                $pass_prompt = 'password: ';
-                $prompt_reg = '[#]';
-                break;
-
-            case 'ios': // Cisco IOS, IOS-XE, IOS-XR
-                $user_prompt = 'Username:';
-                $pass_prompt = 'Password:';
-                $prompt_reg = '[>#]';
-                break;
-
-            case 'digistar':
-                $pass_prompt = 'Password: ';
-                $prompt_reg = '[>]';
-                break;
-
-            case 'phyhome':
-                $user_prompt = 'Username(1-32 chars):';
-                $pass_prompt = 'Password(1-16 chars):';
-                $prompt_reg = '[>]';
-                break;
-        }
-
-        try {
-            // username
-            if (! empty($username)) {
-                $this->setPrompt($user_prompt);
-                $this->waitPrompt();
-                $this->write($username);
-            }
-
-            // password
-            $this->setPrompt($pass_prompt);
-            $this->waitPrompt();
-            $this->write($password);
-
-            // wait prompt
-            $this->setRegexPrompt($prompt_reg);
-            $this->waitPrompt();
-        } catch (\Exception $e) {
-            throw new \Exception('Login failed. '.$e->getMessage());
-        }
-
-        return $this;
+        $this->setPrompt($prompt);
+        $this->waitPrompt();
+        $this->write($input);
     }
 
     /**
@@ -400,25 +412,23 @@ class Telnet
     }
 
     /**
-     * Sets the stream timeout.
-     *
-     * @param  float  $timeout
-     * @return void
-     */
-    public function setStreamTimeout($timeout)
-    {
-        $this->stream_timeout_usec = (int) (fmod($timeout, 1) * 1000000);
-        $this->stream_timeout_sec = (int) $timeout;
-    }
-
-    /**
      * Set if the buffer should be stripped from the buffer after reading.
      *
      * @param  $strip  boolean if the prompt should be stripped.
      */
     public function stripPromptFromBuffer(mixed $strip): void
     {
-        $this->strip_prompt = $strip;
+        $this->stripPrompt = $strip;
+    }
+
+    /**
+     * Destroy instance, cleans up socket connection and command buffer
+     */
+    public function destroy(): void
+    {
+        self::$instance = null;
+        $this->disconnect();
+        $this->buffer = '';
     }
 
     /**
@@ -428,8 +438,8 @@ class Telnet
      */
     protected function getc()
     {
-        stream_set_timeout(self::$socket, $this->stream_timeout_sec, $this->stream_timeout_usec);
-        $c = fgetc(self::$socket);
+        stream_set_timeout($this->socket, $this->streamTimeoutSec, $this->streamTimeoutUsec);
+        $c = fgetc($this->socket);
         $this->globalBuffer->fwrite(strval($c));
 
         return $c;
@@ -458,11 +468,10 @@ class Telnet
      */
     protected function readTo($prompt)
     {
-        if (! self::$socket) {
-            throw new \Exception('Telnet connection closed');
+        if (! $this->socket) {
+            throw new \Exception('Connection closed');
         }
 
-        // clear the buffer
         $this->clearBuffer();
 
         $until_t = time() + $this->timeout;
@@ -490,6 +499,15 @@ class Telnet
             // append current char to global buffer
             $this->buffer .= $c;
 
+            if ($this->debug && strpos($this->buffer, $this->eol) !== false) {
+                $lines = explode($this->eol, $this->buffer);
+                // $this->buffer = array_pop($lines);
+
+                foreach ($lines as $line) {
+                    $this->debugLogLine($line);
+                }
+            }
+
             // we've encountered the prompt. Break out of the loop
             if (! empty($prompt) && preg_match("/{$prompt}$/", $this->buffer)) {
                 return self::TELNET_OK;
@@ -499,31 +517,41 @@ class Telnet
         return false;
     }
 
+    private function debugLogLine(string $buffer): void
+    {
+        $lines = explode("\n", $buffer);
+        foreach ($lines as $line) {
+            if (trim($line) !== '') {
+                var_dump(addcslashes($line, "\r\n"));
+            }
+        }
+    }
+
     /**
      * Write command to a socket
      *
      * @param  string  $buffer  Stuff to write to socket
-     * @param  bool  $add_newline  Default true, adds newline to the command
+     * @param  bool  $addNewline  Default true, adds newline to the command
      * @return bool
      *
      * @throws \Exception
      */
-    protected function write($buffer, $add_newline = true)
+    protected function write($buffer, $addNewline = true)
     {
-        if (! self::$socket) {
+        if (! $this->socket) {
             throw new \Exception('Telnet connection closed');
         }
 
         // clear buffer from last command
         $this->clearBuffer();
 
-        if ($add_newline == true) {
+        if ($addNewline == true) {
             $buffer .= $this->eol;
         }
 
         $this->globalBuffer->fwrite($buffer);
 
-        if (! fwrite(self::$socket, $buffer) < 0) {
+        if (! fwrite($this->socket, $buffer) < 0) {
             throw new \Exception('Error writing to socket');
         }
 
@@ -539,8 +567,9 @@ class Telnet
     {
         // Remove all carriage returns from line breaks
         $buf = str_replace(["\n\r", "\r\n", "\n", "\r"], "\n", $this->buffer);
+
         // Cut last line from buffer (almost always prompt)
-        if ($this->strip_prompt) {
+        if ($this->stripPrompt) {
             $buf = explode("\n", $buf);
             unset($buf[count($buf) - 1]);
             $buf = implode("\n", $buf);
@@ -573,7 +602,7 @@ class Telnet
             default => throw new \Exception('Unknown control character: '.ord($controlChar))
         };
 
-        fwrite(self::$socket, $this->IAC.$response.$opt);
+        fwrite($this->socket, $this->IAC.$response.$opt);
 
         return self::TELNET_OK;
     }
@@ -584,5 +613,15 @@ class Telnet
     protected function waitPrompt(): bool
     {
         return $this->readTo($this->prompt);
+    }
+
+    public function enableDebug(): void
+    {
+        $this->debug = true;
+    }
+
+    public function disableDebug(): void
+    {
+        $this->debug = false;
     }
 }
