@@ -41,8 +41,8 @@
         <env name="DB_FOREIGN_KEYS" value="true"/>
 
         <env name="NOKIA_OLT_IP" value=""/>
-        <env name="NOKIA_OLT_USERNAME" value=""/>
-        <env name="NOKIA_OLT_PASSWORD" value=""/>
+        <env name="NOKIA_OLT_USERNAME_TELNET" value=""/>
+        <env name="NOKIA_OLT_PASSWORD_TELNET" value=""/>
         <env name="NOKIA_SERIAL_1" value=""/>
         <env name="NOKIA_SERIAL_2" value=""/>
         <env name="NOKIA_SERIAL_3" value=""/>

@@ -5,6 +5,7 @@ namespace PauloHortelan\Onmt\Services\Nokia\Models;
 use Exception;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
@@ -137,24 +138,25 @@ class FX16 extends NokiaService
 
         foreach (self::$interfaces as $interface) {
             try {
-                self::$telnetConn->exec("configure equipment ont interface $interface admin-state $adminState");
+                $command = "configure equipment ont interface $interface admin-state $adminState";
+                self::$telnetConn->exec($command);
 
                 $configuredOnts[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'command' => $command,
                     'errorInfo' => null,
-                    'result' => [
-                        'interface' => $interface,
-                    ],
+                    'result' => [],
                 ];
             } catch (\Exception $e) {
                 $errorInfo = $e->getMessage();
 
                 $configuredOnts[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                    ],
+                    'result' => [],
                 ];
             }
         }
@@ -171,24 +173,25 @@ class FX16 extends NokiaService
 
         foreach (self::$interfaces as $interface) {
             try {
-                self::$telnetConn->exec("configure equipment ont no interface $interface");
+                $command = "configure equipment ont no interface $interface";
+                self::$telnetConn->exec($command);
 
                 $removedOnts[] = [
                     'success' => true,
+                    'interface' => $interface,
+                    'command' => $command,
                     'errorInfo' => null,
-                    'result' => [
-                        'interface' => $interface,
-                    ],
+                    'result' => [],
                 ];
             } catch (\Exception $e) {
                 $errorInfo = $e->getMessage();
 
                 $removedOnts[] = [
                     'success' => false,
+                    'interface' => $interface,
+                    'command' => $command,
                     'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                    ],
+                    'result' => [],
                 ];
             }
         }
@@ -788,6 +791,50 @@ class FX16 extends NokiaService
                 $buildCommand = $config->buildCommand();
 
                 $command = "ENT-VLANEGPORT::$accessIdentifier:::$buildCommand;";
+                $response = self::$tl1Conn->exec($command, false);
+
+                if (! str_contains($response, 'M  0 COMPLD')) {
+                    throw new \Exception($response);
+                }
+
+                $configuredOnts[] = [
+                    'success' => true,
+                    'interface' => $interface,
+                    'command' => $command,
+                    'errorInfo' => null,
+                    'result' => [],
+                ];
+            } catch (\Exception $e) {
+                $errorInfo = $e->getMessage();
+
+                $configuredOnts[] = [
+                    'success' => false,
+                    'interface' => $interface,
+                    'command' => $command,
+                    'errorInfo' => $errorInfo,
+                    'result' => [],
+                ];
+            }
+        }
+
+        return $configuredOnts;
+    }
+
+    /**
+     * Provisions a new HGU TR069 short key-value pair - TL1
+     */
+    public static function entHguTr069Sparam(EntHguTr069SparamConfig $config): ?array
+    {
+        $configuredOnts = [];
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+
+            try {
+                $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+                $buildCommand = $config->buildCommand();
+
+                $command = "ENT-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
                 $response = self::$tl1Conn->exec($command, false);
 
                 if (! str_contains($response, 'M  0 COMPLD')) {

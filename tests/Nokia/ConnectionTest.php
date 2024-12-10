@@ -9,10 +9,10 @@ uses()->group('Nokia');
 
 beforeEach(function () {
     $this->ipServer = env('NOKIA_OLT_IP');
-    $this->username = env('NOKIA_OLT_USERNAME');
-    $this->password = env('NOKIA_OLT_PASSWORD');
-
-    $this->serial1 = env('NOKIA_SERIAL_1');
+    $this->usernameTelnet = env('NOKIA_OLT_USERNAME_TELNET');
+    $this->passwordTelnet = env('NOKIA_OLT_PASSWORD_TELNET');
+    $this->usernameTL1 = env('NOKIA_OLT_USERNAME_TL1');
+    $this->passwordTL1 = env('NOKIA_OLT_PASSWORD_TL1');
 });
 
 describe('Nokia Connection Telnet', function () {
@@ -23,9 +23,11 @@ describe('Nokia Connection Telnet', function () {
     });
 
     it('can login', function () {
-        $nokia = Nokia::connectTelnet($this->ipServer, $this->username, $this->password, 23);
+        $nokia = Nokia::connectTelnet($this->ipServer, $this->usernameTelnet, $this->passwordTelnet, 23);
 
         expect($nokia)->toBeInstanceOf(NokiaService::class);
+
+        $nokia->disconnect();
     });
 });
 
@@ -37,8 +39,10 @@ describe('Nokia Connection TL1', function () {
     });
 
     it('can login', function () {
-        $nokia = Nokia::connectTL1($this->ipServer, $this->username, $this->password, 1022);
+        $nokia = Nokia::connectTL1($this->ipServer, $this->usernameTL1, $this->passwordTL1, 1023);
 
         expect($nokia)->toBeInstanceOf(NokiaService::class);
+
+        $nokia->disconnect();
     });
 });

@@ -5,6 +5,7 @@ namespace PauloHortelan\Onmt\Services\Nokia;
 use Exception;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
@@ -126,6 +127,23 @@ class NokiaService
         throw new Exception('No connection established.');
     }
 
+    public function disableDebug(): void
+    {
+        if (isset(self::$telnetConn)) {
+            self::$telnetConn->disableDebug();
+
+            return;
+        }
+
+        if (isset(self::$tl1Conn)) {
+            self::$tl1Conn->disableDebug();
+
+            return;
+        }
+
+        throw new Exception('No connection established.');
+    }
+
     public function model(string $model): object
     {
         self::$model = $model;
@@ -155,14 +173,14 @@ class NokiaService
         return $this;
     }
 
-    private function validateInterfaces()
+    private function validateInterfaces(): void
     {
         if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
             throw new Exception('Interface(s) not found.');
         }
     }
 
-    private function validateSerials()
+    private function validateSerials(): void
     {
         if (empty(self::$serials) || count(array_filter(self::$serials)) < count(self::$serials)) {
             throw new Exception('Serial(s) not found.');
@@ -280,6 +298,13 @@ class NokiaService
         return $nextPosition;
     }
 
+    /**
+     * Remove ONT's - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return array Info about each removed ONT
+     */
     public function removeOnts(): ?array
     {
         $this->validateInterfaces();
@@ -292,7 +317,7 @@ class NokiaService
 
             foreach ($ontsStateDown as $ontStateDown) {
                 if ($ontStateDown['success'] === true) {
-                    $interfaces[] = $ontStateDown['result']['interface'];
+                    $interfaces[] = $ontStateDown['interface'];
                 } else {
                     $ontsResponse = array_merge($ontsResponse, $ontsStateDown);
                 }
@@ -312,15 +337,17 @@ class NokiaService
     }
 
     /**
-     * Provision ONT's
+     * Provision ONT's - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
      * @param  EntOntConfig  $config  Provision configuration parameters
-     * @return array Info about each ONT provision
+     * @return array Info about each provisioned ONT
      */
     public function provisionOnts(EntOntConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::entOnts($config);
         }
@@ -329,15 +356,17 @@ class NokiaService
     }
 
     /**
-     * Edit provisioned ONT's
+     * Edit provisioned ONT's - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
      * @param  EdOntConfig  $config  Provision configuration parameters
-     * @return array Info about each ONT provision
+     * @return array Info about each provisioned ONT
      */
     public function editProvisionedOnts(EdOntConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::edOnts($config);
         }
@@ -346,7 +375,7 @@ class NokiaService
     }
 
     /**
-     * Plan ONT card
+     * Plan ONT card - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -355,6 +384,8 @@ class NokiaService
      */
     public function planOntCard(EntOntCardConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::entOntsCard($config);
         }
@@ -363,7 +394,7 @@ class NokiaService
     }
 
     /**
-     * Creates a logical port on an LT
+     * Creates a logical port on an LT - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -372,6 +403,8 @@ class NokiaService
      */
     public function createLogicalPortOnLT(EntLogPortConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::entLogPort($config);
         }
@@ -380,7 +413,7 @@ class NokiaService
     }
 
     /**
-     * Edit the VEIP on ONT's
+     * Edit the VEIP on ONT's - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -389,6 +422,8 @@ class NokiaService
      */
     public function editVeipOnts(EdOntVeipConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::edOntVeip($config);
         }
@@ -397,7 +432,7 @@ class NokiaService
     }
 
     /**
-     * Configures an upstream queue
+     * Configures an upstream queue - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -406,6 +441,8 @@ class NokiaService
      */
     public function configureUpstreamQueue(QosUsQueueConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::setQosUsQueue($config);
         }
@@ -414,7 +451,7 @@ class NokiaService
     }
 
     /**
-     * Bounds a bridge port to the VLAN
+     * Bounds a bridge port to the VLAN - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -423,6 +460,8 @@ class NokiaService
      */
     public function boundBridgePortToVlan(VlanPortConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::setVlanPort($config);
         }
@@ -431,7 +470,7 @@ class NokiaService
     }
 
     /**
-     * Adds a egress port to the VLAN
+     * Adds a egress port to the VLAN - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -440,8 +479,162 @@ class NokiaService
      */
     public function addEgressPortToVlan(VlanEgPortConfig $config): ?array
     {
+        $this->validateInterfaces();
+
         if (self::$model === 'FX16') {
             return FX16::entVlanEgPort($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Configures TR069 VLAN - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $vlan  VLAN value
+     * @param  int  $sParamId  Parameter index
+     * @return array Info about each configured ONT
+     */
+    public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1): ?array
+    {
+        $this->validateInterfaces();
+
+        if (self::$model === 'FX16') {
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.X_CT-COM_WANGponLinkConfig.VLANIDMark',
+                paramValue: $vlan,
+                sParamId: $sParamId
+            );
+
+            return FX16::entHguTr069Sparam($config);
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Configures TR069 PPPOE username and password - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $username  PPPOE username
+     * @param  string  $password  PPPOE password
+     * @param  int  $sParamIdUsername  PPPOE username parameter index
+     * @param  int  $sParamIdPassword  PPPOE password parameter index
+     * @return array Info about each configured ONT
+     */
+    public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3): ?array
+    {
+        $this->validateInterfaces();
+
+        $finalResponse = [];
+
+        if (self::$model === 'FX16') {
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Username',
+                paramValue: $username,
+                sParamId: $sParamIdUsername
+            );
+
+            $response = FX16::entHguTr069Sparam($config);
+            $finalResponse[] = $response;
+
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Password',
+                paramValue: $password,
+                sParamId: $sParamIdPassword
+            );
+
+            $response = FX16::entHguTr069Sparam($config);
+            $finalResponse[] = $response;
+
+            return $finalResponse;
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Configures TR069 Wifi 2.4Ghz - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $ssid  SSID value
+     * @param  string  $preSharedKey  Wifi password
+     * @param  int  $sParamIdSsid  SSID parameter index
+     * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
+     * @return array Info about each configured ONT
+     */
+    public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5): ?array
+    {
+        $this->validateInterfaces();
+
+        $finalResponse = [];
+
+        if (self::$model === 'FX16') {
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID',
+                paramValue: $ssid,
+                sParamId: $sParamIdSsid
+            );
+
+            $response = FX16::entHguTr069Sparam($config);
+            $finalResponse[] = $response;
+
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1.PreSharedKey',
+                paramValue: $preSharedKey,
+                sParamId: $sParamIdPreSharedKey
+            );
+
+            $response = FX16::entHguTr069Sparam($config);
+            $finalResponse[] = $response;
+
+            return $finalResponse;
+        }
+
+        throw new Exception('Model '.self::$model.' is not supported.');
+    }
+
+    /**
+     * Configures TR069 Wifi 5Ghz - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $ssid  SSID value
+     * @param  string  $preSharedKey  Wifi password
+     * @param  int  $sParamIdSsid  SSID parameter index
+     * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
+     * @return array Info about each configured ONT
+     */
+    public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7): ?array
+    {
+        $this->validateInterfaces();
+
+        $finalResponse = [];
+
+        if (self::$model === 'FX16') {
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.SSID',
+                paramValue: $ssid,
+                sParamId: $sParamIdSsid
+            );
+
+            $response = FX16::entHguTr069Sparam($config);
+            $finalResponse[] = $response;
+
+            $config = new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.PreSharedKey.1.PreSharedKey',
+                paramValue: $preSharedKey,
+                sParamId: $sParamIdPreSharedKey
+            );
+
+            $response = FX16::entHguTr069Sparam($config);
+            $finalResponse[] = $response;
+
+            return $finalResponse;
         }
 
         throw new Exception('Model '.self::$model.' is not supported.');

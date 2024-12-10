@@ -6,8 +6,8 @@ uses()->group('Nokia');
 
 beforeEach(function () {
     $ipServer = env('NOKIA_OLT_IP');
-    $username = env('NOKIA_OLT_USERNAME');
-    $password = env('NOKIA_OLT_PASSWORD');
+    $username = env('NOKIA_OLT_USERNAME_TELNET');
+    $password = env('NOKIA_OLT_PASSWORD_TELNET');
 
     $this->serial1 = env('NOKIA_SERIAL_1');
     $this->serial2 = env('NOKIA_SERIAL_2');
