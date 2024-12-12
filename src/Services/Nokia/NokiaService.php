@@ -3,6 +3,8 @@
 namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
+use Illuminate\Support\Collection;
+use PauloHortelan\Onmt\DTOs\CommandResult;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
@@ -12,6 +14,7 @@ use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\QosUsQueueConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
@@ -22,9 +25,9 @@ class NokiaService
 {
     use Assertations, Validations;
 
-    protected static Telnet $telnetConn;
+    protected static ?Telnet $telnetConn = null;
 
-    protected static TL1 $tl1Conn;
+    protected static ?TL1 $tl1Conn = null;
 
     protected static string $model = 'FX16';
 
@@ -76,12 +79,14 @@ class NokiaService
     {
         if (isset(self::$telnetConn)) {
             self::$telnetConn->destroy();
+            self::$telnetConn = null;
 
             return;
         }
 
         if (isset(self::$tl1Conn)) {
             self::$tl1Conn->destroy();
+            self::$tl1Conn = null;
 
             return;
         }
@@ -89,22 +94,18 @@ class NokiaService
         throw new Exception('No connection established.');
     }
 
-    public function inhibitAlarms(): ?array
+    public function inhibitAlarms(): ?CommandResult
     {
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
         if (isset(self::$telnetConn)) {
-            if (self::$model === 'FX16') {
-                return FX16::environmentInhibitAlarms();
-            }
+            return FX16::environmentInhibitAlarms();
         }
 
         if (isset(self::$tl1Conn)) {
-            if (self::$model === 'FX16') {
-                return FX16::inhMsgAll();
-            }
+            return FX16::inhMsgAll();
         }
 
         throw new Exception('No connection established.');
@@ -187,98 +188,208 @@ class NokiaService
         }
     }
 
-    public function ontsDetail(): ?array
+    /**
+     * Gets ONT's detail - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsDetail(): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::showEquipmentOntOptics();
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::showEquipmentOntOptics($interface);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
-    public function ontsDetailBySerials(): ?array
+    /**
+     * Gets ONT's detail by serial - Telnet
+     *
+     * Parameter 'serials' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsDetailBySerials(): ?Collection
     {
         $this->validateSerials();
 
-        $ontsDetail = [];
-        $serials = self::$serials;
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
 
-        foreach ($serials as $serial) {
-            $this->serials([$serial]);
-            $interfaceResponse = $this->ontsInterface()[0];
+        $finalResponse = collect();
 
-            if ($interfaceResponse['success']) {
-                $interface = $interfaceResponse['result']['interface'];
-                $this->interfaces([$interface]);
+        foreach (self::$serials as $serial) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->serial = $serial;
+            $commandResultBatch->save();
 
-                $ontsDetail[] = $this->ontsDetail()[0];
-            } else {
-                $ontsDetail[] = $interfaceResponse;
+            $response = FX16::showEquipmentOntIndex($serial);
+            $commandResultBatch->addCommand($response);
+
+            $interface = $response->result['interface'] ?? null;
+
+            if (empty($interface)) {
+                $response = new CommandResult(false, '', '', []);
+                $commandResultBatch->addCommand($response);
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
+
+            $response = FX16::showEquipmentOntOptics($interface);
+            $commandResultBatch->addCommand($response);
+
+            $commandResultBatch->serial = $serial;
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        return $ontsDetail;
+        return $finalResponse;
     }
 
-    public function ontsInterface(): ?array
+    /**
+     * Gets ONT's interfaces by serials - Telnet
+     *
+     * Parameter 'serials' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsInterfaces(): ?Collection
     {
         $this->validateSerials();
 
-        if (self::$model === 'FX16') {
-            return FX16::showEquipmentOntIndex();
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$serials as $serial) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->serial = $serial;
+            $commandResultBatch->save();
+
+            $response = FX16::showEquipmentOntIndex($serial);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
-    public function ontsPortDetail(): ?array
+    /**
+     * Gets ONT's port detail - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsPortDetail(): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::showInterfacePort();
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::showInterfacePort($interface);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
-    public function unregisteredOnts(): ?array
+    /**
+     * Gets the unregistered ONT's - Telnet
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function unregisteredOnts(): ?Collection
     {
-        if (self::$model === 'FX16') {
-            return FX16::showPonUnprovisionOnu();
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        $commandResultBatch = new CommandResultBatch;
+        $commandResultBatch->save();
+
+        $response = FX16::showPonUnprovisionOnu();
+        $commandResultBatch->addCommand($response);
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
     }
 
-    public function ontsByPonInterface(string $ponInterface): ?array
+    /**
+     * Gets the unregistered ONT's - Telnet
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsByPonInterface(string $ponInterface): ?Collection
     {
-        if (empty($ponInterface)) {
-            throw new Exception('Pon Interface(s) not provided.');
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        if (self::$model === 'FX16') {
-            return FX16::showEquipmentOntStatusPon($ponInterface);
-        }
+        $finalResponse = collect();
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $commandResultBatch = new CommandResultBatch;
+        $commandResultBatch->save();
+
+        $response = FX16::showEquipmentOntStatusPon($ponInterface);
+        $commandResultBatch->addCommand($response);
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
     }
 
+    /**
+     * Gets the next free ONT index - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1/1'
+     * @return int The next ONT index
+     */
     public function getNextOntIndex(string $ponInterface): ?int
     {
-        if (empty($ponInterface)) {
-            throw new Exception('PON Interface not provided.');
-        }
+        $commandResult = $this->ontsByPonInterface($ponInterface);
 
-        $response = $this->ontsByPonInterface($ponInterface);
-
-        if ($response['success'] === false) {
+        if ($commandResult->success === false) {
             throw new Exception('Provided PON Interface is not valid.');
         }
 
-        $onts = $response['result'];
+        $onts = $commandResult->result;
 
         $lastSegments = array_map(function ($item) {
             $parts = explode('/', $item['interface']);
@@ -303,37 +414,33 @@ class NokiaService
      *
      * Parameter 'interfaces' must already be provided
      *
-     * @return array Info about each removed ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function removeOnts(): ?array
+    public function removeOnts(): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            $ontsResponse = [];
-            $interfaces = [];
-
-            $ontsStateDown = FX16::configureEquipmentOntInterfaceAdminState('down');
-
-            foreach ($ontsStateDown as $ontStateDown) {
-                if ($ontStateDown['success'] === true) {
-                    $interfaces[] = $ontStateDown['interface'];
-                } else {
-                    $ontsResponse = array_merge($ontsResponse, $ontsStateDown);
-                }
-            }
-
-            $this->interfaces($interfaces);
-
-            if (! empty($interfaces)) {
-                $removedOnts = FX16::configureEquipmentOntNoInterface();
-                $ontsResponse = array_merge($ontsResponse, $removedOnts);
-            }
-
-            return $ontsResponse;
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::configureEquipmentOntInterfaceAdminState($interface, 'down');
+            $commandResultBatch->addCommand($response);
+
+            $response = FX16::configureEquipmentOntNoInterface($interface);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -342,17 +449,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  EntOntConfig  $config  Provision configuration parameters
-     * @return array Info about each provisioned ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function provisionOnts(EntOntConfig $config): ?array
+    public function provisionOnts(EntOntConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::entOnts($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entOnt($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -361,17 +481,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  EdOntConfig  $config  Provision configuration parameters
-     * @return array Info about each provisioned ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function editProvisionedOnts(EdOntConfig $config): ?array
+    public function editProvisionedOnts(EdOntConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::edOnts($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::edOnt($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -380,17 +513,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  EntOntCardConfig  $config  ONT card configuration parameters
-     * @return array Info about each ONT planned
+     * @return Collection A collection of CommandResultBatch
      */
-    public function planOntCard(EntOntCardConfig $config): ?array
+    public function planOntCard(EntOntCardConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::entOntsCard($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entOntsCard($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -399,17 +545,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  EntLogPortConfig  $config  Logical port configuration parameters
-     * @return array Info about each created ONT logical port
+     * @return Collection A collection of CommandResultBatch
      */
-    public function createLogicalPortOnLT(EntLogPortConfig $config): ?array
+    public function createLogicalPortOnLT(EntLogPortConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::entLogPort($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entLogPort($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -418,17 +577,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  EdOntVeipConfig  $config  ONT VEIP configuration parameters
-     * @return array Info about each edited ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function editVeipOnts(EdOntVeipConfig $config): ?array
+    public function editVeipOnts(EdOntVeipConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::edOntVeip($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::edOntVeip($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -437,17 +609,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  QosUsQueueConfig  $config  QOS us queue configuration parameters
-     * @return array Info about each configured ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function configureUpstreamQueue(QosUsQueueConfig $config): ?array
+    public function configureUpstreamQueue(QosUsQueueConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::setQosUsQueue($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::setQosUsQueue($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -456,17 +641,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  VlanPortConfig  $config  VLAN port configuration parameters
-     * @return array Info about each configured VLAN ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function boundBridgePortToVlan(VlanPortConfig $config): ?array
+    public function boundBridgePortToVlan(VlanPortConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::setVlanPort($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::setVlanPort($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -475,17 +673,30 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  VlanEgPortConfig  $config  VLAN egress port configuration parameters
-     * @return array Info about each configured VLAN ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function addEgressPortToVlan(VlanEgPortConfig $config): ?array
+    public function addEgressPortToVlan(VlanEgPortConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            return FX16::entVlanEgPort($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entVlanEgPort($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -495,23 +706,36 @@ class NokiaService
      *
      * @param  int  $vlan  VLAN value
      * @param  int  $sParamId  Parameter index
-     * @return array Info about each configured ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1): ?array
+    public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1): ?Collection
     {
         $this->validateInterfaces();
 
-        if (self::$model === 'FX16') {
-            $config = new EntHguTr069SparamConfig(
-                paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.X_CT-COM_WANGponLinkConfig.VLANIDMark',
-                paramValue: $vlan,
-                sParamId: $sParamId
-            );
-
-            return FX16::entHguTr069Sparam($config);
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $config = new EntHguTr069SparamConfig(
+            paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.X_CT-COM_WANGponLinkConfig.VLANIDMark',
+            paramValue: $vlan,
+            sParamId: $sParamId
+        );
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entHguTr069Sparam($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -523,37 +747,47 @@ class NokiaService
      * @param  string  $password  PPPOE password
      * @param  int  $sParamIdUsername  PPPOE username parameter index
      * @param  int  $sParamIdPassword  PPPOE password parameter index
-     * @return array Info about each configured ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3): ?array
+    public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3): ?Collection
     {
         $this->validateInterfaces();
 
-        $finalResponse = [];
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
 
-        if (self::$model === 'FX16') {
-            $config = new EntHguTr069SparamConfig(
+        $configs = [
+            new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Username',
                 paramValue: $username,
                 sParamId: $sParamIdUsername
-            );
-
-            $response = FX16::entHguTr069Sparam($config);
-            $finalResponse[] = $response;
-
-            $config = new EntHguTr069SparamConfig(
+            ),
+            new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Password',
                 paramValue: $password,
                 sParamId: $sParamIdPassword
-            );
+            ),
+        ];
 
-            $response = FX16::entHguTr069Sparam($config);
-            $finalResponse[] = $response;
+        $finalResponse = collect();
 
-            return $finalResponse;
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
+                $response = FX16::entHguTr069Sparam($interface, $config);
+                $commandResultBatch->addCommand($response);
+
+                return $response;
+            });
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        return $finalResponse;
     }
 
     /**
@@ -565,37 +799,47 @@ class NokiaService
      * @param  string  $preSharedKey  Wifi password
      * @param  int  $sParamIdSsid  SSID parameter index
      * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
-     * @return array Info about each configured ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5): ?array
+    public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5): ?Collection
     {
         $this->validateInterfaces();
 
-        $finalResponse = [];
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
 
-        if (self::$model === 'FX16') {
-            $config = new EntHguTr069SparamConfig(
+        $configs = [
+            new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID',
                 paramValue: $ssid,
                 sParamId: $sParamIdSsid
-            );
-
-            $response = FX16::entHguTr069Sparam($config);
-            $finalResponse[] = $response;
-
-            $config = new EntHguTr069SparamConfig(
+            ),
+            new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1.PreSharedKey',
                 paramValue: $preSharedKey,
                 sParamId: $sParamIdPreSharedKey
-            );
+            ),
+        ];
 
-            $response = FX16::entHguTr069Sparam($config);
-            $finalResponse[] = $response;
+        $finalResponse = collect();
 
-            return $finalResponse;
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
+                $response = FX16::entHguTr069Sparam($interface, $config);
+                $commandResultBatch->addCommand($response);
+
+                return $response;
+            });
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        return $finalResponse;
     }
 
     /**
@@ -607,36 +851,181 @@ class NokiaService
      * @param  string  $preSharedKey  Wifi password
      * @param  int  $sParamIdSsid  SSID parameter index
      * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
-     * @return array Info about each configured ONT
+     * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7): ?array
+    public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7): ?Collection
     {
         $this->validateInterfaces();
 
-        $finalResponse = [];
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
 
-        if (self::$model === 'FX16') {
-            $config = new EntHguTr069SparamConfig(
+        $configs = [
+            new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.SSID',
                 paramValue: $ssid,
                 sParamId: $sParamIdSsid
-            );
-
-            $response = FX16::entHguTr069Sparam($config);
-            $finalResponse[] = $response;
-
-            $config = new EntHguTr069SparamConfig(
+            ),
+            new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.PreSharedKey.1.PreSharedKey',
                 paramValue: $preSharedKey,
                 sParamId: $sParamIdPreSharedKey
-            );
+            ),
+        ];
 
-            $response = FX16::entHguTr069Sparam($config);
-            $finalResponse[] = $response;
+        $finalResponse = collect();
 
-            return $finalResponse;
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
+                $response = FX16::entHguTr069Sparam($interface, $config);
+                $commandResultBatch->addCommand($response);
+
+                return $response;
+            });
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        return $finalResponse;
+    }
+
+    /**
+     * Configures TR069 Web Account Password - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $password  Password value
+     * @param  int  $sParamId  Parameter index
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureTr069WebAccountPassword(string $password, int $sParamId = 8): ?Collection
+    {
+        $this->validateInterfaces();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $config = new EntHguTr069SparamConfig(
+            paramName: 'InternetGatewayDevice.X_Authentication.WebAccount.Password',
+            paramValue: $password,
+            sParamId: $sParamId
+        );
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entHguTr069Sparam($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configures TR069 Account Password - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $password  Password value
+     * @param  int  $sParamId  Parameter index
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureTr069AccountPassword(string $password, int $sParamId = 9): ?Collection
+    {
+        $this->validateInterfaces();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $config = new EntHguTr069SparamConfig(
+            paramName: 'InternetGatewayDevice.X_Authentication.Account.Password',
+            paramValue: $password,
+            sParamId: $sParamId
+        );
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            $response = FX16::entHguTr069Sparam($interface, $config);
+            $commandResultBatch->addCommand($response);
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configures TR069 DNS's - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $dns  DNS value. Example '0.0.0.0\,1.1.1.1'
+     * @param  int  $sParamIdLan  LAN parameter index
+     * @param  int  $sParamIdWan  WAN parameter index
+     * @param  int  $sParamIdWan2  WAN part 2 parameter index
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14): ?Collection
+    {
+        $this->validateInterfaces();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $configs = [
+            new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.LANDevice.1.LANHostConfigManagemENT.DNSServers',
+                paramValue: $dns,
+                sParamId: $sParamIdLan
+            ),
+            new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.DNSServers',
+                paramValue: $dns,
+                sParamId: $sParamIdWan
+            ),
+            new EntHguTr069SparamConfig(
+                paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.X_ALU_COM_TR69DNSServers',
+                paramValue: $dns,
+                sParamId: $sParamIdWan2
+            ),
+        ];
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = new CommandResultBatch;
+            $commandResultBatch->interface = $interface;
+            $commandResultBatch->save();
+
+            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
+                $response = FX16::entHguTr069Sparam($interface, $config);
+                $commandResultBatch->addCommand($response);
+
+                return $response;
+            });
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 }

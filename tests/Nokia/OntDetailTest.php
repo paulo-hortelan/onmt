@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Facades\Nokia;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Nokia');
 
@@ -24,10 +26,17 @@ describe('Nokia Optical Detail - Success', function () {
 
         $ontsDetail = $this->nokia->ontsDetail();
 
-        var_dump($ontsDetail);
+        expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
-        expect($ontsDetail)->toBeArray();
-        expect($ontsDetail[0]['result']['rxSignalLevel'])->toBeFloat();
+        $ontsDetail->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult['result']['rxSignalLevel'])->toBeFloat();
+            });
+        });
     });
 
     it('can get multiple details', function () {
@@ -35,10 +44,17 @@ describe('Nokia Optical Detail - Success', function () {
 
         $ontsDetail = $this->nokia->ontsDetail();
 
-        expect($ontsDetail)->toBeArray();
-        expect($ontsDetail[0]['result']['rxSignalLevel'])->toBeFloat();
-        expect($ontsDetail[1]['result']['rxSignalLevel'])->toBeFloat();
-        expect($ontsDetail[2]['result']['rxSignalLevel'])->toBeFloat();
+        expect($ontsDetail)->toBeInstanceOf(Collection::class);
+
+        $ontsDetail->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult['result']['rxSignalLevel'])->toBeFloat();
+            });
+        });
     });
 });
 
@@ -48,20 +64,34 @@ describe('Nokia Optical Detail By Serial - Success', function () {
 
         $ontsDetail = $this->nokia->ontsDetailBySerials();
 
-        var_dump($ontsDetail);
+        expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
-        expect($ontsDetail)->toBeArray();
-        expect($ontsDetail[0]['result']['rxSignalLevel'])->toBeFloat();
-    })->only();
+        $ontsDetail->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+            });
+        });
+    });
 
     it('can get multiple details', function () {
-        $this->nokia->serials([$this->serial1, $this->serial2, $this->serial3]);
+        $this->nokia->serials([$this->serialALCL, $this->serialCMSZ]);
 
-        $details = $this->nokia->ontsDetailBySerials();
+        $ontsDetail = $this->nokia->ontsDetailBySerials();
 
-        expect($details)->toBeArray();
-        expect($details[0]['result']['rxSignalLevel'])->toBeFloat();
-        expect($details[1]['result']['rxSignalLevel'])->toBeFloat();
-        expect($details[2]['result']['rxSignalLevel'])->toBeFloat();
+        expect($ontsDetail)->toBeInstanceOf(Collection::class);
+
+        $ontsDetail->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            var_dump($batch->toArray());
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+            });
+        });
     });
 });

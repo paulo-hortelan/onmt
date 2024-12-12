@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Facades\Nokia;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Nokia');
 
@@ -16,7 +18,15 @@ describe('Nokia Unregistered Onts - Success', function () {
     it('can get unregistered onts', function () {
         $unregisteredOnts = $this->nokia->unregisteredOnts();
 
-        expect($unregisteredOnts)->toBeArray();
-        expect($unregisteredOnts[0]['success'])->toBeTrue();
+        expect($unregisteredOnts)->toBeInstanceOf(Collection::class);
+
+        $unregisteredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+            });
+        });
     });
 });

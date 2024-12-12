@@ -3,6 +3,7 @@
 namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
 use Exception;
+use PauloHortelan\Onmt\DTOs\CommandResult;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
@@ -19,67 +20,46 @@ class FX16 extends NokiaService
     /**
      * Inhibit environment alarms - Telnet
      */
-    public static function environmentInhibitAlarms(): ?array
+    public static function environmentInhibitAlarms(): ?CommandResult
     {
         $command = 'environment inhibit-alarms';
 
         try {
             self::$telnetConn->exec($command);
 
-            return [
-                'success' => true,
-                'command' => $command,
-                'errorInfo' => null,
-                'result' => [],
-            ];
+            return new CommandResult(true, $command, null, []);
         } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
-
-            return [
-                'success' => false,
-                'command' => $command,
-                'errorInfo' => $errorInfo,
-                'result' => [],
-            ];
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
     }
 
     /**
-     * Get ONT's info by PON interfaces - Telnet
+     * Get ONT's info by PON interface - Telnet
      */
-    public static function showEquipmentOntStatusPon(string $ponInterface): ?array
+    public static function showEquipmentOntStatusPon(string $ponInterface): ?CommandResult
     {
-        $response = [];
         $onts = [];
+        $command = "show equipment ont status pon $ponInterface";
 
         try {
-            $command = "show equipment ont status pon $ponInterface";
-            $response = self::$telnetConn->exec($command);
+            $commandResponse = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, 'sernum')) {
-                throw new \Exception($response);
+            if (! str_contains($commandResponse, 'sernum')) {
+                throw new \Exception($commandResponse);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $commandResponse);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/sernum/', $column)) {
-                    $numOnts = count($response) - $key - 5;
+                    $numOnts = count($splittedResponse) - $key - 5;
 
                     if ($numOnts === 0) {
-                        $response = [
-                            'success' => true,
-                            'ponInterface' => $ponInterface,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [],
-                        ];
-
-                        break;
+                        return new CommandResult(true, $command, null, []);
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\s+/', $response[$key + $i + 1]);
+                        $splitted = preg_split('/\s+/', $splittedResponse[$key + $i + 1]);
 
                         $ponInterface = $splitted[0];
                         $interface = $splitted[1];
@@ -98,35 +78,19 @@ class FX16 extends NokiaService
                             'ontOltDistance' => $ontOltDistance ?? null,
                         ];
                     }
-
-                    $response = [
-                        'success' => true,
-                        'ponInterface' => $ponInterface,
-                        'command' => $command,
-                        'errorInfo' => null,
-                        'result' => $onts,
-                    ];
                 }
             }
         } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
-
-            $response = [
-                'success' => false,
-                'ponInterface' => $ponInterface,
-                'command' => $command,
-                'errorInfo' => $errorInfo,
-                'result' => [],
-            ];
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
 
-        return $response;
+        return new CommandResult(true, $command, null, $onts);
     }
 
     /**
-     * Configure ONT's admin state - Telnet
+     * Configure ONT admin state - Telnet
      */
-    public static function configureEquipmentOntInterfaceAdminState($adminState): ?array
+    public static function configureEquipmentOntInterfaceAdminState(string $interface, string $adminState): ?CommandResult
     {
         $adminStates = ['down', 'up'];
 
@@ -134,733 +98,418 @@ class FX16 extends NokiaService
             throw new Exception("AdminState must be 'down' or 'up'");
         }
 
-        $configuredOnts = [];
+        $command = "configure equipment ont interface $interface admin-state $adminState";
 
-        foreach (self::$interfaces as $interface) {
-            try {
-                $command = "configure equipment ont interface $interface admin-state $adminState";
-                self::$telnetConn->exec($command);
+        try {
+            self::$telnetConn->exec($command);
 
-                $configuredOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $configuredOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
-            }
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
-
-        return $configuredOnts;
     }
 
     /**
-     * Remove ONT's - Telnet
+     * Remove ONT interface - Telnet
      */
-    public static function configureEquipmentOntNoInterface(): ?array
+    public static function configureEquipmentOntNoInterface(string $interface): ?CommandResult
     {
-        $removedOnts = [];
+        $command = "configure equipment ont no interface $interface";
 
-        foreach (self::$interfaces as $interface) {
-            try {
-                $command = "configure equipment ont no interface $interface";
-                self::$telnetConn->exec($command);
+        try {
+            self::$telnetConn->exec($command);
 
-                $removedOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $removedOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
-            }
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
-
-        return $removedOnts;
     }
 
     /**
-     * Returns the ONT's equipment optics - Telnet
+     * Returns the ONT equipment optics - Telnet
      */
-    public static function showEquipmentOntOptics(): ?array
+    public static function showEquipmentOntOptics(string $interface): ?CommandResult
     {
-        $ontsDetail = [];
+        $command = "show equipment ont optics $interface detail";
 
-        var_dump(self::$interfaces);
-        foreach (self::$interfaces as $interface) {
-            try {
-                $command = "show equipment ont optics $interface detail";
-                $response = self::$telnetConn->exec($command);
+        try {
+            $response = self::$telnetConn->exec($command);
 
-                if (! str_contains($response, 'tx-signal-level')) {
-                    throw new \Exception($response);
-                }
-
-                if (preg_match('/tx-signal-level.*:(.*\s)/m', $response, $match)) {
-                    $txSignalLevel = (float) $match[1];
-                }
-
-                if (preg_match('/ont-voltage.*:(.*\s)/m', $response, $match)) {
-                    $ontVoltage = (float) $match[1];
-                }
-
-                if (preg_match('/olt-rx-sig-level.*:(.*\s)/m', $response, $match)) {
-                    $oltRxSigLevel = (float) $match[1];
-                }
-
-                if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
-                    $rxSignalLevel = (float) $match[1];
-                }
-
-                if (preg_match('/ont-temperature.*:(.*\s)/m', $response, $match)) {
-                    $ontTemperature = (float) $match[1];
-                }
-
-                if (preg_match('/laser-bias-curr.*:(.*\s)/m', $response, $match)) {
-                    $laserBiasCurr = (float) $match[1];
-                }
-
-                $ontsDetail[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [
-                        'txSignalLevel' => $txSignalLevel ?? null,
-                        'ontVoltage' => $ontVoltage ?? null,
-                        'oltRxSigLevel' => $oltRxSigLevel ?? null,
-                        'rxSignalLevel' => $rxSignalLevel ?? null,
-                        'ontTemperature' => $ontTemperature ?? null,
-                        'laserBiasCurr' => $laserBiasCurr ?? null,
-                    ],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsDetail[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'tx-signal-level')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $ontsDetail;
+            if (preg_match('/tx-signal-level.*:(.*\s)/m', $response, $match)) {
+                $txSignalLevel = (float) $match[1];
+            }
+
+            if (preg_match('/ont-voltage.*:(.*\s)/m', $response, $match)) {
+                $ontVoltage = (float) $match[1];
+            }
+
+            if (preg_match('/olt-rx-sig-level.*:(.*\s)/m', $response, $match)) {
+                $oltRxSigLevel = (float) $match[1];
+            }
+
+            if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
+                $rxSignalLevel = (float) $match[1];
+            }
+
+            if (preg_match('/ont-temperature.*:(.*\s)/m', $response, $match)) {
+                $ontTemperature = (float) $match[1];
+            }
+
+            if (preg_match('/laser-bias-curr.*:(.*\s)/m', $response, $match)) {
+                $laserBiasCurr = (float) $match[1];
+            }
+
+            $ontDetail = [
+                'txSignalLevel' => $txSignalLevel ?? null,
+                'ontVoltage' => $ontVoltage ?? null,
+                'oltRxSigLevel' => $oltRxSigLevel ?? null,
+                'rxSignalLevel' => $rxSignalLevel ?? null,
+                'ontTemperature' => $ontTemperature ?? null,
+                'laserBiasCurr' => $laserBiasCurr ?? null,
+            ];
+
+            return new CommandResult(true, $command, null, $ontDetail);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 
     /**
-     * Returns the ONT's optical interfaces - Telnet
+     * Returns the ONT optical interface - Telnet
      */
-    public static function showEquipmentOntIndex(): ?array
+    public static function showEquipmentOntIndex(string $serial): ?CommandResult
     {
-        $ontsInterface = [];
+        $formattedSerial = substr_replace($serial, ':', 4, 0);
+        $command = "show equipment ont index sn:$formattedSerial detail";
 
-        foreach (self::$serials as $serial) {
-            $formattedSerial = substr_replace($serial, ':', 4, 0);
+        try {
+            $response = self::$telnetConn->exec($command);
 
-            try {
-                $command = "show equipment ont index sn:$formattedSerial detail";
-                $response = self::$telnetConn->exec($command);
-
-                if (! str_contains($response, 'ont-idx')) {
-                    throw new \Exception($response);
-                }
-
-                if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
-                    $interface = trim($match[1]);
-                }
-
-                $ontsInterface[] = [
-                    'success' => true,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [
-                        'interface' => $interface ?? null,
-                    ],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsInterface[] = [
-                    'success' => false,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'ont-idx')) {
+                throw new \Exception($response);
             }
+
+            if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
+                $interface = trim($match[1]);
+            }
+
+            $ontInterface = [
+                'interface' => $interface ?? null,
+            ];
+
+            return new CommandResult(true, $command, null, $ontInterface);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
 
         return $ontsInterface;
     }
 
     /**
-     * Returns the ONT's port details - Telnet
+     * Returns the ONT port details - Telnet
      */
-    public static function showInterfacePort(): ?array
+    public static function showInterfacePort(string $interface): ?CommandResult
     {
-        $ontsPortDetail = [];
+        $command = "show interface port ont:$interface detail";
 
-        foreach (self::$interfaces as $interface) {
-            try {
-                $response = self::$telnetConn->exec("show interface port ont:$interface detail");
+        try {
+            $response = self::$telnetConn->exec($command);
 
-                if (! str_contains($response, 'opr-status')) {
-                    throw new \Exception($response);
-                }
-
-                if (preg_match('/opr-status.*?:(.*?[^\s]+)/m', $response, $match)) {
-                    $oprStatus = trim($match[1]);
-                }
-
-                if (preg_match('/admin-status.*?:(.*?[^\s]+)/m', $response, $match)) {
-                    $adminStatus = trim($match[1]);
-                }
-
-                if (preg_match('/last-chg-opr-stat.*?:(.*?[^\s]+)/m', $response, $match)) {
-                    $lastChgOprStat = trim($match[1]);
-                }
-
-                $ontsPortDetail[] = [
-                    'success' => true,
-                    'errorInfo' => null,
-                    'result' => [
-                        'interface' => $interface,
-                        'oprStatus' => $oprStatus ?? null,
-                        'adminStatus' => $adminStatus ?? null,
-                        'lastChgOprStat' => $lastChgOprStat ?? null,
-                    ],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsPortDetail[] = [
-                    'success' => false,
-                    'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                    ],
-                ];
+            if (! str_contains($response, 'opr-status')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $ontsPortDetail;
+            if (preg_match('/opr-status.*?:(.*?[^\s]+)/m', $response, $match)) {
+                $oprStatus = trim($match[1]);
+            }
+
+            if (preg_match('/admin-status.*?:(.*?[^\s]+)/m', $response, $match)) {
+                $adminStatus = trim($match[1]);
+            }
+
+            if (preg_match('/last-chg-opr-stat.*?:(.*?[^\s]+)/m', $response, $match)) {
+                $lastChgOprStat = trim($match[1]);
+            }
+
+            $portDetail[] = [
+                'interface' => $interface,
+                'oprStatus' => $oprStatus ?? null,
+                'adminStatus' => $adminStatus ?? null,
+                'lastChgOprStat' => $lastChgOprStat ?? null,
+            ];
+
+            return new CommandResult(true, $command, null, $portDetail);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 
     /**
      * Returns the ONT's unprovisioned - Telnet
      */
-    public static function showPonUnprovisionOnu(): ?array
+    public static function showPonUnprovisionOnu(): ?CommandResult
     {
-        $unregOnts = [];
+        $unregData = [];
+        $command = 'show pon unprovision-onu';
 
         try {
-            $command = 'show pon unprovision-onu';
-
             $response = self::$telnetConn->exec($command);
 
             if (! str_contains($response, 'gpon-index')) {
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/gpon-index/', $column)) {
-                    $numOnts = count($response) - $key - 5;
+                    $numOnts = count($splittedResponse) - $key - 5;
 
                     if ($numOnts === 0) {
-                        $unregOnts[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [],
-                        ];
+                        return new CommandResult(true, $command, null, []);
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\s+/', $response[$key + $i + 1]);
+                        $splitted = preg_split('/\s+/', $splittedResponse[$key + $i + 1]);
 
                         $alarmIdx = (int) $splitted[1];
                         $interface = $splitted[2];
                         $serial = $splitted[3];
 
-                        $unregOnts[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'alarmIdx' => $alarmIdx ?? null,
-                                'interface' => $interface ?? null,
-                                'serial' => $serial ?? null,
-                            ],
+                        $unregData[] = [
+                            'alarmIdx' => $alarmIdx ?? null,
+                            'interface' => $interface ?? null,
+                            'serial' => $serial ?? null,
                         ];
                     }
                 }
             }
         } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
-
-            $unregOnts[] = [
-                'success' => false,
-                'command' => $command,
-                'errorInfo' => $errorInfo,
-                'result' => [],
-            ];
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
 
-        return $unregOnts;
+        return new CommandResult(true, $command, null, $unregData);
     }
 
     /**
      * Inhibit all messages - TL1
      */
-    public static function inhMsgAll(): ?array
+    public static function inhMsgAll(): ?CommandResult
     {
+        $command = 'INH-MSG-ALL::ALL:::;';
+
         try {
-            $command = 'INH-MSG-ALL::ALL:::;';
             $response = self::$tl1Conn->exec($command, false);
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
             }
 
-            return [
-                'success' => true,
-                'command' => $command,
-                'errorInfo' => null,
-                'result' => [],
-            ];
+            return new CommandResult(true, $command, null, []);
         } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
-
-            return [
-                'success' => false,
-                'command' => $command,
-                'errorInfo' => $errorInfo,
-                'result' => [],
-            ];
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
     }
 
     /**
-     * Provision ONT's - TL1
+     * Provision ONT - TL1
      */
-    public static function entOnts(EntOntConfig $config): ?array
+    public static function entOnt(string $interface, EntOntConfig $config): ?CommandResult
     {
-        $provisionedOnts = [];
+        $formattedInterface = str_replace('/', '-', $interface);
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $formattedInterface = str_replace('/', '-', $interface);
+        $entOntCommand = $config->buildCommand();
+        $command = "ENT-ONT::ONT-$formattedInterface::::$entOntCommand;";
 
-            try {
-                $entOntCommand = $config->buildCommand();
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-                $command = "ENT-ONT::ONT-$formattedInterface::::$entOntCommand;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $provisionedOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $provisionedOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
 
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
-
-        return $provisionedOnts;
     }
 
     /**
-     * Edit provisioned ONT's - TL1
+     * Edit provisioned ONT - TL1
      */
-    public static function edOnts(EdOntConfig $config): ?array
+    public static function edOnt(string $interface, EdOntConfig $config): ?CommandResult
     {
-        $editedOnts = [];
+        $formattedInterface = str_replace('/', '-', $interface);
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $formattedInterface = str_replace('/', '-', $interface);
+        $edOntCommand = $config->buildCommand();
+        $command = "ED-ONT::ONT-$formattedInterface::::$edOntCommand:IS;";
 
-            try {
-                $edOntCommand = $config->buildCommand();
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-                $command = "ED-ONT::ONT-$formattedInterface::::$edOntCommand:IS;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $editedOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $editedOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
 
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
-
-        return $editedOnts;
     }
 
     /**
      * Plans a new ONT card - TL1
      */
-    public static function entOntsCard(EntOntCardConfig $config): ?array
+    public static function entOntsCard(string $interface, EntOntCardConfig $config): ?CommandResult
     {
-        $ontsCard = [];
+        $entOntCardConfigCommand = $config->buildCommand();
+        $accessIdentifier = $config->buildIdentifier($interface, 14);
+        $command = "ENT-ONTCARD::$accessIdentifier:::$entOntCardConfigCommand::IS;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $entOntCardConfigCommand = $config->buildCommand();
-                $accessIdentifier = $config->buildIdentifier($interface, 14);
-
-                $command = "ENT-ONTCARD::$accessIdentifier:::$entOntCardConfigCommand::IS;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $ontsCard[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsCard[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
 
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
-
-        return $ontsCard;
     }
 
     /**
      * Creates a logical port on an LT - TL1
      */
-    public static function entLogPort(EntLogPortConfig $config): ?array
+    public static function entLogPort(string $interface, EntLogPortConfig $config): ?CommandResult
     {
-        $ontsLTLogPort = [];
+        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $command = "ENT-LOGPORT::$accessIdentifier:::;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-
-                $command = "ENT-LOGPORT::$accessIdentifier:::;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $ontsLTLogPort[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsLTLogPort[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
 
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
         }
-
-        return $ontsLTLogPort;
     }
 
     /**
-     * Edit ONT's VEIP - TL1
+     * Edit ONT VEIP - TL1
      */
-    public static function edOntVeip(EdOntVeipConfig $config): ?array
+    public static function edOntVeip(string $interface, EdOntVeipConfig $config): ?CommandResult
     {
-        $editedOntsVeip = [];
+        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $command = "ED-ONTVEIP::$accessIdentifier:::::;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-
-                $command = "ED-ONTVEIP::$accessIdentifier:::::;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $editedOntsVeip[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $editedOntsVeip[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $editedOntsVeip;
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 
     /**
      * Configures upstream queue - TL1
      */
-    public static function setQosUsQueue(QosUsQueueConfig $config): ?array
+    public static function setQosUsQueue(string $interface, QosUsQueueConfig $config): ?CommandResult
     {
-        $configuredOnts = [];
+        $accessIdentifier = $config->buildIdentifier($interface, 14, 1, 0);
+        $buildCommand = $config->buildCommand();
+        $command = "SET-QOS-USQUEUE::$accessIdentifier::::$buildCommand;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $accessIdentifier = $config->buildIdentifier($interface, 14, 1, 0);
-                $buildCommand = $config->buildCommand();
-
-                $command = "SET-QOS-USQUEUE::$accessIdentifier::::$buildCommand;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $configuredOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $configuredOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $configuredOnts;
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 
     /**
      * Bounds a bridge port to the VLAN - TL1
      */
-    public static function setVlanPort(VlanPortConfig $config): ?array
+    public static function setVlanPort(string $interface, VlanPortConfig $config): ?CommandResult
     {
-        $configuredOnts = [];
+        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $buildCommand = $config->buildCommand();
+        $command = "SET-VLANPORT::$accessIdentifier:::$buildCommand;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-                $buildCommand = $config->buildCommand();
-
-                $command = "SET-VLANPORT::$accessIdentifier:::$buildCommand;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $configuredOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $configuredOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $configuredOnts;
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 
     /**
      * Adds a egress port to the VLAN - TL1
      */
-    public static function entVlanEgPort(VlanEgPortConfig $config): ?array
+    public static function entVlanEgPort(string $interface, VlanEgPortConfig $config): ?CommandResult
     {
-        $configuredOnts = [];
+        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $buildCommand = $config->buildCommand();
+        $command = "ENT-VLANEGPORT::$accessIdentifier:::$buildCommand;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-                $buildCommand = $config->buildCommand();
-
-                $command = "ENT-VLANEGPORT::$accessIdentifier:::$buildCommand;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $configuredOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $configuredOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $configuredOnts;
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 
     /**
      * Provisions a new HGU TR069 short key-value pair - TL1
      */
-    public static function entHguTr069Sparam(EntHguTr069SparamConfig $config): ?array
+    public static function entHguTr069Sparam(string $interface, EntHguTr069SparamConfig $config): ?CommandResult
     {
-        $configuredOnts = [];
+        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $buildCommand = $config->buildCommand();
+        $command = "ENT-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        try {
+            $response = self::$tl1Conn->exec($command, false);
 
-            try {
-                $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-                $buildCommand = $config->buildCommand();
-
-                $command = "ENT-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
-                $response = self::$tl1Conn->exec($command, false);
-
-                if (! str_contains($response, 'M  0 COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $configuredOnts[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $configuredOnts[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
             }
-        }
 
-        return $configuredOnts;
+            return new CommandResult(true, $command, null, []);
+        } catch (\Exception $e) {
+            return new CommandResult(false, $command, $e->getMessage(), []);
+        }
     }
 }

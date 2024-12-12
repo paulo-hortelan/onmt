@@ -417,7 +417,7 @@ class FiberhomeService
      * @param  string  $pppoeUsername  PPPOE username.
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
      * @param  LanConfig  $lanConfig  LAN service configuration parameters
-     * @return array Info about each ONT configuration
+     * @return array An array per interface containing an array for each command
      */
     public function provisionBridgeOnts(string $ontType, string $pppoeUsername, string $portInterface, LanConfig $lanConfig): ?array
     {
@@ -441,15 +441,15 @@ class FiberhomeService
             if (self::$model === 'AN551604') {
                 $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
 
-                if (! $authorizedOnt[0]['success']) {
-                    $provisionResult[] = $authorizedOnt[0];
+                $provisionResult[$i][] = $authorizedOnt[0];
 
+                if (! $authorizedOnt[0]['success']) {
                     continue;
                 }
 
                 $configuredOnt = AN551604::cfgLanPortVlan($portInterface, $lanConfig);
 
-                $provisionResult[] = $configuredOnt[0];
+                $provisionResult[$i][] = $configuredOnt[0];
             }
         }
 

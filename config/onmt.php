@@ -1,6 +1,5 @@
 <?php
 
-/*
- * You can place your custom package configuration in here.
- */
-return [];
+return [
+    'logging' => env('ONMT_LOGGING_METHOD', 'database'), // Options: ''disabled, 'file' or 'database'
+];

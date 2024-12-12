@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Facades\Nokia;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Nokia');
 
@@ -9,32 +11,30 @@ beforeEach(function () {
     $username = env('NOKIA_OLT_USERNAME_TELNET');
     $password = env('NOKIA_OLT_PASSWORD_TELNET');
 
-    $this->serial1 = env('NOKIA_SERIAL_1');
-    $this->serial2 = env('NOKIA_SERIAL_2');
-    $this->serial3 = env('NOKIA_SERIAL_3');
+    $this->serialALCL = env('NOKIA_SERIAL_ALCL');
+    $this->serialCMSZ = env('NOKIA_SERIAL_CMSZ');
 
-    $this->interface1 = env('NOKIA_INTERFACE_1');
-    $this->interface2 = env('NOKIA_INTERFACE_2');
-    $this->interface3 = env('NOKIA_INTERFACE_3');
+    $this->interfaceALCL = env('NOKIA_INTERFACE_ALCL');
+    $this->interfaceCMSZ = env('NOKIA_INTERFACE_CMSZ');
 
-    $this->ponInterface1 = env('NOKIA_PON_INTERFACE_1');
+    $this->ponInterfaceALCL = env('NOKIA_PON_INTERFACE_ALCL');
 
     $this->nokia = Nokia::connectTelnet($ipOlt, $username, $password, 23);
 });
 
 describe('Nokia Onts by Pon Interface - Success', function () {
     it('can get onts', function () {
-        $onts = $this->nokia->ontsByPonInterfaces([$this->ponInterface1]);
+        $onts = $this->nokia->ontsByPonInterface($this->ponInterfaceALCL);
 
-        expect($onts)->toBeArray();
-        expect($onts[0]['success'])->toBeTrue();
+        expect($onts)->toBeInstanceOf(Collection::class);
+
+        $onts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+            });
+        });
     });
-
-    it('can get next ont index', function () {
-        $nextOntIndex = $this->nokia->getNextOntIndex($this->ponInterface1);
-
-        var_dump($nextOntIndex);
-
-        expect($nextOntIndex)->toBeInt();
-    })->only();
 });

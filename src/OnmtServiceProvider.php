@@ -14,7 +14,8 @@ class OnmtServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('onmt')
-            ->hasConfigFile();
+            ->hasConfigFile()
+            ->hasMigrations();
 
         $this->app->bind(FiberhomeService::class, function () {
             return new FiberhomeService;

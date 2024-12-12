@@ -9,11 +9,10 @@ beforeEach(function () {
     $username = env('NOKIA_OLT_USERNAME_TELNET');
     $password = env('NOKIA_OLT_PASSWORD_TELNET');
 
-    $this->serial1 = env('NOKIA_SERIAL_1');
-    $this->serial2 = env('NOKIA_SERIAL_2');
-    $this->serial3 = env('NOKIA_SERIAL_3');
+    $this->serial1 = env('NOKIA_SERIAL_ALCL');
+    $this->serial2 = env('NOKIA_SERIAL_CMSZ');
 
-    $this->nokia = Nokia::connect($ipServer, $username, $password);
+    $this->nokia = Nokia::connectTelnet($ipServer, $username, $password, 23);
 });
 
 describe('Nokia Optical Interface', function () {
