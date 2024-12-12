@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Facades\Nokia;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Nokia');
 
@@ -9,45 +11,42 @@ beforeEach(function () {
     $username = env('NOKIA_OLT_USERNAME_TELNET');
     $password = env('NOKIA_OLT_PASSWORD_TELNET');
 
-    $this->interface1 = env('NOKIA_INTERFACE_1');
-    $this->interface2 = env('NOKIA_INTERFACE_2');
-    $this->interface3 = env('NOKIA_INTERFACE_3');
+    $this->interfaceALCL = env('NOKIA_INTERFACE_ALCL');
+    $this->interfaceCMSZ = env('NOKIA_INTERFACE_CMSZ');
 
-    $this->nokia = Nokia::connect($ipServer, $username, $password);
+    $this->nokia = Nokia::connectTelnet($ipServer, $username, $password, 23);
 });
 
 describe('Nokia Port Detail', function () {
     it('can get single detail', function () {
-        $detail = $this->nokia->ontsPortDetail([$this->interface1]);
+        $this->nokia->interfaces([$this->interfaceALCL]);
 
-        expect($detail)->toBeArray();
-        expect($detail[0]['result']['oprStatus'])->toBeString();
+        $details = $this->nokia->ontsPortDetail();
 
-        $detail = $this->nokia->interface($this->interface1)->ontsPortDetail();
+        expect($details)->toBeInstanceOf(Collection::class);
 
-        expect($detail)->toBeArray();
-        expect($detail[0]['result']['oprStatus'])->toBeString();
-    });
+        $details->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+            });
+        });
+    })->only();
 
     it('can get multiple details', function () {
-        $interfaces = [$this->interface1, $this->interface2, $this->interface3];
+        $this->nokia->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
 
-        $details = $this->nokia->ontsPortDetail($interfaces);
+        $details = $this->nokia->ontsPortDetail();
 
-        expect($details)->toBeArray();
-        expect($details[0]['result']['oprStatus'])->toBeString();
-        expect($details[1]['result']['oprStatus'])->toBeString();
-        expect($details[2]['result']['oprStatus'])->toBeString();
+        $details->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeArray();
 
-        $details = $this->nokia->interfaces($interfaces)->ontsPortDetail();
-
-        expect($details)->toBeArray();
-        expect($details[0]['result']['oprStatus'])->toBeString();
-        expect($details[1]['result']['oprStatus'])->toBeString();
-        expect($details[2]['result']['oprStatus'])->toBeString();
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult['success'])->toBeTrue();
+            });
+        });
     });
-});
-
-afterAll(function () {
-    $this->nokia->disconnect();
 });
