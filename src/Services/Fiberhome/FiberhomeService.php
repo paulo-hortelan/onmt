@@ -3,11 +3,14 @@
 namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Fiberhome\Models\AN551604;
 
@@ -15,7 +18,9 @@ class FiberhomeService
 {
     use Assertations, Validations;
 
-    protected static TL1 $connection;
+    protected static ?TL1 $tl1Conn = null;
+
+    protected static ?Telnet $telnetConn = null;
 
     protected static string $model = 'AN551604';
 
@@ -29,7 +34,7 @@ class FiberhomeService
 
     public static array $interfaces = [];
 
-    public function connect(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): ?object
+    public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): ?object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
@@ -38,19 +43,30 @@ class FiberhomeService
         }
 
         self::$ipOlt = $ipOlt;
-        self::$connection = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.self::$model);
-        self::$connection->stripPromptFromBuffer(true);
+        self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.self::$model);
+        self::$tl1Conn->stripPromptFromBuffer(true);
+        self::$tl1Conn->authenticate($username, $password, 'Fiberhome-'.self::$model);
 
         return $this;
     }
 
     public function disconnect(): void
     {
-        if (empty($this->connection)) {
-            throw new Exception('No connection established.');
+        if (isset(self::$telnetConn)) {
+            self::$telnetConn->destroy();
+            self::$telnetConn = null;
+
+            return;
         }
 
-        $this->connection->destroy();
+        if (isset(self::$tl1Conn)) {
+            self::$tl1Conn->destroy();
+            self::$tl1Conn = null;
+
+            return;
+        }
+
+        throw new Exception('No connection established.');
     }
 
     public function timeout(int $connTimeout, int $streamTimeout): object
@@ -75,6 +91,28 @@ class FiberhomeService
         return $this;
     }
 
+    public function enableDebug(): void
+    {
+        if (isset(self::$tl1Conn)) {
+            self::$tl1Conn->enableDebug();
+
+            return;
+        }
+
+        throw new Exception('No connection established.');
+    }
+
+    public function disableDebug(): void
+    {
+        if (isset(self::$tl1Conn)) {
+            self::$tl1Conn->disableDebug();
+
+            return;
+        }
+
+        throw new Exception('No connection established.');
+    }
+
     private function validateInterfacesSerials()
     {
         if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
@@ -95,19 +133,36 @@ class FiberhomeService
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  array  $interfaces  Interfaces list in the format 'NA-NA-{SLOT}-{PON}'
-     * @param  array  $serials  Serials list. Example: ['CMSZ123456']
-     * @return array List with info about each ONT power: 'rxPower', 'txPower'
+     * @return Collection Collection with info about each ONT power: 'rxPower', 'txPower'
      */
-    public function ontsOpticalPower(): ?array
+    public function ontsOpticalPower(): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::lstOMDDM();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::lstOMDDM($interface, $serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -115,19 +170,36 @@ class FiberhomeService
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  array  $interfaces  Interface list in the format 'NA-NA-{SLOT}-{PON}'
-     * @param  array  $serials  Serial list. Example: ['CMSZ123456']
-     * @return array List with info about each ONT state: 'adminState', 'oprState', 'auth', 'lastOffTime'
+     * @return Collection Collection with info about each ONT state: 'adminState', 'oprState', 'auth', 'lastOffTime'
      */
-    public function ontsStateInfo(): ?array
+    public function ontsStateInfo(): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::lstOnuState();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::lstOnuState($interface, $serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -135,67 +207,138 @@ class FiberhomeService
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  array  $interfaces  Interface list in the format 'NA-NA-{SLOT}-{PON}'
-     * @param  array  $serials  Serial list. Example: ['CMSZ123456']
-     * @return array List with info about each ONT port: 'cVlan'
+     * @return Collection Collection with info about each ONT port: 'cVlan'
      */
-    public function ontsPortInfo(): ?array
+    public function ontsPortInfo(): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::lstPortVlan();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::lstPortVlan($interface, $serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
-    public function ontsLanInfo(): ?array
+    /**
+     * List ONT's LAN Info
+     *
+     * @return Collection Info about ONT LAN
+     */
+    public function ontsLanInfo(): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::lstOnuLanInfo();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        $commandResultBatch = CommandResultBatch::create([]);
+
+        $response = AN551604::lstOnuLanInfo();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
     }
 
-    public function oltUplinksLanPerf(array $portInterfaces): ?array
+    /**
+     * List OLT uplink's lan perf
+     *
+     * @return Collection Info about OLT
+     */
+    public function oltUplinksLanPerf(string $portInterface): ?Collection
     {
-        if (self::$model === 'AN551604') {
-            return AN551604::lstLanPerf($portInterfaces);
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        $commandResultBatch = CommandResultBatch::create([]);
+
+        $response = AN551604::lstLanPerf($portInterface);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
     }
 
     /**
      * List unregistered ONT's
      *
-     * @return array Info about each unregistered ONT
+     * @return Collection Info about each unregistered ONT
      */
-    public function unregisteredOnts(): ?array
+    public function unregisteredOnts(): ?Collection
     {
-        if (self::$model === 'AN551604') {
-            return AN551604::lstUnregOnu();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        $commandResultBatch = CommandResultBatch::create([]);
+
+        $response = AN551604::lstUnregOnu();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
     }
 
     /**
      * List registered ONT's
      *
-     * @return array Info about each registered ONT
+     * @return Collection Info about each registered ONT
      */
-    public function registeredOnts(): ?array
+    public function registeredOnts(): ?Collection
     {
-        if (self::$model === 'AN551604') {
-            return AN551604::lstOnu();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        $commandResultBatch = CommandResultBatch::create([]);
+
+        $response = AN551604::lstOnu();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
     }
 
     /**
@@ -205,17 +348,36 @@ class FiberhomeService
      *
      * @param  string  $ontType  ONT's type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
-     * @return array Info about each ONT authorization
+     * @return Collection Info about each ONT authorization
      */
-    public function authorizeOnts(string $ontType, string $pppoeUsername): ?array
+    public function authorizeOnts(string $ontType, string $pppoeUsername): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::addOnu($ontType, $pppoeUsername);
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -223,19 +385,38 @@ class FiberhomeService
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  array  $portInface  Port interface. Example: 'NA-NA-NA-1'
+     * @param  string  $portInface  Port interface. Example: 'NA-NA-NA-1'
      * @param  LanConfig  $config  LAN service configuration parameters
-     * @return array Info about each ONT configuration
+     * @return Collection Info about each ONT configuration
      */
-    public function configureLanOnts(string $portInterface, LanConfig $config): ?array
+    public function configureLanOnts(string $portInterface, LanConfig $config): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::cfgLanPortVlan($portInterface, $config);
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::cfgLanPortVlan($interface, $serial, $portInterface, $config);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -245,17 +426,36 @@ class FiberhomeService
      *
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
      * @param  VeipConfig  $config  VEIP service configuration parameters
-     * @return array Info about each ONT configuration
+     * @return Collection Info about each ONT configuration
      */
-    public function configureVeipOnts(string $portInterface, VeipConfig $config): ?array
+    public function configureVeipOnts(string $portInterface, VeipConfig $config): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::cfgVeipService($portInterface, $config);
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::cfgVeipService($interface, $serial, $portInterface, $config);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -264,17 +464,36 @@ class FiberhomeService
      * Parameters 'interfaces' and 'serials' must already be provided
      *
      * @param  WanConfig  $config  WAN service configurations parameters
-     * @return array Info about each ONT configuration
+     * @return Collection Info about each ONT configuration
      */
-    public function configureWanOnts(WanConfig $config): ?array
+    public function configureWanOnts(WanConfig $config): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::setWanService($config);
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::setWanService($interface, $serial, $config);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**
@@ -286,9 +505,9 @@ class FiberhomeService
      * @param  string  $pppoeUsername  PPPOE username.
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
      * @param  VeipConfig  $veipConfig  VEIP service configuration parameters
-     * @return array Info about each ONT configuration
+     * @return Collection Info about each ONT configuration
      */
-    public function provisionRouterVeipOnts(string $ontType, string $pppoeUsername, string $portInterface, VeipConfig $veipConfig): ?array
+    public function provisionRouterVeipOnts(string $ontType, string $pppoeUsername, string $portInterface, VeipConfig $veipConfig): ?Collection
     {
         $this->validateInterfacesSerials();
 
@@ -296,35 +515,37 @@ class FiberhomeService
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        $provisionResult = [];
+        $finalResponse = collect();
 
-        $interfaces = self::$interfaces;
-        $serials = self::$serials;
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
 
-        for ($i = 0; $i < count($interfaces); $i++) {
-            $interface = $interfaces[$i];
-            $serial = $serials[$i];
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
 
-            $this->interfaces([$interface])->serials([$serial]);
+            $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
 
-            if (self::$model === 'AN551604') {
-                $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
 
-                if (! $authorizedOnt[0]['success']) {
-                    $provisionResult[] = $authorizedOnt[0];
+            if (! $response->success) {
+                $finalResponse->push($commandResultBatch);
 
-                    continue;
-                }
-
-                $configuredOnt = AN551604::cfgVeipService($portInterface, $veipConfig);
-
-                $provisionResult[] = $configuredOnt[0];
+                continue;
             }
+
+            $response = AN551604::cfgVeipService($interface, $serial, $portInterface, $veipConfig);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        $this->interfaces([$interfaces])->serials([$serials]);
-
-        return $provisionResult;
+        return $finalResponse;
     }
 
     /**
@@ -335,9 +556,9 @@ class FiberhomeService
      * @param  string  $ontType  ONT's type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
      * @param  WanConfig  $wanConfig  WAN service configuration parameters
-     * @return array Info about each ONT configuration
+     * @return Collection Info about each ONT configuration
      */
-    public function provisionRouterWanOnts(string $ontType, string $pppoeUsername, WanConfig $wanConfig): ?array
+    public function provisionRouterWanOnts(string $ontType, string $pppoeUsername, WanConfig $wanConfig): ?Collection
     {
         $this->validateInterfacesSerials();
 
@@ -345,67 +566,75 @@ class FiberhomeService
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        $provisionResult = [];
+        $finalResponse = collect();
 
-        $interfaces = self::$interfaces;
-        $serials = self::$serials;
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
 
-        for ($i = 0; $i < count($interfaces); $i++) {
-            $interface = $interfaces[$i];
-            $serial = $serials[$i];
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
 
-            $this->interfaces([$interface])->serials([$serial]);
+            $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
 
-            if (self::$model === 'AN551604') {
-                $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
 
-                if (! $authorizedOnt[0]['success']) {
-                    $provisionResult[] = $authorizedOnt[0];
+            if (! $response->success) {
+                $finalResponse->push($commandResultBatch);
 
-                    continue;
-                }
-
-                $wanConfig->uPort = 0;
-                $wanConfig->ssdId = null;
-
-                // UPORT = 0
-                $configuredOnt = AN551604::setWanService($wanConfig);
-
-                if (! $configuredOnt[0]['success']) {
-                    $provisionResult[] = $configuredOnt[0];
-
-                    continue;
-                }
-
-                $wanConfig->uPort = null;
-                $wanConfig->ssdId = 1;
-
-                // SSDID = 0
-                $configuredOnt = AN551604::setWanService($wanConfig);
-
-                if (! $configuredOnt[0]['success']) {
-                    $provisionResult[] = $configuredOnt[0];
-
-                    continue;
-                }
-
-                $wanConfig->ssdId = 5;
-
-                $configuredOnt = AN551604::setWanService($wanConfig);
-
-                if (! $configuredOnt[0]['success']) {
-                    $provisionResult[] = $configuredOnt[0];
-
-                    continue;
-                }
-
-                $provisionResult[] = $configuredOnt[0];
+                continue;
             }
+
+            $wanConfig->uPort = 0;
+            $wanConfig->ssdId = null;
+
+            // UPORT = 0
+            $response = AN551604::setWanService($interface, $serial, $wanConfig);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            if (! $response->success) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $wanConfig->uPort = null;
+            $wanConfig->ssdId = 1;
+
+            // SSDID = 0
+            $response = AN551604::setWanService($interface, $serial, $wanConfig);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            if (! $response->success) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $wanConfig->ssdId = 5;
+
+            $response = AN551604::setWanService($interface, $serial, $wanConfig);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            if (! $response->success) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        $this->interfaces([$interfaces])->serials([$serials]);
-
-        return $provisionResult;
+        return $finalResponse;
     }
 
     /**
@@ -417,9 +646,9 @@ class FiberhomeService
      * @param  string  $pppoeUsername  PPPOE username.
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
      * @param  LanConfig  $lanConfig  LAN service configuration parameters
-     * @return array An array per interface containing an array for each command
+     * @return Collection Info about each ONT configuration
      */
-    public function provisionBridgeOnts(string $ontType, string $pppoeUsername, string $portInterface, LanConfig $lanConfig): ?array
+    public function provisionBridgeOnts(string $ontType, string $pppoeUsername, string $portInterface, LanConfig $lanConfig): ?Collection
     {
         $this->validateInterfacesSerials();
 
@@ -427,35 +656,37 @@ class FiberhomeService
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        $provisionResult = [];
+        $finalResponse = collect();
 
-        $interfaces = self::$interfaces;
-        $serials = self::$serials;
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
 
-        for ($i = 0; $i < count($interfaces); $i++) {
-            $interface = $interfaces[$i];
-            $serial = $serials[$i];
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
 
-            $this->interfaces([$interface])->serials([$serial]);
+            $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
 
-            if (self::$model === 'AN551604') {
-                $authorizedOnt = AN551604::addOnu($ontType, $pppoeUsername);
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
 
-                $provisionResult[$i][] = $authorizedOnt[0];
+            if (! $response->success) {
+                $finalResponse->push($commandResultBatch);
 
-                if (! $authorizedOnt[0]['success']) {
-                    continue;
-                }
-
-                $configuredOnt = AN551604::cfgLanPortVlan($portInterface, $lanConfig);
-
-                $provisionResult[$i][] = $configuredOnt[0];
+                continue;
             }
+
+            $response = AN551604::cfgLanPortVlan($interface, $serial, $portInterface, $lanConfig);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
         }
 
-        $this->interfaces([$interfaces])->serials([$serials]);
-
-        return $provisionResult;
+        return $finalResponse;
     }
 
     /**
@@ -463,16 +694,35 @@ class FiberhomeService
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @return array Info about each ONT delete result
+     * @return Collection Info about each ONT delete result
      */
-    public function removeOnts(): ?array
+    public function removeOnts(): ?Collection
     {
         $this->validateInterfacesSerials();
 
-        if (self::$model === 'AN551604') {
-            return AN551604::delOnu();
+        if (self::$model !== 'AN551604') {
+            throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        throw new Exception('Model '.self::$model.' is not supported.');
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$interfaces); $i++) {
+            $interface = self::$interfaces[$i];
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+                'serial' => $serial,
+            ]);
+
+            $response = AN551604::delOnu($interface, $serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 }

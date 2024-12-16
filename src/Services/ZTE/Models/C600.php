@@ -22,16 +22,16 @@ class C600 extends C300
                     $interface = trim($match[0]);
                 }
             } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
+                $error = $e->getMessage();
             }
 
             if (! $success) {
-                $errorInfo = 'Interface not found on OLT';
+                $error = 'Interface not found on OLT';
             }
 
             $ontsInterface[] = [
                 'success' => $success,
-                'errorInfo' => $errorInfo ?? null,
+                'error' => $error ?? null,
                 'result' => [
                     'serial' => $serial,
                     'interface' => $interface ?? null,

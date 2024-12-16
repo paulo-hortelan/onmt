@@ -5,6 +5,7 @@ namespace PauloHortelan\Onmt\Services\Fiberhome\Models;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
+use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 
 class AN551604 extends FiberhomeService
@@ -12,189 +13,153 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the ONT's optical power
      */
-    public static function lstOMDDM(): ?array
+    public static function lstOMDDM(string $interface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $ontsOpticalPower = [];
+        $command = "LST-OMDDM::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "LST-OMDDM::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $response = preg_split("/\r\n|\n|\r/", $response);
-
-                foreach ($response as $key => $column) {
-                    if (preg_match('/ONUID/', $column)) {
-                        $splitted = preg_split('/\\t/', $response[$key + 1]);
-
-                        $rxPower = (float) str_replace(',', '.', $splitted[1]);
-                        $txPower = (float) str_replace(',', '.', $splitted[3]);
-
-                        $ontsOpticalPower[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'interface' => $interface,
-                                'serial' => $serial,
-                                'rxPower' => $rxPower ?? null,
-                                'txPower' => $txPower ?? null,
-                            ],
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsOpticalPower[] = [
-                    'success' => false,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                        'serial' => $serial,
-                    ],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+
+            $response = preg_split("/\r\n|\n|\r/", $response);
+
+            foreach ($response as $key => $column) {
+                if (preg_match('/ONUID/', $column)) {
+                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+
+                    $rxPower = (float) str_replace(',', '.', $splitted[1]);
+                    $txPower = (float) str_replace(',', '.', $splitted[3]);
+
+                    $ontsOpticalPower = [
+                        'rxPower' => $rxPower ?? null,
+                        'txPower' => $txPower ?? null,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $ontsOpticalPower;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $ontsOpticalPower,
+        ]);
     }
 
     /**
      * Returns the ONT's state info
      */
-    public static function lstOnuState(): ?array
+    public static function lstOnuState(string $interface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $opticalStates = [];
+        $opticalState = [];
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $command = "LST-ONUSTATE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "LST-ONUSTATE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $response = preg_split("/\r\n|\n|\r/", $response);
-
-                foreach ($response as $key => $column) {
-                    if (preg_match('/ONUID/', $column)) {
-                        $splitted = preg_split('/\\t/', $response[$key + 1]);
-
-                        $adminState = $splitted[1];
-                        $oprState = $splitted[2];
-                        $auth = $splitted[3];
-                        $lastOffTime = $splitted[6];
-
-                        $opticalStates[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'interface' => $interface,
-                                'serial' => $serial,
-                                'adminState' => $adminState ?? null,
-                                'oprState' => $oprState ?? null,
-                                'auth' => $auth ?? null,
-                                'lastOffTime' => $lastOffTime ?? null,
-                            ],
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $opticalStates[] = [
-                    'success' => false,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                        'serial' => $serial,
-                    ],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+
+            $response = preg_split("/\r\n|\n|\r/", $response);
+
+            foreach ($response as $key => $column) {
+                if (preg_match('/ONUID/', $column)) {
+                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+
+                    $adminState = $splitted[1];
+                    $oprState = $splitted[2];
+                    $auth = $splitted[3];
+                    $lastOffTime = $splitted[6];
+
+                    $opticalState = [
+                        'adminState' => $adminState ?? null,
+                        'oprState' => $oprState ?? null,
+                        'auth' => $auth ?? null,
+                        'lastOffTime' => $lastOffTime ?? null,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $opticalStates;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $opticalState,
+        ]);
     }
 
     /**
      * Returns the ONT's port info
      */
-    public static function lstPortVlan(): ?array
+    public static function lstPortVlan(string $interface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $ontsPortInfo = [];
+        $command = "LST-PORTVLAN::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "LST-PORTVLAN::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $response = preg_split("/\r\n|\n|\r/", $response);
-
-                foreach ($response as $key => $column) {
-                    if (preg_match('/ONUIP/', $column)) {
-                        $splitted = preg_split('/\\t/', $response[$key + 1]);
-
-                        $cvLan = isset($splitted[6]) ? (int) $splitted[6] : null;
-
-                        $ontsPortInfo[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'interface' => $interface,
-                                'serial' => $serial,
-                                'cvLan' => $cvLan,
-                            ],
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsPortInfo[] = [
-                    'success' => false,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                        'serial' => $serial,
-                    ],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+
+            $response = preg_split("/\r\n|\n|\r/", $response);
+
+            foreach ($response as $key => $column) {
+                if (preg_match('/ONUIP/', $column)) {
+                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+
+                    $cvLan = isset($splitted[6]) ? (int) $splitted[6] : null;
+
+                    $ontsPortInfo = [
+                        'cvLan' => $cvLan,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $ontsPortInfo;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $ontsPortInfo,
+        ]);
     }
 
     /**
      * Returns the ONT's lan info
      */
-    public static function lstOnuLanInfo(): ?array
+    public static function lstOnuLanInfo(): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $ontsLanInfo = [];
@@ -205,7 +170,7 @@ class AN551604 extends FiberhomeService
 
             try {
                 $command = "LST-ONULANINFO::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
-                $response = self::$connection->exec($command);
+                $response = self::$tl1Conn->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
@@ -224,115 +189,102 @@ class AN551604 extends FiberhomeService
                         $vlanPriority = $splitted[4];
                         $speed = $splitted[5];
 
-                        $ontsLanInfo[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'interface' => $interface,
-                                'serial' => $serial,
-                                'adminStatus' => $adminStatus ?? null,
-                                'operStatus' => $operStatus ?? null,
-                                'duplex' => $duplex ?? null,
-                                'pVid' => $pVid ?? null,
-                                'vlanPriority' => $vlanPriority ?? null,
-                                'speed' => $speed ?? null,
-                            ],
+                        $ontsLanInfo = [
+                            'adminStatus' => $adminStatus ?? null,
+                            'operStatus' => $operStatus ?? null,
+                            'duplex' => $duplex ?? null,
+                            'pVid' => $pVid ?? null,
+                            'vlanPriority' => $vlanPriority ?? null,
+                            'speed' => $speed ?? null,
                         ];
                     }
                 }
             } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $ontsLanInfo[] = [
+                return CommandResult::create([
                     'success' => false,
                     'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [
-                        'interface' => $interface,
-                        'serial' => $serial,
-                    ],
-                ];
+                    'error' => $e->getMessage(),
+                    'result' => [],
+                ]);
             }
         }
 
-        return $ontsLanInfo;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $ontsLanInfo,
+        ]);
     }
 
     /**
      * Returns the OLT uplink's lan perf
      */
-    public static function lstLanPerf(array $portInterfaces): ?array
+    public static function lstLanPerf(string $portInterface): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $oltUplinksLanPerf = [];
 
-        for ($i = 0; $i < count($portInterfaces); $i++) {
-            $portInterface = $portInterfaces[$i];
+        try {
+            $command = "LST-LANPERF::OLTID=$ipOlt,PORTID=$portInterface,PORTID=NA-NA-NA-NA:CTAG::;";
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "LST-LANPERF::OLTID=$ipOlt,PORTID=$portInterface,PORTID=NA-NA-NA-NA:CTAG::;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $response = preg_split("/\r\n|\n|\r/", $response);
-
-                foreach ($response as $key => $column) {
-                    if (preg_match('/AdminStatus/', $column)) {
-                        $splitted = preg_split('/\\t/', $response[$key + 1]);
-
-                        $adminStatus = $splitted[0];
-                        $operStatus = $splitted[1];
-                        $duplex = $splitted[2];
-                        $pVid = (int) $splitted[3];
-                        $vlanPriority = $splitted[4];
-                        $speed = $splitted[5];
-
-                        $oltUplinksLanPerf[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'portInterface' => $portInterface,
-                                'adminStatus' => $adminStatus ?? null,
-                                'operStatus' => $operStatus ?? null,
-                                'duplex' => $duplex ?? null,
-                                'pVid' => $pVid ?? null,
-                                'vlanPriority' => $vlanPriority ?? null,
-                                'speed' => $speed ?? null,
-                            ],
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $oltUplinksLanPerf[] = [
-                    'success' => false,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+
+            $response = preg_split("/\r\n|\n|\r/", $response);
+
+            foreach ($response as $key => $column) {
+                if (preg_match('/AdminStatus/', $column)) {
+                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+
+                    $adminStatus = $splitted[0];
+                    $operStatus = $splitted[1];
+                    $duplex = $splitted[2];
+                    $pVid = (int) $splitted[3];
+                    $vlanPriority = $splitted[4];
+                    $speed = $splitted[5];
+
+                    $oltUplinksLanPerf = [
+                        'portInterface' => $portInterface,
+                        'adminStatus' => $adminStatus ?? null,
+                        'operStatus' => $operStatus ?? null,
+                        'duplex' => $duplex ?? null,
+                        'pVid' => $pVid ?? null,
+                        'vlanPriority' => $vlanPriority ?? null,
+                        'speed' => $speed ?? null,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $oltUplinksLanPerf;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $oltUplinksLanPerf,
+        ]);
     }
 
     /**
      * Returns the unregistered ONT's
      */
-    public static function lstUnregOnu(): ?array
+    public static function lstUnregOnu(): ?CommandResult
     {
+        $unRegData = [];
         $ipOlt = self::$ipOlt;
-        $unregOnts = [];
+        $command = "LST-UNREGONU::OLTID=$ipOlt:CTAG::;";
 
         try {
-            $command = "LST-UNREGONU::OLTID=$ipOlt:CTAG::;";
-            $response = self::$connection->exec($command);
+            $response = self::$tl1Conn->exec($command);
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -345,12 +297,12 @@ class AN551604 extends FiberhomeService
                     $numOnts = count($response) - $key - 2;
 
                     if ($numOnts === 0) {
-                        $unregOnts[] = [
+                        return CommandResult::create([
                             'success' => true,
                             'command' => $command,
-                            'errorInfo' => null,
+                            'error' => null,
                             'result' => [],
-                        ];
+                        ]);
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
@@ -365,48 +317,47 @@ class AN551604 extends FiberhomeService
                         $authTime = $splitted[6];
                         $dt = $splitted[7];
 
-                        $unregOnts[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'slot' => $slot ?? null,
-                                'pon' => $pon ?? null,
-                                'serial' => $serial ?? null,
-                                'loid' => $loid ?? null,
-                                'pwd' => $pwd ?? null,
-                                'error' => $error ?? null,
-                                'authTime' => $authTime ?? null,
-                                'dt' => $dt ?? null,
-                            ],
+                        $unRegData = [
+                            'slot' => $slot ?? null,
+                            'pon' => $pon ?? null,
+                            'serial' => $serial ?? null,
+                            'loid' => $loid ?? null,
+                            'pwd' => $pwd ?? null,
+                            'error' => $error ?? null,
+                            'authTime' => $authTime ?? null,
+                            'dt' => $dt ?? null,
                         ];
                     }
                 }
             }
         } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
-
-            $unregOnts[] = [
+            return CommandResult::create([
                 'success' => false,
-                'errorInfo' => $errorInfo,
+                'command' => $command,
+                'error' => $e->getMessage(),
                 'result' => [],
-            ];
+            ]);
         }
 
-        return $unregOnts;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $unRegData,
+        ]);
     }
 
     /**
      * Returns the registered ONT's
      */
-    public static function lstOnu(): ?array
+    public static function lstOnu(): ?CommandResult
     {
-        $ipOlt = self::$ipOlt;
         $regOnts = [];
+        $ipOlt = self::$ipOlt;
+        $command = "LST-ONU::OLTID=$ipOlt:CTAG::;";
 
         try {
-            $command = "LST-ONU::OLTID=$ipOlt:CTAG::;";
-            $response = self::$connection->exec($command);
+            $response = self::$tl1Conn->exec($command);
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -419,12 +370,12 @@ class AN551604 extends FiberhomeService
                     $numOnts = count($response) - $key - 2;
 
                     if ($numOnts === 0) {
-                        $regOnts[] = [
+                        return CommandResult::create([
                             'success' => true,
                             'command' => $command,
-                            'errorInfo' => null,
+                            'error' => null,
                             'result' => [],
-                        ];
+                        ]);
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
@@ -443,183 +394,139 @@ class AN551604 extends FiberhomeService
                         $swVer = $splitted[10];
 
                         $regOnts[] = [
-                            'success' => true,
-                            'command' => $command,
-                            'errorInfo' => null,
-                            'result' => [
-                                'oltId' => $oltId ?? null,
-                                'ponId' => $ponId ?? null,
-                                'onuNo' => $onuNo ?? null,
-                                'name' => $name ?? null,
-                                'desc' => $desc ?? null,
-                                'onuTypeIp' => $onuTypeIp ?? null,
-                                'authType' => $authType ?? null,
-                                'serial' => $serial ?? null,
-                                'loid' => $loid ?? null,
-                                'pwd' => $pwd ?? null,
-                                'swVer' => $swVer ?? null,
-                            ],
+                            'oltId' => $oltId ?? null,
+                            'ponId' => $ponId ?? null,
+                            'onuNo' => $onuNo ?? null,
+                            'name' => $name ?? null,
+                            'desc' => $desc ?? null,
+                            'onuTypeIp' => $onuTypeIp ?? null,
+                            'authType' => $authType ?? null,
+                            'serial' => $serial ?? null,
+                            'loid' => $loid ?? null,
+                            'pwd' => $pwd ?? null,
+                            'swVer' => $swVer ?? null,
                         ];
                     }
                 }
             }
         } catch (\Exception $e) {
-            $errorInfo = $e->getMessage();
-
-            $regOnts[] = [
+            return CommandResult::create([
                 'success' => false,
-                'errorInfo' => $errorInfo,
+                'command' => $command,
+                'error' => $e->getMessage(),
                 'result' => [],
-            ];
+            ]);
         }
 
-        return $regOnts;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $regOnts,
+        ]);
     }
 
     /**
      * Authorize ONT's
      */
-    public static function addOnu($ontType, $pppoeUsername): ?array
+    public static function addOnu(string $interface, string $serial, string $ontType, string $pppoeUsername): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $authResponse = [];
+        $command = "ADD-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "ADD-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $authResponse[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $authResponse[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $authResponse;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => [],
+        ]);
     }
 
     /**
      * Remove ONT's
      */
-    public static function delOnu(): ?array
+    public static function delOnu(string $interface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $delResponse = [];
+        $command = "DEL-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;";
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "DEL-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $delResponse[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $delResponse[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $delResponse;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => [],
+        ]);
     }
 
     /**
      * Configure ONT's VLAN
      */
-    public static function cfgLanPortVlan($portInterface, LanConfig $config): ?array
+    public static function cfgLanPortVlan(string $interface, string $serial, string $portInterface, LanConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $configVlanResponse = [];
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $lanServiceCommand = $config->buildCommand();
 
-            try {
-                $lanServiceCommand = $config->buildCommand();
+            $command = "CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$lanServiceCommand;";
+            $response = self::$tl1Conn->exec($command);
 
-                $command = "CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$lanServiceCommand;";
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $configVlanResponse[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $configVlanResponse[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $configVlanResponse;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => [],
+        ]);
     }
 
     /**
      * Configure ONT's VEIP
      */
-    public static function cfgVeipService(string $portInterface, VeipConfig $config): ?array
+    public static function cfgVeipService(string $interface, string $serial, string $portInterface, VeipConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $cfgVeipVlanResponses = [];
 
         for ($i = 0; $i < count(self::$interfaces); $i++) {
             $interface = self::$interfaces[$i];
@@ -630,82 +537,60 @@ class AN551604 extends FiberhomeService
 
                 $command = "CFG-VEIPSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$veipServiceCommand;";
 
-                $response = self::$connection->exec($command);
+                $response = self::$tl1Conn->exec($command);
 
                 if (! str_contains($response, 'M  CTAG COMPLD')) {
                     throw new \Exception($response);
                 }
-
-                $cfgVeipVlanResponses[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
             } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $cfgVeipVlanResponses[] = [
+                return CommandResult::create([
                     'success' => false,
-                    'interface' => $interface,
-                    'serial' => $serial,
                     'command' => $command,
-                    'errorInfo' => $errorInfo,
+                    'error' => $e->getMessage(),
                     'result' => [],
-                ];
+                ]);
             }
         }
 
-        return $cfgVeipVlanResponses;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => [],
+        ]);
     }
 
     /**
      * Set ONT's WAN Service
      */
-    public static function setWanService(WanConfig $config): ?array
+    public static function setWanService(string $interface, string $serial, WanConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $setWanServiceResponses = [];
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $wanServiceCommand = $config->buildCommand();
 
-            try {
-                $wanServiceCommand = $config->buildCommand();
+            $command = "SET-WANSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::$wanServiceCommand;";
 
-                $command = "SET-WANSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::$wanServiceCommand;";
+            $response = self::$tl1Conn->exec($command);
 
-                $response = self::$connection->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $setWanServiceResponses[] = [
-                    'success' => true,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => null,
-                    'result' => [],
-                ];
-            } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
-
-                $setWanServiceResponses[] = [
-                    'success' => false,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'command' => $command,
-                    'errorInfo' => $errorInfo,
-                    'result' => [],
-                ];
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return $setWanServiceResponses;
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => [],
+        ]);
     }
 }

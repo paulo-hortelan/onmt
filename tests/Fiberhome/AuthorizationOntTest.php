@@ -1,17 +1,19 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Facades\Fiberhome;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Fiberhome');
 
 beforeEach(function () {
     $ipOlt = env('FIBERHOME_OLT_IP');
     $ipServer = env('FIBERHOME_IP_SERVER');
-    $username = env('FIBERHOME_OLT_USERNAME');
-    $password = env('FIBERHOME_OLT_PASSWORD');
+    $username = env('FIBERHOME_OLT_USERNAME_TL1');
+    $password = env('FIBERHOME_OLT_PASSWORD_TL1');
 
     $this->serialALCL = env('FIBERHOME_SERIAL_ALCL');
     $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
@@ -25,10 +27,12 @@ beforeEach(function () {
     $this->ontTypeCMSZ = env('FIBERHOME_ONT_TYPE_CMSZ');
     $this->ontTypeFHTT = env('FIBERHOME_ONT_TYPE_FHTT');
 
+    $this->portInterfaceCMSZ = env('FIBERHOME_PORT_INTERFACE_CMSZ');
+    $this->portInterfaceALCL = env('FIBERHOME_PORT_INTERFACE_ALCL');
+
     $this->pppoeUsername = env('FIBERHOME_PPPOE_USERNAME');
 
-    $this->fiberhome = Fiberhome::timeout(5, 10)->connect($ipOlt, $username, $password, 3337, $ipServer);
-
+    $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($ipOlt, $username, $password, 3337, $ipServer);
 });
 
 describe('Fiberhome Authorize Onts', function () {
@@ -37,8 +41,16 @@ describe('Fiberhome Authorize Onts', function () {
 
         $configuredOnts = $this->fiberhome->authorizeOnts($this->ontTypeALCL, $this->pppoeUsername);
 
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
 })->skip();
 
@@ -53,8 +65,16 @@ describe('Fiberhome Configure Onts LAN', function () {
 
         $configuredOnts = $this->fiberhome->configureLanOnts($this->portInterfaceCMSZ, $lanConfig);
 
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
 })->skip();
 
@@ -71,8 +91,16 @@ describe('Fiberhome Configure Onts VEIP', function () {
 
         $configuredOnts = $this->fiberhome->configureVeipOnts($this->portInterfaceALCL, $veipConfig);
 
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
 })->skip();
 
@@ -100,8 +128,16 @@ describe('Fiberhome Configure Onts WAN', function () {
 
         $configuredOnts = $this->fiberhome->configureWanOnts($WanConfig);
 
-        expect($configuredOnts)->toBeArray();
-        expect($configuredOnts[0]['success'])->toBeTrue();
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
 })->skip();
 
@@ -112,7 +148,15 @@ describe('Fiberhome Remove Onts', function () {
 
         $removedOnts = $this->fiberhome->removeOnts();
 
-        expect($removedOnts)->toBeArray();
-        expect($removedOnts[0]['success'])->toBeTrue();
+        expect($removedOnts)->toBeInstanceOf(Collection::class);
+
+        $removedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
-})->only();
+})->skip();

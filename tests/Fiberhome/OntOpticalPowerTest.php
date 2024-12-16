@@ -1,45 +1,61 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Facades\Fiberhome;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Fiberhome');
 
 beforeEach(function () {
     $ipOlt = env('FIBERHOME_OLT_IP');
     $ipServer = env('FIBERHOME_IP_SERVER');
-    $username = env('FIBERHOME_OLT_USERNAME');
-    $password = env('FIBERHOME_OLT_PASSWORD');
+    $username = env('FIBERHOME_OLT_USERNAME_TL1');
+    $password = env('FIBERHOME_OLT_PASSWORD_TL1');
 
-    $this->serial1 = env('FIBERHOME_SERIAL_ALCL');
-    $this->serial2 = env('FIBERHOME_SERIAL_2');
-    $this->serial3 = env('FIBERHOME_SERIAL_3');
+    $this->serialALCL = env('FIBERHOME_SERIAL_ALCL');
+    $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
 
-    $this->interface1 = env('FIBERHOME_INTERFACE_ALCL');
-    $this->interface2 = env('FIBERHOME_INTERFACE_2');
-    $this->interface3 = env('FIBERHOME_INTERFACE_3');
+    $this->interfaceALCL = env('FIBERHOME_INTERFACE_ALCL');
+    $this->interfaceCMSZ = env('FIBERHOME_INTERFACE_CMSZ');
 
-    $this->fiberhome = Fiberhome::connect($ipOlt, $username, $password, 3337, $ipServer);
+    $this->fiberhome = Fiberhome::connectTL1($ipOlt, $username, $password, 3337, $ipServer);
 });
 
-describe('Fiberhome Ont Optical Power - Success', function () {
+describe('Fiberhome Ont Optical Power', function () {
     it('can get single power', function () {
-        $this->fiberhome->interfaces([$this->interface1])->serials([$this->serial1]);
+        $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
 
         $powers = $this->fiberhome->ontsOpticalPower();
 
-        expect($powers)->toBeArray();
-        expect($powers[0]['result']['rxPower'])->toBeFloat();
-    })->only();
+        expect($powers)->toBeInstanceOf(Collection::class);
+
+        $powers->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+                expect($commandResult->result['rxPower'])->toBeFloat();
+            });
+        });
+    });
 
     it('can get multiple powers', function () {
-        $this->fiberhome->interfaces([$this->interface1, $this->interface2, $this->interface3]);
-        $this->fiberhome->serials([$this->serial1, $this->serial2, $this->serial3]);
+        $this->fiberhome->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
+        $this->fiberhome->serials([$this->serialALCL, $this->serialCMSZ]);
 
         $powers = $this->fiberhome->ontsOpticalPower();
 
-        expect($powers)->toBeArray();
-        expect($powers[0]['result']['rxPower'])->toBeFloat();
-        expect($powers[1]['result']['rxPower'])->toBeFloat();
-        expect($powers[2]['result']['rxPower'])->toBeFloat();
+        expect($powers)->toBeInstanceOf(Collection::class);
+
+        $powers->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+                expect($commandResult->result['rxPower'])->toBeFloat();
+            });
+        });
     });
 });

@@ -1,17 +1,19 @@
 <?php
 
+use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Facades\Fiberhome;
+use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Fiberhome');
 
 beforeEach(function () {
     $ipOlt = env('FIBERHOME_OLT_IP');
     $ipServer = env('FIBERHOME_IP_SERVER');
-    $username = env('FIBERHOME_OLT_USERNAME');
-    $password = env('FIBERHOME_OLT_PASSWORD');
+    $username = env('FIBERHOME_OLT_USERNAME_TL1');
+    $password = env('FIBERHOME_OLT_PASSWORD_TL1');
 
     $this->serialALCL = env('FIBERHOME_SERIAL_ALCL');
     $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
@@ -31,7 +33,7 @@ beforeEach(function () {
     $this->portInterfaceCMSZ = env('FIBERHOME_PORT_INTERFACE_CMSZ');
     $this->portInterfaceFHTT = env('FIBERHOME_PORT_INTERFACE_FHTT');
 
-    $this->fiberhome = Fiberhome::timeout(5, 10)->connect($ipOlt, $username, $password, 3337, $ipServer);
+    $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($ipOlt, $username, $password, 3337, $ipServer);
 
 });
 
@@ -48,10 +50,21 @@ describe('Fiberhome Provision Onts Router-Nokia', function () {
 
         $provisionedOnts = $this->fiberhome->provisionRouterVeipOnts($this->ontTypeALCL, $this->pppoeUsername, $this->portInterfaceALCL, $veipConfig);
 
-        expect($provisionedOnts)->toBeArray();
-        expect($provisionedOnts[0]['success'])->toBeTrue();
+        var_dump($provisionedOnts->toArray());
+
+        expect($provisionedOnts)->toBeInstanceOf(Collection::class);
+
+        $provisionedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
     });
-})->skip();
+})->only();
 
 describe('Fiberhome Provision Onts Router-Fiberhome', function () {
     it('can provision onts', function () {
@@ -77,8 +90,16 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
 
         $provisionedOnts = $this->fiberhome->provisionRouterWanOnts($this->ontTypeFHTT, $this->pppoeUsername, $WanConfig);
 
-        expect($provisionedOnts)->toBeArray();
-        expect($provisionedOnts[0]['success'])->toBeTrue();
+        expect($provisionedOnts)->toBeInstanceOf(Collection::class);
+
+        $provisionedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
 })->skip();
 
@@ -93,7 +114,15 @@ describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
 
         $provisionedOnts = $this->fiberhome->provisionBridgeOnts($this->ontTypeCMSZ, $this->pppoeUsername, $this->portInterfaceCMSZ, $LanConfig);
 
-        expect($provisionedOnts)->toBeArray();
-        expect($provisionedOnts[0]['success'])->toBeTrue();
+        expect($provisionedOnts)->toBeInstanceOf(Collection::class);
+
+        $provisionedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
     });
 })->skip();

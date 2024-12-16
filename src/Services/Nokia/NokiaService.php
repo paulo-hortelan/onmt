@@ -211,6 +211,7 @@ class NokiaService
         }
 
         $response->associateBatch($commandResultBatch);
+        $response->load('commands');
 
         $finalResponse->push($commandResultBatch);
 
@@ -241,6 +242,7 @@ class NokiaService
 
             $response = FX16::showEquipmentOntOptics($interface);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -272,6 +274,7 @@ class NokiaService
 
             $response = FX16::showEquipmentOntIndex($serial);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $interface = $response->result['interface'] ?? null;
 
@@ -284,6 +287,7 @@ class NokiaService
                 ]);
 
                 $response->associateBatch($commandResultBatch);
+                $response->load('commands');
                 $finalResponse->push($commandResultBatch);
 
                 continue;
@@ -324,6 +328,7 @@ class NokiaService
 
             $response = FX16::showEquipmentOntIndex($serial);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -355,6 +360,7 @@ class NokiaService
 
             $response = FX16::showInterfacePort($interface);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -379,6 +385,7 @@ class NokiaService
 
         $response = FX16::showPonUnprovisionOnu();
         $response->associateBatch($commandResultBatch);
+        $response->load('commands');
 
         $finalResponse->push($commandResultBatch);
 
@@ -402,6 +409,7 @@ class NokiaService
 
         $response = FX16::showEquipmentOntStatusPon($ponInterface);
         $response->associateBatch($commandResultBatch);
+        $response->load('commands');
 
         $finalResponse->push($commandResultBatch);
 
@@ -466,9 +474,11 @@ class NokiaService
 
             $response = FX16::configureEquipmentOntInterfaceAdminState($interface, 'down');
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $response = FX16::configureEquipmentOntNoInterface($interface);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -502,6 +512,7 @@ class NokiaService
             $response = FX16::entOnt($interface, $config);
 
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -534,6 +545,7 @@ class NokiaService
 
             $response = FX16::edOnt($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -566,6 +578,7 @@ class NokiaService
 
             $response = FX16::entOntsCard($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -598,6 +611,7 @@ class NokiaService
 
             $response = FX16::entLogPort($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -630,6 +644,7 @@ class NokiaService
 
             $response = FX16::edOntVeip($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -662,6 +677,7 @@ class NokiaService
 
             $response = FX16::setQosUsQueue($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -694,6 +710,7 @@ class NokiaService
 
             $response = FX16::setVlanPort($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -726,6 +743,7 @@ class NokiaService
 
             $response = FX16::entVlanEgPort($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -765,6 +783,7 @@ class NokiaService
 
             $response = FX16::entHguTr069Sparam($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -814,6 +833,7 @@ class NokiaService
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
                 $response->associateBatch($commandResultBatch);
+                $response->load('commands');
 
                 return $response;
             });
@@ -866,6 +886,7 @@ class NokiaService
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
                 $response->associateBatch($commandResultBatch);
+                $response->load('commands');
 
                 return $response;
             });
@@ -918,6 +939,7 @@ class NokiaService
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
                 $response->associateBatch($commandResultBatch);
+                $response->load('commands');
 
                 return $response;
             });
@@ -960,6 +982,7 @@ class NokiaService
 
             $response = FX16::entHguTr069Sparam($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -999,6 +1022,7 @@ class NokiaService
 
             $response = FX16::entHguTr069Sparam($interface, $config);
             $response->associateBatch($commandResultBatch);
+            $response->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1053,6 +1077,7 @@ class NokiaService
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
                 $response->associateBatch($commandResultBatch);
+                $response->load('commands');
 
                 return $response;
             });

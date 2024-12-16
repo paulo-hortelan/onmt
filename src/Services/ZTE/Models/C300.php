@@ -35,16 +35,16 @@ class C300
                     $downRxPower = (float) $match[1];
                 }
             } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
+                $error = $e->getMessage();
             }
 
             if (! $success) {
-                $errorInfo = 'Interface not found on OLT';
+                $error = 'Interface not found on OLT';
             }
 
             $ontsOpticalPower[] = [
                 'success' => $success,
-                'errorInfo' => $errorInfo ?? null,
+                'error' => $error ?? null,
                 'result' => [
                     'interface' => $interface,
                     'downRxPower' => $downRxPower ?? null,
@@ -74,16 +74,16 @@ class C300
                     $interface = trim($match[0]);
                 }
             } catch (\Exception $e) {
-                $errorInfo = $e->getMessage();
+                $error = $e->getMessage();
             }
 
             if (! $success) {
-                $errorInfo = 'Interface not found on OLT';
+                $error = 'Interface not found on OLT';
             }
 
             $ontsInterface[] = [
                 'success' => $success,
-                'errorInfo' => $errorInfo ?? null,
+                'error' => $error ?? null,
                 'result' => [
                     'serial' => $serial,
                     'interface' => $interface ?? null,
