@@ -30,11 +30,11 @@ describe('Nokia Optical Detail - Success', function () {
 
         $ontsDetail->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
-                expect($commandResult['result']['rxSignalLevel'])->toBeFloat();
+                expect($commandResult->success)->toBeTrue();
+                expect($commandResult->result['rxSignalLevel'])->toBeFloat();
             });
         });
     });
@@ -48,11 +48,11 @@ describe('Nokia Optical Detail - Success', function () {
 
         $ontsDetail->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
-                expect($commandResult['result']['rxSignalLevel'])->toBeFloat();
+                expect($commandResult->success)->toBeTrue();
+                expect($commandResult->result['rxSignalLevel'])->toBeFloat();
             });
         });
     });
@@ -68,10 +68,10 @@ describe('Nokia Optical Detail By Serial - Success', function () {
 
         $ontsDetail->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -85,12 +85,12 @@ describe('Nokia Optical Detail By Serial - Success', function () {
 
         $ontsDetail->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             var_dump($batch->toArray());
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });

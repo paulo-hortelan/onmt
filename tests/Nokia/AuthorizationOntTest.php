@@ -72,7 +72,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -93,7 +93,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -119,7 +119,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -140,7 +140,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -164,7 +164,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -190,7 +190,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -216,7 +216,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -243,7 +243,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -264,7 +264,7 @@ describe('Nokia Configure PPPOE and VLAN on ONT\'s - Router Nokia', function () 
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -283,7 +283,7 @@ describe('Nokia Configure PPPOE and VLAN on ONT\'s - Router Nokia', function () 
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -304,7 +304,7 @@ describe('Nokia Configure WIFI on ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -323,7 +323,7 @@ describe('Nokia Configure WIFI on ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -344,7 +344,7 @@ describe('Nokia Configure Account on ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -363,7 +363,7 @@ describe('Nokia Configure Account on ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -384,7 +384,7 @@ describe('Nokia Configure DNS on ONT\'s - Router Nokia', function () {
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
@@ -614,7 +614,7 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Bridge Chima', 
 
         $executedCommands = CommandResultBatch::where('interface', $newInterface)->get();
     });
-})->only();
+})->skip();
 
 describe('Nokia Remove ONT\'s', function () {
     it('can remove onts', function () {

@@ -30,10 +30,10 @@ describe('Nokia Onts by Pon Interface - Success', function () {
 
         $onts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });

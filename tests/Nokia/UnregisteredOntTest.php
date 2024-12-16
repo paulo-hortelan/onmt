@@ -22,10 +22,10 @@ describe('Nokia Unregistered Onts - Success', function () {
 
         $unregisteredOnts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });

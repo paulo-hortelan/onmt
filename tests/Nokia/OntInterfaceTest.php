@@ -9,25 +9,25 @@ beforeEach(function () {
     $username = env('NOKIA_OLT_USERNAME_TELNET');
     $password = env('NOKIA_OLT_PASSWORD_TELNET');
 
-    $this->serial1 = env('NOKIA_SERIAL_ALCL');
-    $this->serial2 = env('NOKIA_SERIAL_CMSZ');
+    $this->serialALCL = env('NOKIA_SERIAL_ALCL');
+    $this->serialCMSZ = env('NOKIA_SERIAL_CMSZ');
 
     $this->nokia = Nokia::connectTelnet($ipServer, $username, $password, 23);
 });
 
 describe('Nokia Optical Interface', function () {
     it('can get single interface', function () {
-        $interface = $this->nokia->ontsInterface([$this->serial1])[0];
+        $interface = $this->nokia->ontsInterface([$this->serialALCL])[0];
 
         expect($interface['result']['interface'])->toBeString();
 
-        $interface = $this->nokia->serial($this->serial1)->ontsInterface()[0];
+        $interface = $this->nokia->serial($this->serialALCL)->ontsInterface()[0];
 
         expect($interface['result']['interface'])->toBeString();
     });
 
     it('can get multiple interfaces', function () {
-        $serials = [$this->serial1, $this->serial2, $this->serial3];
+        $serials = [$this->serialALCL, $this->serialCMSZ];
 
         $interfaces = $this->nokia->ontsInterface($serials);
 

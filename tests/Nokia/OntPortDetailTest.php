@@ -27,10 +27,10 @@ describe('Nokia Port Detail', function () {
 
         $details->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     })->only();
@@ -42,10 +42,10 @@ describe('Nokia Port Detail', function () {
 
         $details->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeArray();
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult['success'])->toBeTrue();
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });
