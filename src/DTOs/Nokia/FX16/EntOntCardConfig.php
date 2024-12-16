@@ -10,14 +10,24 @@ class EntOntCardConfig
 
     public int $plndNumVoicePorts;
 
+    public int $ontCardHolderSlot;
+
+    /**
+     * @param  string  $planCardType  Plan card type
+     * @param  int  $plndNumDataPorts  .
+     * @param  int  $plndNumVoicePorts  .
+     * @param  int  $ontCardHolderSlot  ONT card holder (1.. 14)
+     */
     public function __construct(
         string $planCardType,
         int $plndNumDataPorts,
-        int $plndNumVoicePorts
+        int $plndNumVoicePorts,
+        int $ontCardHolderSlot
     ) {
         $this->planCardType = $planCardType;
         $this->plndNumDataPorts = $plndNumDataPorts;
         $this->plndNumVoicePorts = $plndNumVoicePorts;
+        $this->ontCardHolderSlot = $ontCardHolderSlot;
     }
 
     public function buildCommand(): string
@@ -35,16 +45,15 @@ class EntOntCardConfig
      * Build the ONT identifier
      *
      * @param  string  $interface  rack/shelf/lt_slot/pon_port/ont
-     * @param  int  $ontCardHolderSlot  ONT card holder (1.. 14)
      * @return string Identifier command
      */
-    public function buildIdentifier(string $interface, int $ontCardHolderSlot): string
+    public function buildIdentifier(string $interface): string
     {
         $formattedInterface = str_replace('/', '-', $interface);
 
         $command = '';
 
-        $command .= "ONTCARD-$formattedInterface-$ontCardHolderSlot";
+        $command .= "ONTCARD-$formattedInterface-{$this->ontCardHolderSlot}";
 
         $command = rtrim($command, ',');
 

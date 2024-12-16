@@ -4,7 +4,6 @@ namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
 use Illuminate\Support\Collection;
-use PauloHortelan\Onmt\DTOs\CommandResult;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
@@ -14,6 +13,7 @@ use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\QosUsQueueConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
+use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
@@ -189,6 +189,35 @@ class NokiaService
     }
 
     /**
+     * Executes the given command
+     *
+     * @param  string  $command  Command
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function executeCommand(string $command): ?Collection
+    {
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        $commandResultBatch = CommandResultBatch::create([]);
+
+        if (! empty(self::$telnetConn)) {
+            $response = FX16::executeCommandTelnet($command);
+        } else {
+            $response = FX16::executeCommandTL1($command);
+        }
+
+        $response->associateBatch($commandResultBatch);
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
+    }
+
+    /**
      * Gets ONT's detail - Telnet
      *
      * Parameter 'interfaces' must already be provided
@@ -206,12 +235,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::showEquipmentOntOptics($interface);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -237,18 +266,24 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->serial = $serial;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'serial' => $serial,
+            ]);
 
             $response = FX16::showEquipmentOntIndex($serial);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $interface = $response->result['interface'] ?? null;
 
             if (empty($interface)) {
-                $response = new CommandResult(false, '', '', []);
-                $commandResultBatch->addCommand($response);
+                $response = CommandResult::create([
+                    'success' => false,
+                    'command' => null,
+                    'error' => null,
+                    'result' => [],
+                ]);
+
+                $response->associateBatch($commandResultBatch);
                 $finalResponse->push($commandResultBatch);
 
                 continue;
@@ -283,12 +318,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->serial = $serial;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'serial' => $serial,
+            ]);
 
             $response = FX16::showEquipmentOntIndex($serial);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -314,12 +349,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::showInterfacePort($interface);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -340,11 +375,10 @@ class NokiaService
 
         $finalResponse = collect();
 
-        $commandResultBatch = new CommandResultBatch;
-        $commandResultBatch->save();
+        $commandResultBatch = CommandResultBatch::create([]);
 
         $response = FX16::showPonUnprovisionOnu();
-        $commandResultBatch->addCommand($response);
+        $response->associateBatch($commandResultBatch);
 
         $finalResponse->push($commandResultBatch);
 
@@ -364,11 +398,10 @@ class NokiaService
 
         $finalResponse = collect();
 
-        $commandResultBatch = new CommandResultBatch;
-        $commandResultBatch->save();
+        $commandResultBatch = CommandResultBatch::create([]);
 
         $response = FX16::showEquipmentOntStatusPon($ponInterface);
-        $commandResultBatch->addCommand($response);
+        $response->associateBatch($commandResultBatch);
 
         $finalResponse->push($commandResultBatch);
 
@@ -383,13 +416,13 @@ class NokiaService
      */
     public function getNextOntIndex(string $ponInterface): ?int
     {
-        $commandResult = $this->ontsByPonInterface($ponInterface);
+        $commandResultBatch = $this->ontsByPonInterface($ponInterface)->first();
 
-        if ($commandResult->success === false) {
+        if (! $commandResultBatch->allCommandsSuccessful()) {
             throw new Exception('Provided PON Interface is not valid.');
         }
 
-        $onts = $commandResult->result;
+        $onts = $commandResultBatch->commands[0]['result'];
 
         $lastSegments = array_map(function ($item) {
             $parts = explode('/', $item['interface']);
@@ -427,15 +460,15 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::configureEquipmentOntInterfaceAdminState($interface, 'down');
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $response = FX16::configureEquipmentOntNoInterface($interface);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -462,12 +495,13 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entOnt($interface, $config);
-            $commandResultBatch->addCommand($response);
+
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -494,12 +528,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::edOnt($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -515,7 +549,7 @@ class NokiaService
      * @param  EntOntCardConfig  $config  ONT card configuration parameters
      * @return Collection A collection of CommandResultBatch
      */
-    public function planOntCard(EntOntCardConfig $config): ?Collection
+    public function planOntsCard(EntOntCardConfig $config): ?Collection
     {
         $this->validateInterfaces();
 
@@ -526,12 +560,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entOntsCard($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -558,12 +592,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entLogPort($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -590,12 +624,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::edOntVeip($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -622,12 +656,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::setQosUsQueue($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -654,12 +688,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::setVlanPort($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -686,12 +720,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entVlanEgPort($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -725,12 +759,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entHguTr069Sparam($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -773,13 +807,13 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
-                $commandResultBatch->addCommand($response);
+                $response->associateBatch($commandResultBatch);
 
                 return $response;
             });
@@ -825,13 +859,13 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
-                $commandResultBatch->addCommand($response);
+                $response->associateBatch($commandResultBatch);
 
                 return $response;
             });
@@ -877,13 +911,13 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
-                $commandResultBatch->addCommand($response);
+                $response->associateBatch($commandResultBatch);
 
                 return $response;
             });
@@ -920,12 +954,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entHguTr069Sparam($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -959,12 +993,12 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             $response = FX16::entHguTr069Sparam($interface, $config);
-            $commandResultBatch->addCommand($response);
+            $response->associateBatch($commandResultBatch);
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1012,13 +1046,13 @@ class NokiaService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
-            $commandResultBatch = new CommandResultBatch;
-            $commandResultBatch->interface = $interface;
-            $commandResultBatch->save();
+            $commandResultBatch = CommandResultBatch::create([
+                'interface' => $interface,
+            ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
                 $response = FX16::entHguTr069Sparam($interface, $config);
-                $commandResultBatch->addCommand($response);
+                $response->associateBatch($commandResultBatch);
 
                 return $response;
             });

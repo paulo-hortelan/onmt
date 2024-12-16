@@ -3,7 +3,6 @@
 namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
 use Exception;
-use PauloHortelan\Onmt\DTOs\CommandResult;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
@@ -13,6 +12,7 @@ use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\QosUsQueueConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
+use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 class FX16 extends NokiaService
@@ -27,9 +27,67 @@ class FX16 extends NokiaService
         try {
             self::$telnetConn->exec($command);
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Executes the given command - Telnet
+     */
+    public static function executeCommandTelnet(string $command): ?CommandResult
+    {
+        try {
+            self::$tl1Conn->exec($command);
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Executes the given command - TL1
+     */
+    public static function executeCommandTL1(string $command): ?CommandResult
+    {
+        try {
+            self::$telnetConn->exec($command);
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -55,7 +113,12 @@ class FX16 extends NokiaService
                     $numOnts = count($splittedResponse) - $key - 5;
 
                     if ($numOnts === 0) {
-                        return new CommandResult(true, $command, null, []);
+                        return CommandResult::create([
+                            'success' => true,
+                            'command' => $command,
+                            'error' => null,
+                            'result' => [],
+                        ]);
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
@@ -81,10 +144,20 @@ class FX16 extends NokiaService
                 }
             }
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return new CommandResult(true, $command, null, $onts);
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $onts,
+        ]);
     }
 
     /**
@@ -103,9 +176,19 @@ class FX16 extends NokiaService
         try {
             self::$telnetConn->exec($command);
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -119,9 +202,19 @@ class FX16 extends NokiaService
         try {
             self::$telnetConn->exec($command);
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -172,9 +265,19 @@ class FX16 extends NokiaService
                 'laserBiasCurr' => $laserBiasCurr ?? null,
             ];
 
-            return new CommandResult(true, $command, null, $ontDetail);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => $ontDetail,
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -201,9 +304,19 @@ class FX16 extends NokiaService
                 'interface' => $interface ?? null,
             ];
 
-            return new CommandResult(true, $command, null, $ontInterface);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => $ontInterface,
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
         return $ontsInterface;
@@ -242,9 +355,19 @@ class FX16 extends NokiaService
                 'lastChgOprStat' => $lastChgOprStat ?? null,
             ];
 
-            return new CommandResult(true, $command, null, $portDetail);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => $portDetail,
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -270,7 +393,12 @@ class FX16 extends NokiaService
                     $numOnts = count($splittedResponse) - $key - 5;
 
                     if ($numOnts === 0) {
-                        return new CommandResult(true, $command, null, []);
+                        return CommandResult::create([
+                            'success' => true,
+                            'command' => $command,
+                            'error' => null,
+                            'result' => [],
+                        ]);
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
@@ -289,10 +417,20 @@ class FX16 extends NokiaService
                 }
             }
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
-        return new CommandResult(true, $command, null, $unregData);
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $unregData,
+        ]);
     }
 
     /**
@@ -309,9 +447,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -332,9 +480,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -355,9 +513,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -367,7 +535,7 @@ class FX16 extends NokiaService
     public static function entOntsCard(string $interface, EntOntCardConfig $config): ?CommandResult
     {
         $entOntCardConfigCommand = $config->buildCommand();
-        $accessIdentifier = $config->buildIdentifier($interface, 14);
+        $accessIdentifier = $config->buildIdentifier($interface);
         $command = "ENT-ONTCARD::$accessIdentifier:::$entOntCardConfigCommand::IS;";
 
         try {
@@ -377,9 +545,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -388,7 +566,7 @@ class FX16 extends NokiaService
      */
     public static function entLogPort(string $interface, EntLogPortConfig $config): ?CommandResult
     {
-        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $accessIdentifier = $config->buildIdentifier($interface);
         $command = "ENT-LOGPORT::$accessIdentifier:::;";
 
         try {
@@ -398,9 +576,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -409,7 +597,7 @@ class FX16 extends NokiaService
      */
     public static function edOntVeip(string $interface, EdOntVeipConfig $config): ?CommandResult
     {
-        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $accessIdentifier = $config->buildIdentifier($interface);
         $command = "ED-ONTVEIP::$accessIdentifier:::::;";
 
         try {
@@ -419,9 +607,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -430,7 +628,7 @@ class FX16 extends NokiaService
      */
     public static function setQosUsQueue(string $interface, QosUsQueueConfig $config): ?CommandResult
     {
-        $accessIdentifier = $config->buildIdentifier($interface, 14, 1, 0);
+        $accessIdentifier = $config->buildIdentifier($interface);
         $buildCommand = $config->buildCommand();
         $command = "SET-QOS-USQUEUE::$accessIdentifier::::$buildCommand;";
 
@@ -441,9 +639,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -463,9 +671,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -485,9 +703,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 
@@ -507,9 +735,19 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return new CommandResult(true, $command, null, []);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
         } catch (\Exception $e) {
-            return new CommandResult(false, $command, $e->getMessage(), []);
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
     }
 }

@@ -3,12 +3,13 @@
 namespace PauloHortelan\Onmt\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CommandResultBatch extends Model
 {
     protected $table = 'command_result_batches';
 
-    public $timestamps = true;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'interface',
@@ -16,20 +17,16 @@ class CommandResultBatch extends Model
         'commands',
     ];
 
-    protected $casts = [
-        'commands' => 'array',
-    ];
+    public function commands(): HasMany
+    {
+        return $this->hasMany(CommandResult::class, 'batch_id');
+    }
 
     /**
-     * Add a command result to the batch.
-     *
-     * @param  \PauloHortelan\Onmt\DTOs\CommandResult  $commandResult
+     * Check if all commands in the batch were successful.
      */
-    public function addCommand($commandResult): void
+    public function allCommandsSuccessful(): bool
     {
-        $commands = $this->commands;
-        $commands[] = $commandResult->toArray();
-
-        $this->update(['commands' => $commands]);
+        return $this->commands()->where('success', false)->doesntExist();
     }
 }

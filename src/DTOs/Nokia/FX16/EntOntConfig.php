@@ -12,23 +12,23 @@ class EntOntConfig
 
     public string $swVerPlnd;
 
-    public string $opticsHist;
+    public ?string $opticsHist;
 
-    public string $plndCfgFile1;
+    public ?string $plndCfgFile1;
 
-    public string $dlCfgFile1;
+    public ?string $dlCfgFile1;
 
-    public string $voipAllowed;
+    public ?string $voipAllowed;
 
     public function __construct(
         string $desc1,
         string $desc2,
         string $serNum,
         string $swVerPlnd,
-        string $opticsHist,
-        string $plndCfgFile1,
-        string $dlCfgFile1,
-        string $voipAllowed,
+        ?string $opticsHist = null,
+        ?string $plndCfgFile1 = null,
+        ?string $dlCfgFile1 = null,
+        ?string $voipAllowed = null,
     ) {
         $this->desc1 = $desc1;
         $this->desc2 = $desc2;
@@ -43,8 +43,8 @@ class EntOntConfig
     public function buildCommand(): string
     {
         $parameters = [
-            'DESC1' => $this->desc1 ?? null,
-            'DESC2' => $this->desc2 ?? null,
+            'DESC1' => '"'.$this->desc1.'"' ?? null,
+            'DESC2' => '"'.$this->desc2.'"' ?? null,
             'SERNUM' => $this->serNum ?? null,
             'SWVERPLND' => $this->swVerPlnd ?? null,
             'OPTICSHIST' => $this->opticsHist ?? null,

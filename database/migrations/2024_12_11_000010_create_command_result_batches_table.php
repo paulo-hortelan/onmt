@@ -13,7 +13,7 @@ class CreateCommandResultBatchesTable extends Migration
             $table->string('interface')->nullable();
             $table->string('serial')->nullable();
             $table->json('commands')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
