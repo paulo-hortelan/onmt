@@ -15,9 +15,8 @@ class OnmtServiceProvider extends PackageServiceProvider
         $package
             ->name('onmt')
             ->hasConfigFile()
-            ->hasMigrations();
-
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+            ->hasMigration('create_command_results_table')
+            ->hasMigration('create_command_result_batches_table.');
 
         $this->app->bind(FiberhomeService::class, function () {
             return new FiberhomeService();
