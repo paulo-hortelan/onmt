@@ -34,6 +34,8 @@ class FiberhomeService
 
     public static array $interfaces = [];
 
+    private ?CommandResultBatch $globalCommandBatch = null;
+
     public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): ?object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
@@ -128,6 +130,30 @@ class FiberhomeService
         }
     }
 
+    private function validateSingleInterfaceSerial(): void
+    {
+        if (count(self::$interfaces) > 1 || count(self::$serials) > 1) {
+            throw new Exception('Multiple Interfaces or Serials found.');
+        }
+    }
+
+    /**
+     * Starts the commands execution and saves in a single CommandResultBatch
+     *
+     * * Make sure to provide only ONE or none interface/serial *
+     * * or it will get the first interface/serial provided
+     */
+    public function startRecordingCommands(): void
+    {
+        $this->validateSingleInterfaceSerial();
+
+        $this->globalCommandBatch =
+            CommandResultBatch::create([
+                'interface' => self::$interfaces[0] ?? null,
+                'serial' => self::$serials[0] ?? null,
+            ]);
+    }
+
     /**
      * Gets ONT's optical power
      *
@@ -149,7 +175,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -186,7 +212,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -223,7 +249,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -254,7 +280,7 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
 
         $response = AN551604::lstOnuLanInfo();
 
@@ -279,7 +305,7 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
 
         $response = AN551604::lstLanPerf($portInterface);
 
@@ -304,7 +330,7 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
 
         $response = AN551604::lstUnregOnu();
 
@@ -329,7 +355,7 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
 
         $response = AN551604::lstOnu();
 
@@ -364,7 +390,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -403,7 +429,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -442,7 +468,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -480,7 +506,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -521,7 +547,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -572,7 +598,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -662,7 +688,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);
@@ -710,7 +736,7 @@ class FiberhomeService
             $interface = self::$interfaces[$i];
             $serial = self::$serials[$i];
 
-            $commandResultBatch = CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'interface' => $interface,
                 'serial' => $serial,
             ]);

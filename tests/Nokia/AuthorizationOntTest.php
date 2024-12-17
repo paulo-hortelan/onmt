@@ -394,6 +394,8 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Router Nokia', 
     it('can realize a complete provision and configuration', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
+        $this->nokiaTelnet->startRecordingCommands();
+
         $ontIndex = $this->nokiaTelnet->getNextOntIndex($this->ponInterface);
         $newInterface = $this->ponInterface.'/'.$ontIndex;
 
@@ -509,7 +511,9 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Router Nokia', 
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $executedCommands = CommandResultBatch::where('interface', $newInterface)->get();
+        $commandBatchResult = $this->nokiaTL1->stopRecordingCommands();
+
+        expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });
 })->skip();
 
