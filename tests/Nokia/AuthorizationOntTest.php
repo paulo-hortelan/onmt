@@ -82,7 +82,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
 
         $this->nokiaTL1->interfaces(['1/1/1/1/3']);
 
-        $edOntConfig = new EdOntConfig;
+        $edOntConfig = new EdOntConfig();
 
         $editedOnts = $this->nokiaTL1->editProvisionedOnts($edOntConfig);
 
@@ -420,7 +420,7 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Router Nokia', 
 
         expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $edOntConfig = new EdOntConfig;
+        $edOntConfig = new EdOntConfig();
 
         $editedOnts = $this->nokiaTL1->editProvisionedOnts($edOntConfig);
 
@@ -541,7 +541,7 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Bridge Chima', 
 
         expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $edOntConfig = new EdOntConfig;
+        $edOntConfig = new EdOntConfig();
 
         $editedOnts = $this->nokiaTL1->editProvisionedOnts($edOntConfig);
 
