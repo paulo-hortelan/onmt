@@ -18,15 +18,15 @@ class OnmtServiceProvider extends PackageServiceProvider
             ->hasMigrations();
 
         $this->app->bind(FiberhomeService::class, function () {
-            return new FiberhomeService;
+            return new FiberhomeService();
         });
 
         $this->app->bind(NokiaService::class, function () {
-            return new NokiaService;
+            return new NokiaService();
         });
 
         $this->app->bind(ZTEService::class, function () {
-            return new ZTEService;
+            return new ZTEService();
         });
     }
 }
