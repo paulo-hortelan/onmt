@@ -257,15 +257,6 @@ class NokiaService
         return $globalCommandBatch;
     }
 
-    public function getglobalCommandBatch(): CommandResultBatch
-    {
-        if ($this->globalCommandBatch === null) {
-            throw new Exception('The Record Commands has not started');
-        }
-
-        return $this->globalCommandBatch;
-    }
-
     /**
      * Executes the given command
      *
