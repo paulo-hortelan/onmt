@@ -10,9 +10,11 @@ class CreateCommandResultBatchesTable extends Migration
     {
         Schema::create('command_result_batches', function (Blueprint $table) {
             $table->id();
+            $table->string('ip');
+            $table->string('description')->nullable();
             $table->string('interface')->nullable();
             $table->string('serial')->nullable();
-            $table->json('commands')->nullable();
+            $table->string('operator')->nullable();
             $table->timestamp('created_at')->useCurrent();
         });
     }

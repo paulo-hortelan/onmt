@@ -12,10 +12,27 @@ class CommandResultBatch extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'ip',
+        'description',
         'interface',
         'serial',
-        'commands',
+        'operator',
     ];
+
+    public static function create(array $attributes = [])
+    {
+        if (config('onmt.database_operations') === 'disabled') {
+            $instance = new static($attributes);
+            $instance->exists = false;
+
+            return $instance;
+        }
+
+        $model = new static($attributes);
+        $model->save();
+
+        return $model;
+    }
 
     public function commands(): HasMany
     {

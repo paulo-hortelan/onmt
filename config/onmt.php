@@ -1,5 +1,6 @@
 <?php
 
 return [
-    'logging' => env('ONMT_LOGGING_METHOD', 'database'), // Options: ''disabled, 'file' or 'database'
+    'database_operations' => env('ONMT_DATABASE_OPERATIONS', 'enabled'), // Options: 'disabled, 'enabled'
+    'default_operator' => env('ONMT_DEFAULT_OPERATOR', null),
 ];

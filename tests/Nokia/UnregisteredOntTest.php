@@ -20,6 +20,8 @@ describe('Nokia Unregistered Onts - Success', function () {
 
         expect($unregisteredOnts)->toBeInstanceOf(Collection::class);
 
+        $tests = CommandResultBatch::all();
+
         $unregisteredOnts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);

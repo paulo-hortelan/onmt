@@ -24,6 +24,8 @@ class FiberhomeService
 
     protected static string $model = 'AN551604';
 
+    protected static ?string $operator;
+
     protected int $connTimeout = 5;
 
     protected int $streamTimeout = 4;
@@ -43,6 +45,8 @@ class FiberhomeService
         if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('Provided IP(s) are not valid(s).');
         }
+
+        self::$operator = config('onmt.default_operator');
 
         self::$ipOlt = $ipOlt;
         self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.self::$model);
@@ -137,20 +141,30 @@ class FiberhomeService
         }
     }
 
+    public function setOperator(string $operator): object
+    {
+        self::$operator = $operator;
+
+        return $this;
+    }
+
     /**
      * Starts the commands execution and saves in a single CommandResultBatch
      *
      * * Make sure to provide only ONE or none interface/serial *
      * * or it will get the first interface/serial provided
      */
-    public function startRecordingCommands(): void
+    public function startRecordingCommands(?string $description = null): void
     {
         $this->validateSingleInterfaceSerial();
 
         $this->globalCommandBatch =
             CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => $description,
                 'interface' => self::$interfaces[0] ?? null,
                 'serial' => self::$serials[0] ?? null,
+                'operator' => self::$operator,
             ]);
     }
 
@@ -176,8 +190,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::lstOMDDM($interface, $serial);
@@ -213,8 +229,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::lstOnuState($interface, $serial);
@@ -250,8 +268,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::lstPortVlan($interface, $serial);
@@ -280,7 +300,10 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         $response = AN551604::lstOnuLanInfo();
 
@@ -305,7 +328,10 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         $response = AN551604::lstLanPerf($portInterface);
 
@@ -330,7 +356,10 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         $response = AN551604::lstUnregOnu();
 
@@ -355,7 +384,10 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         $response = AN551604::lstOnu();
 
@@ -391,8 +423,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
@@ -430,8 +464,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::cfgLanPortVlan($interface, $serial, $portInterface, $config);
@@ -469,8 +505,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::cfgVeipService($interface, $serial, $portInterface, $config);
@@ -507,8 +545,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::setWanService($interface, $serial, $config);
@@ -548,8 +588,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
@@ -599,8 +641,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
@@ -689,8 +733,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
@@ -737,8 +783,10 @@ class FiberhomeService
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = AN551604::delOnu($interface, $serial);

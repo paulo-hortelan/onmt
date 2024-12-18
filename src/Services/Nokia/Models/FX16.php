@@ -27,14 +27,14 @@ class FX16 extends NokiaService
         try {
             self::$telnetConn->exec($command);
 
-            return CommandResult::create([
+            return CommandResult::make([
                 'success' => true,
                 'command' => $command,
                 'error' => null,
                 'result' => [],
             ]);
         } catch (\Exception $e) {
-            return CommandResult::create([
+            return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'error' => $e->getMessage(),
@@ -447,14 +447,14 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return CommandResult::make([
                 'success' => true,
                 'command' => $command,
                 'error' => null,
                 'result' => [],
             ]);
         } catch (\Exception $e) {
-            return CommandResult::create([
+            return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'error' => $e->getMessage(),

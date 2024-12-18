@@ -31,6 +31,8 @@ class NokiaService
 
     protected static string $model = 'FX16';
 
+    protected static ?string $operator;
+
     protected int $connTimeout = 5;
 
     protected int $streamTimeout = 4;
@@ -51,6 +53,8 @@ class NokiaService
             throw new Exception('Provided IP(s) are not valid(s).');
         }
 
+        self::$operator = config('onmt.default_operator');
+
         self::$ipOlt = $ipOlt;
         self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
         self::$telnetConn->stripPromptFromBuffer(true);
@@ -67,6 +71,8 @@ class NokiaService
         if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('OLT brand does not match the service.');
         }
+
+        self::$operator = config('onmt.default_operator');
 
         self::$ipOlt = $ipOlt;
         self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
@@ -147,6 +153,9 @@ class NokiaService
         throw new Exception('No connection established.');
     }
 
+    /**
+     * Set the OLT model
+     */
     public function model(string $model): object
     {
         self::$model = $model;
@@ -154,6 +163,9 @@ class NokiaService
         return $this;
     }
 
+    /**
+     * Set the timeout
+     */
     public function timeout(int $connTimeout, int $streamTimeout): object
     {
         $this->connTimeout = $connTimeout;
@@ -205,20 +217,30 @@ class NokiaService
         }
     }
 
+    public function setOperator(string $operator): object
+    {
+        self::$operator = $operator;
+
+        return $this;
+    }
+
     /**
      * Starts the commands execution and saves in a single CommandResultBatch
      *
      * * Make sure to provide only ONE or none interface/serial *
      * * or it will get the first interface/serial provided
      */
-    public function startRecordingCommands(): void
+    public function startRecordingCommands(?string $description = null): void
     {
         $this->validateSingleInterfaceSerial();
 
         $this->globalCommandBatch =
             CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => $description,
                 'interface' => self::$interfaces[0] ?? null,
                 'serial' => self::$serials[0] ?? null,
+                'operator' => self::$operator,
             ]);
     }
 
@@ -258,7 +280,10 @@ class NokiaService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         if (! empty(self::$telnetConn)) {
             $response = FX16::executeCommandTelnet($command);
@@ -293,7 +318,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::showEquipmentOntOptics($interface);
@@ -326,7 +353,9 @@ class NokiaService
 
         foreach (self::$serials as $serial) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::showEquipmentOntIndex($serial);
@@ -383,7 +412,9 @@ class NokiaService
 
         foreach (self::$serials as $serial) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'serial' => $serial,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::showEquipmentOntIndex($serial);
@@ -416,7 +447,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::showInterfacePort($interface);
@@ -443,7 +476,10 @@ class NokiaService
 
         $finalResponse = collect();
 
-        $commandResultBatch = CommandResultBatch::create([]);
+        $commandResultBatch = CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         $response = FX16::showPonUnprovisionOnu();
 
@@ -468,7 +504,10 @@ class NokiaService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
         $response = FX16::showEquipmentOntStatusPon($ponInterface);
 
@@ -533,7 +572,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Remove ONTs',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::configureEquipmentOntInterfaceAdminState($interface, 'down');
@@ -570,7 +612,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entOnt($interface, $config);
@@ -604,7 +648,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::edOnt($interface, $config);
@@ -638,7 +684,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entOntsCard($interface, $config);
@@ -672,7 +720,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entLogPort($interface, $config);
@@ -705,7 +755,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::edOntVeip($interface, $config);
@@ -739,7 +791,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::setQosUsQueue($interface, $config);
@@ -772,7 +826,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::setVlanPort($interface, $config);
@@ -806,7 +862,9 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entVlanEgPort($interface, $config);
@@ -847,7 +905,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entHguTr069Sparam($interface, $config);
@@ -897,7 +958,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
@@ -951,7 +1015,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
@@ -1005,7 +1072,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
@@ -1050,7 +1120,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entHguTr069Sparam($interface, $config);
@@ -1091,7 +1164,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             $response = FX16::entHguTr069Sparam($interface, $config);
@@ -1146,7 +1222,10 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Configure TR069',
                 'interface' => $interface,
+                'operator' => self::$operator,
             ]);
 
             collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
