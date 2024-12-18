@@ -37,7 +37,7 @@ class NokiaService
 
     protected int $streamTimeout = 4;
 
-    protected static string $ipOlt;
+    protected static string $ipOlt = '';
 
     public static array $serials = [];
 
@@ -53,9 +53,9 @@ class NokiaService
             throw new Exception('Provided IP(s) are not valid(s).');
         }
 
+        self::$ipOlt = $ipOlt;
         self::$operator = config('onmt.default_operator');
 
-        self::$ipOlt = $ipOlt;
         self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
         self::$telnetConn->stripPromptFromBuffer(true);
         self::$telnetConn->authenticate($username, $password, 'Nokia-'.self::$model);
@@ -72,9 +72,9 @@ class NokiaService
             throw new Exception('OLT brand does not match the service.');
         }
 
+        self::$ipOlt = $ipOlt;
         self::$operator = config('onmt.default_operator');
 
-        self::$ipOlt = $ipOlt;
         self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
         self::$tl1Conn->stripPromptFromBuffer(true);
         self::$tl1Conn->authenticate($username, $password, 'Nokia-'.self::$model);

@@ -19,21 +19,6 @@ class CommandResultBatch extends Model
         'operator',
     ];
 
-    public static function create(array $attributes = [])
-    {
-        if (config('onmt.database_operations') === 'disabled') {
-            $instance = new static($attributes);
-            $instance->exists = false;
-
-            return $instance;
-        }
-
-        $model = new static($attributes);
-        $model->save();
-
-        return $model;
-    }
-
     public function commands(): HasMany
     {
         return $this->hasMany(CommandResult::class, 'batch_id');

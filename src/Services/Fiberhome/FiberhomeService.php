@@ -30,7 +30,7 @@ class FiberhomeService
 
     protected int $streamTimeout = 4;
 
-    protected static string $ipOlt;
+    protected static string $ipOlt = '';
 
     public static array $serials = [];
 
@@ -46,9 +46,9 @@ class FiberhomeService
             throw new Exception('Provided IP(s) are not valid(s).');
         }
 
+        self::$ipOlt = $ipOlt;
         self::$operator = config('onmt.default_operator');
 
-        self::$ipOlt = $ipOlt;
         self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.self::$model);
         self::$tl1Conn->stripPromptFromBuffer(true);
         self::$tl1Conn->authenticate($username, $password, 'Fiberhome-'.self::$model);
