@@ -14,6 +14,7 @@ class CommandResultBatch extends Model
     protected $fillable = [
         'ip',
         'description',
+        'pon_interface',
         'interface',
         'serial',
         'operator',

@@ -12,6 +12,7 @@ class CreateCommandResultBatchesTable extends Migration
             $table->id();
             $table->string('ip');
             $table->string('description')->nullable();
+            $table->string('pon_interface')->nullable();
             $table->string('interface')->nullable();
             $table->string('serial')->nullable();
             $table->string('operator')->nullable();

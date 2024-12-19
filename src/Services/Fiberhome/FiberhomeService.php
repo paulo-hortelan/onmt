@@ -150,21 +150,24 @@ class FiberhomeService
 
     /**
      * Starts the commands execution and saves in a single CommandResultBatch
-     *
-     * * Make sure to provide only ONE or none interface/serial *
-     * * or it will get the first interface/serial provided
      */
-    public function startRecordingCommands(?string $description = null): void
-    {
+    public function startRecordingCommands(
+        ?string $description = null,
+        ?string $ponInterface = null,
+        ?string $interface = null,
+        ?string $serial = null,
+        ?string $operator = null
+    ): void {
         $this->validateSingleInterfaceSerial();
 
         $this->globalCommandBatch =
             CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'description' => $description,
-                'interface' => self::$interfaces[0] ?? null,
-                'serial' => self::$serials[0] ?? null,
-                'operator' => self::$operator,
+                'pon_interface' => $ponInterface,
+                'interface' => $interface,
+                'serial' => $serial,
+                'operator' => $operator,
             ]);
     }
 

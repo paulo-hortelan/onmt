@@ -35,7 +35,12 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Router Nokia', 
     it('can realize a complete provision and configuration', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
-        $this->nokiaTelnet->startRecordingCommands();
+        $this->fiberhome->startRecordingCommands(
+            description: 'Provision Router-Nokia',
+            ponInterface: $this->ponInterface,
+            interface: null,
+            serial: $this->serialALCL
+        );
 
         $ontIndex = $this->nokiaTelnet->getNextOntIndex($this->ponInterface);
         $newInterface = $this->ponInterface.'/'.$ontIndex;
@@ -162,7 +167,12 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Bridge Chima', 
     it('can realize a complete provision and configuration', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
-        $this->nokiaTelnet->startRecordingCommands();
+        $this->fiberhome->startRecordingCommands(
+            description: 'Provision Bridge-Chima',
+            ponInterface: $this->ponInterface,
+            interface: null,
+            serial: $this->serialCMSZ
+        );
 
         $ontIndex = $this->nokiaTelnet->getNextOntIndex($this->ponInterface);
         $newInterface = $this->ponInterface.'/'.$ontIndex;

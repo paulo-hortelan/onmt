@@ -37,7 +37,12 @@ describe('Fiberhome Provision Onts Router-Nokia', function () {
     it('can provision onts', function () {
         $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
 
-        $this->fiberhome->startRecordingCommands();
+        $this->fiberhome->startRecordingCommands(
+            description: 'Provision Router-Nokia',
+            ponInterface: $this->interfaceCMSZ,
+            interface: $this->interfaceCMSZ,
+            serial: $this->serialCMSZ
+        );
 
         $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
 
@@ -66,7 +71,12 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
     it('can provision onts', function () {
         $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
 
-        $this->fiberhome->startRecordingCommands();
+        $this->fiberhome->startRecordingCommands(
+            description: 'Provision Router-Fiberhome',
+            ponInterface: $this->interfaceCMSZ,
+            interface: $this->interfaceCMSZ,
+            serial: $this->serialCMSZ
+        );
 
         $this->fiberhome->interfaces([$this->interfaceFHTT])->serials([$this->serialFHTT]);
 
@@ -126,7 +136,12 @@ describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
     it('can provision onts', function () {
         $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
 
-        $this->fiberhome->startRecordingCommands();
+        $this->fiberhome->startRecordingCommands(
+            description: 'Provision Bridge-Fiberhome',
+            ponInterface: $this->interfaceCMSZ,
+            interface: $this->interfaceCMSZ,
+            serial: $this->serialCMSZ
+        );
 
         $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
 
