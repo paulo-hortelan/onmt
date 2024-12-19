@@ -1,19 +1,17 @@
 <?php
 
-use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Facades\Fiberhome;
-use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 uses()->group('Fiberhome');
 
 beforeEach(function () {
-    $ipOlt = env('FIBERHOME_OLT_IP');
-    $ipServer = env('FIBERHOME_IP_SERVER');
-    $username = env('FIBERHOME_OLT_USERNAME_TL1');
-    $password = env('FIBERHOME_OLT_PASSWORD_TL1');
+    $this->ipOlt = env('FIBERHOME_OLT_IP');
+    $this->ipServer = env('FIBERHOME_IP_SERVER');
+    $this->username = env('FIBERHOME_OLT_USERNAME_TL1');
+    $this->password = env('FIBERHOME_OLT_PASSWORD_TL1');
 
     $this->serialALCL = env('FIBERHOME_SERIAL_ALCL');
     $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
@@ -33,13 +31,19 @@ beforeEach(function () {
     $this->portInterfaceCMSZ = env('FIBERHOME_PORT_INTERFACE_CMSZ');
     $this->portInterfaceFHTT = env('FIBERHOME_PORT_INTERFACE_FHTT');
 
-    $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($ipOlt, $username, $password, 3337, $ipServer);
-
 });
 
 describe('Fiberhome Provision Onts Router-Nokia', function () {
     it('can provision onts', function () {
+        $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
+
+        $this->fiberhome->startRecordingCommands();
+
         $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
+
+        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ontTypeALCL, $this->pppoeUsername);
+
+        expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
         $veipConfig = new VeipConfig(
             serviceId: 1,
@@ -48,29 +52,29 @@ describe('Fiberhome Provision Onts Router-Nokia', function () {
             serviceType: 'DATA',
         );
 
-        $provisionedOnts = $this->fiberhome->provisionRouterVeipOnts($this->ontTypeALCL, $this->pppoeUsername, $this->portInterfaceALCL, $veipConfig);
+        $configuredOnts = $this->fiberhome->configureVeipOnts($this->portInterfaceALCL, $veipConfig);
 
-        var_dump($provisionedOnts->toArray());
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        expect($provisionedOnts)->toBeInstanceOf(Collection::class);
+        $commandBatchResult = $this->nokiaTL1->stopRecordingCommands();
 
-        $provisionedOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-
+        expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });
-})->only();
+})->skip();
 
 describe('Fiberhome Provision Onts Router-Fiberhome', function () {
     it('can provision onts', function () {
+        $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
+
+        $this->fiberhome->startRecordingCommands();
+
         $this->fiberhome->interfaces([$this->interfaceFHTT])->serials([$this->serialFHTT]);
 
-        $WanConfig = new WanConfig(
+        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ontTypeFHTT, $this->pppoeUsername);
+
+        expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $wanConfig = new WanConfig(
             status: 1,
             mode: 2,
             connType: 2,
@@ -88,41 +92,59 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
             ssdId: null
         );
 
-        $provisionedOnts = $this->fiberhome->provisionRouterWanOnts($this->ontTypeFHTT, $this->pppoeUsername, $WanConfig);
+        // UPORT = 0
+        $wanConfig->uPort = 0;
+        $wanConfig->ssdId = null;
 
-        expect($provisionedOnts)->toBeInstanceOf(Collection::class);
+        $configuredOnts = $this->fiberhome->configureWanOnts($wanConfig);
 
-        $provisionedOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
+        // SSDID = 1
+        $wanConfig->uPort = null;
+        $wanConfig->ssdId = 1;
+
+        $configuredOnts = $this->fiberhome->configureWanOnts($wanConfig);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        // SSDID = 5
+        $wanConfig->uPort = null;
+        $wanConfig->ssdId = 5;
+
+        $configuredOnts = $this->fiberhome->configureWanOnts($wanConfig);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $commandBatchResult = $this->nokiaTL1->stopRecordingCommands();
+
+        expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });
 })->skip();
 
 describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
     it('can provision onts', function () {
+        $this->fiberhome = Fiberhome::timeout(5, 10)->connectTL1($this->ipOlt, $this->username, $this->password, 3337, $this->ipServer);
+
+        $this->fiberhome->startRecordingCommands();
+
         $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
 
-        $LanConfig = new LanConfig(
+        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ontTypeFHTT, $this->pppoeUsername);
+
+        expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $lanConfig = new LanConfig(
             cVlan: 110,
             cCos: 0,
         );
 
-        $provisionedOnts = $this->fiberhome->provisionBridgeOnts($this->ontTypeCMSZ, $this->pppoeUsername, $this->portInterfaceCMSZ, $LanConfig);
+        $configuredOnts = $this->fiberhome->configureLanOnts($this->portInterfaceCMSZ, $lanConfig);
 
-        expect($provisionedOnts)->toBeInstanceOf(Collection::class);
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $provisionedOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
+        $commandBatchResult = $this->nokiaTL1->stopRecordingCommands();
 
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
+        expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });
 })->skip();
