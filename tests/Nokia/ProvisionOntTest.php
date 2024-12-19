@@ -31,7 +31,7 @@ beforeEach(function () {
     $this->ponInterface = env('NOKIA_PON_INTERFACE');
 });
 
-describe('Nokia Complete Provision and Configuration on ONT\'s - Router Nokia', function () {
+describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', function () {
     it('can realize a complete provision and configuration', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
@@ -163,7 +163,7 @@ describe('Nokia Complete Provision and Configuration on ONT\'s - Router Nokia', 
     });
 })->skip();
 
-describe('Nokia Complete Provision and Configuration on ONT\'s - Bridge Chima', function () {
+describe('Nokia Complete Provision and Configuration on ONTs - Bridge Chima', function () {
     it('can realize a complete provision and configuration', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 

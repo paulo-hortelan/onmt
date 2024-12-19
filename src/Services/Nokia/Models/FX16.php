@@ -97,50 +97,73 @@ class FX16 extends NokiaService
     public static function showEquipmentOntStatusPon(string $ponInterface): ?CommandResult
     {
         $onts = [];
-        $command = "show equipment ont status pon $ponInterface";
+        $command = "show equipment ont status pon $ponInterface detail";
 
         try {
-            $commandResponse = self::$telnetConn->exec($command);
+            $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($commandResponse, 'sernum')) {
-                throw new \Exception($commandResponse);
+            if (! str_contains($response, 'sernum')) {
+                throw new \Exception($response);
             }
 
-            $splittedResponse = preg_split("/\r\n|\n|\r/", $commandResponse);
+            dump($response);
 
-            foreach ($splittedResponse as $key => $column) {
-                if (preg_match('/sernum/', $column)) {
-                    $numOnts = count($splittedResponse) - $key - 5;
+            $ontsData = [];
+            $ontsBlocks = explode("\n--------------------------------------------------------------------------------\n", $response);
 
-                    if ($numOnts === 0) {
-                        return CommandResult::create([
-                            'success' => true,
-                            'command' => $command,
-                            'error' => null,
-                            'result' => [],
-                        ]);
+            foreach ($ontsBlocks as $ontBlock) {
+
+                if (empty(trim($ontBlock))) {
+                    continue;
+                }
+
+                $ontAttributes = [
+                    'pon-interface' => null,
+                    'interface' => null,
+                    'sernum' => null,
+                    'admin-status' => null,
+                    'oper-status' => null,
+                    'olt-rx-sig-level' => null,
+                    'ont-olt-distance' => null,
+                    'desc1' => null,
+                    'desc2' => null,
+                    'hostname' => null,
+                ];
+
+                $lines = explode("\n", $ontBlock);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+
+                    $patterns = [
+                        'pon-interface' => '/pon\s*:\s*(\S+)/',
+                        'interface' => '/ont\s*:\s*(\S+)/',
+                        'sernum' => '/sernum\s*:\s*(\S+)/',
+                        'admin-status' => '/admin-status\s*:\s*(\S+)/',
+                        'oper-status' => '/oper-status\s*:\s*(\S+)/',
+                        'olt-rx-sig-level' => '/olt-rx-sig-level\(dbm\)\s*:\s*([\S-]+)/',
+                        'ont-olt-distance' => '/ont-olt-distance\(km\)\s*:\s*([\S-]+)/',
+                        'desc1' => '/desc1\s*:\s*(.+)/',
+                        'desc2' => '/desc2\s*:\s*(.+)/',
+                        'hostname' => '/hostname\s*:\s*(\S+)/',
+                    ];
+
+                    foreach ($patterns as $key => $pattern) {
+                        if (preg_match($pattern, $line, $matches)) {
+                            $value = trim($matches[1]);
+
+                            if (empty($value)) {
+                                $ontAttributes[$key] = null;
+                            } elseif (in_array($key, ['olt-rx-sig-level', 'ont-olt-distance'])) {
+                                $ontAttributes[$key] = (float) $value;
+                            } else {
+                                $ontAttributes[$key] = $value;
+                            }
+                        }
                     }
+                }
 
-                    for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\s+/', $splittedResponse[$key + $i + 1]);
-
-                        $ponInterface = $splitted[0];
-                        $interface = $splitted[1];
-                        $serial = $splitted[2];
-                        $adminStatus = $splitted[3];
-                        $operStatus = $splitted[4];
-                        $oltRxSigLevel = $splitted[5];
-                        $ontOltDistance = $splitted[6];
-
-                        $onts[] = [
-                            'interface' => $interface ?? null,
-                            'serial' => $serial ?? null,
-                            'adminStatus' => $adminStatus ?? null,
-                            'operStatus' => $operStatus ?? null,
-                            'oltRxSigLevel' => $oltRxSigLevel ?? null,
-                            'ontOltDistance' => $ontOltDistance ?? null,
-                        ];
-                    }
+                if (! empty($ontAttributes['pon-interface'])) {
+                    $ontsData[] = $ontAttributes;
                 }
             }
         } catch (\Exception $e) {
@@ -156,7 +179,7 @@ class FX16 extends NokiaService
             'success' => true,
             'command' => $command,
             'error' => null,
-            'result' => $onts,
+            'result' => $ontsData,
         ]);
     }
 
@@ -232,45 +255,30 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            if (preg_match('/tx-signal-level.*:(.*\s)/m', $response, $match)) {
-                $txSignalLevel = (float) $match[1];
-            }
-
-            if (preg_match('/ont-voltage.*:(.*\s)/m', $response, $match)) {
-                $ontVoltage = (float) $match[1];
-            }
-
-            if (preg_match('/olt-rx-sig-level.*:(.*\s)/m', $response, $match)) {
-                $oltRxSigLevel = (float) $match[1];
-            }
-
-            if (preg_match('/rx-signal-level.*:(.*\s)/m', $response, $match)) {
-                $rxSignalLevel = (float) $match[1];
-            }
-
-            if (preg_match('/ont-temperature.*:(.*\s)/m', $response, $match)) {
-                $ontTemperature = (float) $match[1];
-            }
-
-            if (preg_match('/laser-bias-curr.*:(.*\s)/m', $response, $match)) {
-                $laserBiasCurr = (float) $match[1];
-            }
-
-            $ontDetail = [
-                'txSignalLevel' => $txSignalLevel ?? null,
-                'ontVoltage' => $ontVoltage ?? null,
-                'oltRxSigLevel' => $oltRxSigLevel ?? null,
-                'rxSignalLevel' => $rxSignalLevel ?? null,
-                'ontTemperature' => $ontTemperature ?? null,
-                'laserBiasCurr' => $laserBiasCurr ?? null,
+            $ontDetails = [
+                'tx-signal-level' => null,
+                'ont-voltage' => null,
+                'olt-rx-sig-level' => null,
+                'rx-signal-level' => null,
+                'ont-temperature' => null,
+                'laser-bias-curr' => null,
             ];
 
-            return CommandResult::create([
-                'success' => true,
-                'command' => $command,
-                'error' => null,
-                'result' => $ontDetail,
-            ]);
+            $lines = explode("\n", $response);
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                foreach ($ontDetails as $key => $value) {
+                    if (preg_match('/'.preg_quote($key, '/').'\s*:\s*([^\s:]+)/i', $line, $matches)) {
+                        $value = trim($matches[1]);
+
+                        $ontDetails[$key] = ! empty($value) ? (float) $value : null;
+                    }
+                }
+            }
+
+            extract($ontDetails);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
@@ -279,6 +287,13 @@ class FX16 extends NokiaService
                 'result' => [],
             ]);
         }
+
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $ontDetails,
+        ]);
     }
 
     /**
@@ -320,6 +335,160 @@ class FX16 extends NokiaService
         }
 
         return $ontsInterface;
+    }
+
+    /**
+     * Returns the ONT interface details - Telnet
+     */
+    public static function showEquipmentOntInterface(string $interface): ?CommandResult
+    {
+        $command = "show equipment ont interface $interface detail";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! str_contains($response, 'ont-idx')) {
+                throw new \Exception($response);
+            }
+
+            $interfaceDetails = [
+                'sw-ver-act' => null,
+                'vendor-id' => null,
+                'equip-id' => null,
+                'actual-num-slots' => null,
+                'num-tconts' => null,
+                'num-prio-queues' => null,
+                'auto-sw-download-ver' => null,
+                'yp-serial-no' => null,
+                'oper-spec-ver' => null,
+                'act-txpower-ctrl' => null,
+                'cfgfile1-ver-act' => null,
+                'cfgfile2-ver-act' => null,
+                'actual-us-rate' => null,
+                'template-name' => null,
+                'auto-prov-status' => null,
+                'eqpt-ver-num' => null,
+                'sw-ver-psv' => null,
+                'version-number' => null,
+                'num-trf-sched' => null,
+                'auto-sw-planned-ver' => null,
+                'sernum' => null,
+                'act-ont-type' => null,
+                'sn-bundle-status' => null,
+                'cfgfile1-ver-psv' => null,
+                'cfgfile2-ver-psv' => null,
+            ];
+
+            $lines = explode("\n", $response);
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                foreach ($interfaceDetails as $key => $value) {
+                    if (preg_match('/'.preg_quote($key, '/').'\s*:\s*([^\s:]+)/i', $line, $matches)) {
+                        $value = trim($matches[1]);
+
+                        if (empty($value)) {
+                            $interfaceDetails[$key] = null;
+                        } elseif (in_array($key, ['num-tconts', 'num-prio-queues', 'actual-num-slots', 'num-trf-sched'])) {
+                            $interfaceDetails[$key] = (int) $value;
+                        } else {
+                            $interfaceDetails[$key] = $value;
+                        }
+                    }
+                }
+            }
+
+            extract($interfaceDetails);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $interfaceDetails,
+        ]);
+    }
+
+    /**
+     * Returns the ONT software download details - Telnet
+     */
+    public static function showEquipmentOntSwDownload(string $interface): ?CommandResult
+    {
+        $command = "show equipment ont sw-download $interface";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            dump($response);
+
+            if (! str_contains($response, 'ont-idx')) {
+                throw new \Exception($response);
+            }
+
+            $swDownloadDetails = [
+                'inactive' => null,
+                'download-notok' => null,
+                'ntlt-inprogress' => null,
+                'ontflash-inprogress' => null,
+                'ntlt-failure' => null,
+                'ontflash-failure' => null,
+                'download-file-notfound' => null,
+                'sw-version-mismatch' => null,
+                'sw-delayactivate' => null,
+                'planned' => null,
+                'planned-notok' => null,
+                'download-inprogress' => null,
+                'omci-inprogress' => null,
+                'ontswact-inprogress' => null,
+                'omci-failure' => null,
+                'ontswact-failure' => null,
+                'no-matching-software' => null,
+                'sw-download-failure' => null,
+                'sw-download-pending' => null,
+            ];
+
+            $lines = explode("\n", $response);
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                foreach ($swDownloadDetails as $key => $value) {
+                    if (preg_match('/'.preg_quote($key, '/').'\s*:\s*([^\s:]+)/i', $line, $matches)) {
+                        $value = trim($matches[1]);
+
+                        if (empty($value)) {
+                            $swDownloadDetails[$key] = null;
+                        } else {
+                            $swDownloadDetails[$key] = $value;
+                        }
+                    }
+                }
+            }
+
+            extract($swDownloadDetails);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $swDownloadDetails,
+        ]);
     }
 
     /**

@@ -20,31 +20,15 @@ beforeEach(function () {
 });
 
 describe('Nokia Optical Interface', function () {
-    it('can get interface', function () {
-        $this->nokia->serials([$this->serialALCL]);
-
-        $interfaces = $this->nokia->ontsInterface();
-
-        expect($interfaces)->toBeInstanceOf(Collection::class);
-
-        $interfaces->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
 
     it('can get ont interface detail', function () {
         $this->nokia->interfaces(['1/1/1/1/3']);
 
-        $interfaces = $this->nokia->ontsInterfaceDetail();
+        $downloadDetails = $this->nokia->ontsSwDownloadDetail();
 
-        expect($interfaces)->toBeInstanceOf(Collection::class);
+        expect($downloadDetails)->toBeInstanceOf(Collection::class);
 
-        $interfaces->each(function ($batch) {
+        $downloadDetails->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 

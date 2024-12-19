@@ -119,6 +119,20 @@ class FiberhomeService
         throw new Exception('No connection established.');
     }
 
+    private function validateTelnet(): void
+    {
+        if (empty(self::$telnetConn)) {
+            throw new Exception('Telnet connection not established.');
+        }
+    }
+
+    private function validateTL1(): void
+    {
+        if (empty(self::$tl1Conn)) {
+            throw new Exception('TL1 connection not established.');
+        }
+    }
+
     private function validateInterfacesSerials()
     {
         if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
@@ -181,6 +195,7 @@ class FiberhomeService
     public function ontsOpticalPower(): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -220,6 +235,7 @@ class FiberhomeService
     public function ontsStateInfo(): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -259,6 +275,7 @@ class FiberhomeService
     public function ontsPortInfo(): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -296,6 +313,7 @@ class FiberhomeService
     public function ontsLanInfo(): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -325,6 +343,8 @@ class FiberhomeService
      */
     public function oltUplinksLanPerf(string $portInterface): ?Collection
     {
+        $this->validateTL1();
+
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
@@ -353,6 +373,8 @@ class FiberhomeService
      */
     public function unregisteredOnts(): ?Collection
     {
+        $this->validateTL1();
+
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
@@ -381,6 +403,8 @@ class FiberhomeService
      */
     public function registeredOnts(): ?Collection
     {
+        $this->validateTL1();
+
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
@@ -414,6 +438,7 @@ class FiberhomeService
     public function authorizeOnts(string $ontType, string $pppoeUsername): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -455,6 +480,7 @@ class FiberhomeService
     public function configureLanOnts(string $portInterface, LanConfig $config): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -496,6 +522,7 @@ class FiberhomeService
     public function configureVeipOnts(string $portInterface, VeipConfig $config): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -536,6 +563,7 @@ class FiberhomeService
     public function configureWanOnts(WanConfig $config): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -575,6 +603,7 @@ class FiberhomeService
     public function removeOnts(): ?Collection
     {
         $this->validateInterfacesSerials();
+        $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
             throw new Exception('Model '.self::$model.' is not supported.');

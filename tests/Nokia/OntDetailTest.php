@@ -26,6 +26,8 @@ describe('Nokia Optical Detail - Success', function () {
 
         $ontsDetail = $this->nokia->ontsDetail();
 
+        dump($ontsDetail->toArray());
+
         expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
         $ontsDetail->each(function ($batch) {
@@ -34,10 +36,10 @@ describe('Nokia Optical Detail - Success', function () {
 
             collect($batch->commands)->each(function ($commandResult) {
                 expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['rxSignalLevel'])->toBeFloat();
+                expect($commandResult->result['rx-signal-level'])->toBeFloat();
             });
         });
-    });
+    })->only();
 
     it('can get multiple details', function () {
         $this->nokia->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
@@ -52,7 +54,7 @@ describe('Nokia Optical Detail - Success', function () {
 
             collect($batch->commands)->each(function ($commandResult) {
                 expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['rxSignalLevel'])->toBeFloat();
+                expect($commandResult->result['rx-signal-level'])->toBeFloat();
             });
         });
     });

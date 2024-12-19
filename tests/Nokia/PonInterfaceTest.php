@@ -17,14 +17,14 @@ beforeEach(function () {
     $this->interfaceALCL = env('NOKIA_INTERFACE_ALCL');
     $this->interfaceCMSZ = env('NOKIA_INTERFACE_CMSZ');
 
-    $this->ponInterfaceALCL = env('NOKIA_PON_INTERFACE_ALCL');
+    $this->ponInterface = env('NOKIA_PON_INTERFACE');
 
     $this->nokia = Nokia::connectTelnet($ipOlt, $username, $password, 23);
 });
 
 describe('Nokia Onts by Pon Interface - Success', function () {
     it('can get onts', function () {
-        $onts = $this->nokia->ontsByPonInterface($this->ponInterfaceALCL);
+        $onts = $this->nokia->ontsByPonInterface($this->ponInterface);
 
         expect($onts)->toBeInstanceOf(Collection::class);
 

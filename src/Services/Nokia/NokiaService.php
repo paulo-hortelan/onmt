@@ -188,6 +188,20 @@ class NokiaService
         return $this;
     }
 
+    private function validateTelnet(): void
+    {
+        if (empty(self::$telnetConn)) {
+            throw new Exception('Telnet connection not established.');
+        }
+    }
+
+    private function validateTL1(): void
+    {
+        if (empty(self::$tl1Conn)) {
+            throw new Exception('TL1 connection not established.');
+        }
+    }
+
     private function validateInterfaces(): void
     {
         if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
@@ -303,6 +317,7 @@ class NokiaService
     public function ontsDetail(): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTelnet();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -329,7 +344,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's detail by serial - Telnet
+     * Gets ONT's detail by serials - Telnet
      *
      * Parameter 'serials' must already be provided
      *
@@ -338,6 +353,7 @@ class NokiaService
     public function ontsDetailBySerials(): ?Collection
     {
         $this->validateSerials();
+        $this->validateTelnet();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -347,6 +363,7 @@ class NokiaService
 
         foreach (self::$serials as $serial) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Get ONTs detail by serials',
                 'ip' => self::$ipOlt,
                 'serial' => $serial,
                 'operator' => self::$operator,
@@ -388,15 +405,16 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's interfaces by serials - Telnet
+     * Gets ONT's interface by serials - Telnet
      *
      * Parameter 'serials' must already be provided
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsInterfaces(): ?Collection
+    public function ontsInterface(): ?Collection
     {
         $this->validateSerials();
+        $this->validateTelnet();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -406,12 +424,87 @@ class NokiaService
 
         foreach (self::$serials as $serial) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Get ONTs interface by serial',
                 'ip' => self::$ipOlt,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
             $response = FX16::showEquipmentOntIndex($serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONT's interface detail - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsInterfaceDetail(): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Get ONTs interface detail',
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = FX16::showEquipmentOntInterface($interface);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONT's software download detail - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsSwDownloadDetail(): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Get ONTs software download details',
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = FX16::showEquipmentOntSwDownload($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -432,6 +525,7 @@ class NokiaService
     public function ontsPortDetail(): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTelnet();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -464,6 +558,8 @@ class NokiaService
      */
     public function unregisteredOnts(): ?Collection
     {
+        $this->validateTelnet();
+
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
@@ -471,6 +567,7 @@ class NokiaService
         $finalResponse = collect();
 
         $commandResultBatch = CommandResultBatch::create([
+            'description' => 'List Unregistered ONTs',
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
@@ -486,12 +583,14 @@ class NokiaService
     }
 
     /**
-     * Gets the unregistered ONT's - Telnet
+     * Gets ONT's detail by PON interface - Telnet
      *
      * @return Collection A collection of CommandResultBatch
      */
     public function ontsByPonInterface(string $ponInterface): ?Collection
     {
+        $this->validateTelnet();
+
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
@@ -499,6 +598,7 @@ class NokiaService
         $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'description' => 'Gets ONTs detail by PON interface',
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
@@ -521,6 +621,8 @@ class NokiaService
      */
     public function getNextOntIndex(string $ponInterface): ?int
     {
+        $this->validateTelnet();
+
         $commandResultBatch = $this->ontsByPonInterface($ponInterface)->first();
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
@@ -557,6 +659,7 @@ class NokiaService
     public function removeOnts(): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTelnet();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -597,6 +700,7 @@ class NokiaService
     public function provisionOnts(EntOntConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -633,6 +737,7 @@ class NokiaService
     public function editProvisionedOnts(EdOntConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -669,6 +774,7 @@ class NokiaService
     public function planOntsCard(EntOntCardConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -705,6 +811,7 @@ class NokiaService
     public function createLogicalPortOnLT(EntLogPortConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -740,6 +847,7 @@ class NokiaService
     public function editVeipOnts(EdOntVeipConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -776,6 +884,7 @@ class NokiaService
     public function configureUpstreamQueue(QosUsQueueConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -811,6 +920,7 @@ class NokiaService
     public function boundBridgePortToVlan(VlanPortConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -847,6 +957,7 @@ class NokiaService
     public function addEgressPortToVlan(VlanEgPortConfig $config): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -884,6 +995,7 @@ class NokiaService
     public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -930,6 +1042,7 @@ class NokiaService
     public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -987,6 +1100,7 @@ class NokiaService
     public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1044,6 +1158,7 @@ class NokiaService
     public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1099,6 +1214,7 @@ class NokiaService
     public function configureTr069WebAccountPassword(string $password, int $sParamId = 8): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1143,6 +1259,7 @@ class NokiaService
     public function configureTr069AccountPassword(string $password, int $sParamId = 9): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1189,6 +1306,7 @@ class NokiaService
     public function configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14): ?Collection
     {
         $this->validateInterfaces();
+        $this->validateTL1();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');

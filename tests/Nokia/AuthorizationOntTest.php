@@ -33,7 +33,7 @@ beforeEach(function () {
     $this->ponInterface = env('NOKIA_PON_INTERFACE');
 });
 
-describe('Nokia Authorize ONT\'s - Router Nokia', function () {
+describe('Nokia Authorize ONTs - Router Nokia', function () {
     it('can get next ont index', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
@@ -249,7 +249,7 @@ describe('Nokia Authorize ONT\'s - Router Nokia', function () {
     });
 })->skip();
 
-describe('Nokia Configure PPPOE and VLAN on ONT\'s - Router Nokia', function () {
+describe('Nokia Configure PPPOE and VLAN on ONTs - Router Nokia', function () {
     it('can configure vlan', function () {
         $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
 
@@ -289,7 +289,7 @@ describe('Nokia Configure PPPOE and VLAN on ONT\'s - Router Nokia', function () 
     });
 })->skip();
 
-describe('Nokia Configure WIFI on ONT\'s - Router Nokia', function () {
+describe('Nokia Configure WIFI on ONTs - Router Nokia', function () {
     it('can configure 2.4Ghz', function () {
         $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
 
@@ -329,7 +329,7 @@ describe('Nokia Configure WIFI on ONT\'s - Router Nokia', function () {
     });
 })->skip();
 
-describe('Nokia Configure Account on ONT\'s - Router Nokia', function () {
+describe('Nokia Configure Account on ONTs - Router Nokia', function () {
     it('can configure webaccount password', function () {
         $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
 
@@ -369,7 +369,7 @@ describe('Nokia Configure Account on ONT\'s - Router Nokia', function () {
     });
 })->skip();
 
-describe('Nokia Configure DNS on ONT\'s - Router Nokia', function () {
+describe('Nokia Configure DNS on ONTs - Router Nokia', function () {
     it('can configure all dns\'s password', function () {
         $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
 
@@ -390,7 +390,7 @@ describe('Nokia Configure DNS on ONT\'s - Router Nokia', function () {
     });
 })->skip();
 
-describe('Nokia Remove ONT\'s', function () {
+describe('Nokia Remove ONTs', function () {
     it('can remove onts', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
