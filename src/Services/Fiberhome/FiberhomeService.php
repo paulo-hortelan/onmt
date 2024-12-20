@@ -186,7 +186,7 @@ class FiberhomeService
     }
 
     /**
-     * Gets ONT's optical power
+     * Gets ONTs optical power
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
@@ -226,7 +226,7 @@ class FiberhomeService
     }
 
     /**
-     * Gets ONT's state info
+     * Gets ONTs state info
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
@@ -266,7 +266,7 @@ class FiberhomeService
     }
 
     /**
-     * Gets ONT's port info
+     * Gets ONTs port info
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
@@ -306,7 +306,7 @@ class FiberhomeService
     }
 
     /**
-     * List ONT's LAN Info
+     * List ONTs LAN Info
      *
      * @return Collection Info about ONT LAN
      */
@@ -367,7 +367,7 @@ class FiberhomeService
     }
 
     /**
-     * List unregistered ONT's
+     * List unregistered ONTs
      *
      * @return Collection Info about each unregistered ONT
      */
@@ -397,7 +397,7 @@ class FiberhomeService
     }
 
     /**
-     * List registered ONT's
+     * List registered ONTs
      *
      * @return Collection Info about each registered ONT
      */
@@ -427,11 +427,11 @@ class FiberhomeService
     }
 
     /**
-     * Authorize ONT's
+     * Authorize ONTs
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
-     * @param  string  $ontType  ONT's type. Example: 'HG260'
+     * @param  string  $ontType  ONTs type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
      * @return Collection Info about each ONT authorization
      */
@@ -469,7 +469,7 @@ class FiberhomeService
     }
 
     /**
-     * Configure ONT's LAN service
+     * Configure ONTs LAN service
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
@@ -511,7 +511,7 @@ class FiberhomeService
     }
 
     /**
-     * Configure ONT's VEIP service
+     * Configure ONTs VEIP service
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
@@ -553,7 +553,7 @@ class FiberhomeService
     }
 
     /**
-     * Configure ONT's WAN service
+     * Configure ONTs WAN service
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *
@@ -594,7 +594,7 @@ class FiberhomeService
     }
 
     /**
-     * Remove/Deletes ONT's
+     * Remove/Deletes ONTs
      *
      * Parameters 'interfaces' and 'serials' must already be provided
      *

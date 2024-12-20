@@ -14,7 +14,7 @@ class C300
     }
 
     /**
-     * Returns the ONT's optical power
+     * Returns the ONTs optical power
      */
     public function ontsOpticalPower(array $interfaces): ?array
     {
@@ -57,7 +57,7 @@ class C300
     }
 
     /**
-     * Returns the ONT's interface
+     * Returns the ONTs interface
      */
     public function ontsInterface(array $serials): ?array
     {

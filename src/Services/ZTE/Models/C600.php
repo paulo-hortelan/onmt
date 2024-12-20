@@ -5,7 +5,7 @@ namespace PauloHortelan\Onmt\Services\ZTE\Models;
 class C600 extends C300
 {
     /**
-     * Returns the ONT's interface
+     * Returns the ONTs interface
      */
     public function ontsInterface(array $serials): ?array
     {

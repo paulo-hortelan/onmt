@@ -11,7 +11,7 @@ use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 class AN551604 extends FiberhomeService
 {
     /**
-     * Returns the ONT's optical power
+     * Returns the ONTs optical power
      */
     public static function lstOMDDM(string $interface, string $serial): ?CommandResult
     {
@@ -59,7 +59,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Returns the ONT's state info
+     * Returns the ONTs state info
      */
     public static function lstOnuState(string $interface, string $serial): ?CommandResult
     {
@@ -111,7 +111,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Returns the ONT's port info
+     * Returns the ONTs port info
      */
     public static function lstPortVlan(string $interface, string $serial): ?CommandResult
     {
@@ -157,7 +157,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Returns the ONT's lan info
+     * Returns the ONTs lan info
      */
     public static function lstOnuLanInfo(): ?CommandResult
     {
@@ -275,7 +275,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Returns the unregistered ONT's
+     * Returns the unregistered ONTs
      */
     public static function lstUnregOnu(): ?CommandResult
     {
@@ -348,7 +348,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Returns the registered ONT's
+     * Returns the registered ONTs
      */
     public static function lstOnu(): ?CommandResult
     {
@@ -427,7 +427,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Authorize ONT's
+     * Authorize ONTs
      */
     public static function addOnu(string $interface, string $serial, string $ontType, string $pppoeUsername): ?CommandResult
     {
@@ -458,7 +458,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Remove ONT's
+     * Remove ONTs
      */
     public static function delOnu(string $interface, string $serial): ?CommandResult
     {
@@ -489,7 +489,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Configure ONT's VLAN
+     * Configure ONTs VLAN
      */
     public static function cfgLanPortVlan(string $interface, string $serial, string $portInterface, LanConfig $config): ?CommandResult
     {
@@ -522,7 +522,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Configure ONT's VEIP
+     * Configure ONTs VEIP
      */
     public static function cfgVeipService(string $interface, string $serial, string $portInterface, VeipConfig $config): ?CommandResult
     {
@@ -561,7 +561,7 @@ class AN551604 extends FiberhomeService
     }
 
     /**
-     * Set ONT's WAN Service
+     * Set ONTs WAN Service
      */
     public static function setWanService(string $interface, string $serial, WanConfig $config): ?CommandResult
     {

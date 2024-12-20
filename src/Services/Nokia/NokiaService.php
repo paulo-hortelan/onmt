@@ -308,7 +308,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's detail - Telnet
+     * Gets ONTs detail - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -344,7 +344,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's detail by serials - Telnet
+     * Gets ONTs detail by serials - Telnet
      *
      * Parameter 'serials' must already be provided
      *
@@ -405,7 +405,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's interface by serials - Telnet
+     * Gets ONTs interface by serials - Telnet
      *
      * Parameter 'serials' must already be provided
      *
@@ -442,7 +442,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's interface detail - Telnet
+     * Gets ONTs interface detail - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -461,7 +461,7 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Get ONTs interface detail',
+                'description' => 'Gets ONTs interface detail',
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
@@ -479,7 +479,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's software download detail - Telnet
+     * Gets ONTs software download detail - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -498,7 +498,7 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Get ONTs software download details',
+                'description' => 'Gets ONTs software download details',
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
@@ -516,7 +516,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's port detail - Telnet
+     * Gets ONTs port detail - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -535,6 +535,7 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Gets ONts port detail',
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
@@ -552,7 +553,7 @@ class NokiaService
     }
 
     /**
-     * Gets the unregistered ONT's - Telnet
+     * Gets the unregistered ONTs - Telnet
      *
      * @return Collection A collection of CommandResultBatch
      */
@@ -583,7 +584,7 @@ class NokiaService
     }
 
     /**
-     * Gets ONT's detail by PON interface - Telnet
+     * Gets ONTs detail by PON interface - Telnet
      *
      * @return Collection A collection of CommandResultBatch
      */
@@ -650,7 +651,7 @@ class NokiaService
     }
 
     /**
-     * Remove ONT's - Telnet
+     * Remove ONTs - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -690,7 +691,7 @@ class NokiaService
     }
 
     /**
-     * Provision ONT's - TL1
+     * Provision ONTs - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -727,7 +728,7 @@ class NokiaService
     }
 
     /**
-     * Edit provisioned ONT's - TL1
+     * Edit provisioned ONTs - TL1
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -837,7 +838,7 @@ class NokiaService
     }
 
     /**
-     * Edit the VEIP on ONT's - TL1
+     * Edit the VEIP on ONTs - TL1
      *
      * Parameter 'interfaces' must already be provided
      *

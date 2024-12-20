@@ -92,7 +92,7 @@ class FX16 extends NokiaService
     }
 
     /**
-     * Get ONT's info by PON interface - Telnet
+     * Get ONTs info by PON interface - Telnet
      */
     public static function showEquipmentOntStatusPon(string $ponInterface): ?CommandResult
     {
@@ -541,7 +541,7 @@ class FX16 extends NokiaService
     }
 
     /**
-     * Returns the ONT's unprovisioned - Telnet
+     * Returns the ONTs unprovisioned - Telnet
      */
     public static function showPonUnprovisionOnu(): ?CommandResult
     {
@@ -767,7 +767,7 @@ class FX16 extends NokiaService
     public static function edOntVeip(string $interface, EdOntVeipConfig $config): ?CommandResult
     {
         $accessIdentifier = $config->buildIdentifier($interface);
-        $command = "ED-ONTVEIP::$accessIdentifier:::::;";
+        $command = "ED-ONTVEIP::$accessIdentifier:::::IS;";
 
         try {
             $response = self::$tl1Conn->exec($command, false);
