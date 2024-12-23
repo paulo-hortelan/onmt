@@ -76,6 +76,7 @@ class WanConfig
             'CONNTYPE' => $this->connType ?? null,
             'VLAN' => $this->vlan ?? null,
             'COS' => $this->cos ?? null,
+            'QOS' => $this->qos ?? null,
             'NAT' => $this->nat ?? null,
             'IPMODE' => $this->ipMode ?? null,
             'PPPOEPROXY' => $this->pppoeProxy ?? null,

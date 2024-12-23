@@ -15,17 +15,16 @@ beforeEach(function () {
     $this->serialALCL = env('FIBERHOME_SERIAL_ALCL');
     $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
 
-    $this->interfaceALCL = env('FIBERHOME_INTERFACE_ALCL');
-    $this->interfaceCMSZ = env('FIBERHOME_INTERFACE_CMSZ');
+    $this->ponInterface = env('FIBERHOME_PON_INTERFACE');
 
     $this->fiberhome = Fiberhome::connectTL1($ipOlt, $username, $password, 3337, $ipServer);
 });
 
 describe('Fiberhome Ont Optical Power', function () {
     it('can get single power', function () {
-        $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
+        $this->fiberhome->serials([$this->serialALCL]);
 
-        $powers = $this->fiberhome->ontsOpticalPower();
+        $powers = $this->fiberhome->ontsOpticalPower($this->ponInterface);
 
         expect($powers)->toBeInstanceOf(Collection::class);
 
@@ -41,10 +40,9 @@ describe('Fiberhome Ont Optical Power', function () {
     });
 
     it('can get multiple powers', function () {
-        $this->fiberhome->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
         $this->fiberhome->serials([$this->serialALCL, $this->serialCMSZ]);
 
-        $powers = $this->fiberhome->ontsOpticalPower();
+        $powers = $this->fiberhome->ontsOpticalPower($this->ponInterface);
 
         expect($powers)->toBeInstanceOf(Collection::class);
 

@@ -15,17 +15,16 @@ beforeEach(function () {
     $this->serialALCL = env('FIBERHOME_SERIAL_ALCL');
     $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
 
-    $this->interfaceALCL = env('FIBERHOME_INTERFACE_ALCL');
-    $this->interfaceCMSZ = env('FIBERHOME_INTERFACE_CMSZ');
+    $this->ponInterface = env('FIBERHOME_PON_INTERFACE');
 
     $this->fiberhome = Fiberhome::connectTL1($ipOlt, $username, $password, 3337, $ipServer);
 });
 
 describe('Fiberhome Onts Port Info - Success', function () {
     it('can get single info', function () {
-        $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
+        $this->fiberhome->serials([$this->serialALCL]);
 
-        $ports = $this->fiberhome->ontsPortInfo();
+        $ports = $this->fiberhome->ontsPortInfo($this->ponInterface);
 
         expect($ports)->toBeInstanceOf(Collection::class);
 
@@ -40,10 +39,9 @@ describe('Fiberhome Onts Port Info - Success', function () {
     });
 
     it('can get multiple infos', function () {
-        $this->fiberhome->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
         $this->fiberhome->serials([$this->serialALCL, $this->serialCMSZ]);
 
-        $ports = $this->fiberhome->ontsPortInfo();
+        $ports = $this->fiberhome->ontsPortInfo($this->ponInterface);
 
         expect($ports)->toBeInstanceOf(Collection::class);
 

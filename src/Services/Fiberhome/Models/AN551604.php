@@ -32,12 +32,19 @@ class AN551604 extends FiberhomeService
                 if (preg_match('/ONUID/', $column)) {
                     $splitted = preg_split('/\\t/', $response[$key + 1]);
 
-                    $rxPower = (float) str_replace(',', '.', $splitted[1]);
-                    $txPower = (float) str_replace(',', '.', $splitted[3]);
-
                     $ontsOpticalPower = [
-                        'rxPower' => $rxPower ?? null,
-                        'txPower' => $txPower ?? null,
+                        'RxPower' => (float) str_replace(',', '.', $splitted[1]) ?? null,
+                        'RxPowerR' => $splitted[2] ?? null,
+                        'TxPower' => (float) str_replace(',', '.', $splitted[3]) ?? null,
+                        'TxPowerR' => $splitted[4] ?? null,
+                        'CurrTxBias' => (float) str_replace(',', '.', $splitted[5]) ?? null,
+                        'CurrTxBiasR' => $splitted[6] ?? null,
+                        'Temperature' => (float) str_replace(',', '.', $splitted[7]) ?? null,
+                        'TemperatureR' => $splitted[8] ?? null,
+                        'Voltage' => (float) str_replace(',', '.', $splitted[9]) ?? null,
+                        'VoltageR' => $splitted[10] ?? null,
+                        'PTxPower' => (float) str_replace(',', '.', $splitted[11]) ?? null,
+                        'PRxPower' => (float) str_replace(',', '.', $splitted[12]) ?? null,
                     ];
                 }
             }
@@ -61,13 +68,13 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the ONTs state info
      */
-    public static function lstOnuState(string $interface, string $serial): ?CommandResult
+    public static function lstOnuState(string $ponInterface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $opticalState = [];
 
         try {
-            $command = "LST-ONUSTATE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+            $command = "LST-ONUSTATE::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
             $response = self::$tl1Conn->exec($command);
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
@@ -113,11 +120,11 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the ONTs port info
      */
-    public static function lstPortVlan(string $interface, string $serial): ?CommandResult
+    public static function lstPortVlan(string $ponInterface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $ontsPortInfo = [];
-        $command = "LST-PORTVLAN::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+        $command = "LST-PORTVLAN::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
 
         try {
             $response = self::$tl1Conn->exec($command);
@@ -159,54 +166,49 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the ONTs lan info
      */
-    public static function lstOnuLanInfo(): ?CommandResult
+    public static function lstOnuLanInfo(string $ponInterface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
         $ontsLanInfo = [];
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $command = "LST-ONULANINFO::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+            $response = self::$tl1Conn->exec($command);
 
-            try {
-                $command = "LST-ONULANINFO::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
-                $response = self::$tl1Conn->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-
-                $response = preg_split("/\r\n|\n|\r/", $response);
-
-                foreach ($response as $key => $column) {
-                    if (preg_match('/AdminStatus/', $column)) {
-                        $splitted = preg_split('/\\t/', $response[$key + 1]);
-
-                        $adminStatus = $splitted[0];
-                        $operStatus = $splitted[1];
-                        $duplex = $splitted[2];
-                        $pVid = (int) $splitted[3];
-                        $vlanPriority = $splitted[4];
-                        $speed = $splitted[5];
-
-                        $ontsLanInfo = [
-                            'adminStatus' => $adminStatus ?? null,
-                            'operStatus' => $operStatus ?? null,
-                            'duplex' => $duplex ?? null,
-                            'pVid' => $pVid ?? null,
-                            'vlanPriority' => $vlanPriority ?? null,
-                            'speed' => $speed ?? null,
-                        ];
-                    }
-                }
-            } catch (\Exception $e) {
-                return CommandResult::create([
-                    'success' => false,
-                    'command' => $command,
-                    'error' => $e->getMessage(),
-                    'result' => [],
-                ]);
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+
+            $response = preg_split("/\r\n|\n|\r/", $response);
+
+            foreach ($response as $key => $column) {
+                if (preg_match('/AdminStatus/', $column)) {
+                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+
+                    $adminStatus = $splitted[0];
+                    $operStatus = $splitted[1];
+                    $duplex = $splitted[2];
+                    $pVid = (int) $splitted[3];
+                    $vlanPriority = $splitted[4];
+                    $speed = $splitted[5];
+
+                    $ontsLanInfo = [
+                        'adminStatus' => $adminStatus ?? null,
+                        'operStatus' => $operStatus ?? null,
+                        'duplex' => $duplex ?? null,
+                        'pVid' => $pVid ?? null,
+                        'vlanPriority' => $vlanPriority ?? null,
+                        'speed' => $speed ?? null,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
         return CommandResult::create([
@@ -308,24 +310,15 @@ class AN551604 extends FiberhomeService
                     for ($i = 1; $i <= $numOnts; $i++) {
                         $splitted = preg_split('/\\t/', $response[$key + $i]);
 
-                        $slot = (int) $splitted[0];
-                        $pon = (int) $splitted[1];
-                        $serial = $splitted[2];
-                        $loid = $splitted[3];
-                        $pwd = $splitted[4];
-                        $error = $splitted[5];
-                        $authTime = $splitted[6];
-                        $dt = $splitted[7];
-
                         $unRegData = [
-                            'slot' => $slot ?? null,
-                            'pon' => $pon ?? null,
-                            'serial' => $serial ?? null,
-                            'loid' => $loid ?? null,
-                            'pwd' => $pwd ?? null,
-                            'error' => $error ?? null,
-                            'authTime' => $authTime ?? null,
-                            'dt' => $dt ?? null,
+                            'SLOTNO' => (int) $splitted[0] ?? null,
+                            'PONNO' => (int) $splitted[1] ?? null,
+                            'MAC' => $splitted[2] ?? null,
+                            'LOID' => $splitted[3] ?? null,
+                            'PWD' => $splitted[4] ?? null,
+                            'ERROR' => $splitted[5] ?? null,
+                            'AUTHTIME' => $splitted[6] ?? null,
+                            'DT' => $splitted[7] ?? null,
                         ];
                     }
                 }
@@ -381,30 +374,18 @@ class AN551604 extends FiberhomeService
                     for ($i = 1; $i <= $numOnts; $i++) {
                         $splitted = preg_split('/\\t/', $response[$key + $i]);
 
-                        $oltId = $splitted[0];
-                        $ponId = $splitted[1];
-                        $onuNo = $splitted[2];
-                        $name = $splitted[3];
-                        $desc = $splitted[4];
-                        $onuTypeIp = $splitted[5];
-                        $authType = $splitted[6];
-                        $serial = $splitted[7];
-                        $loid = $splitted[8];
-                        $pwd = $splitted[9];
-                        $swVer = $splitted[10];
-
                         $regOnts[] = [
-                            'oltId' => $oltId ?? null,
-                            'ponId' => $ponId ?? null,
-                            'onuNo' => $onuNo ?? null,
-                            'name' => $name ?? null,
-                            'desc' => $desc ?? null,
-                            'onuTypeIp' => $onuTypeIp ?? null,
-                            'authType' => $authType ?? null,
-                            'serial' => $serial ?? null,
-                            'loid' => $loid ?? null,
-                            'pwd' => $pwd ?? null,
-                            'swVer' => $swVer ?? null,
+                            'OLTID' => $splitted[0] ?? null,
+                            'PONID' => $splitted[1] ?? null,
+                            'ONUNO' => $splitted[2] ?? null,
+                            'NAME' => $splitted[3] ?? null,
+                            'DESC' => $splitted[4] ?? null,
+                            'ONUTYPEIP' => $splitted[5] ?? null,
+                            'AUTHTYPE' => $splitted[6] ?? null,
+                            'MAC' => $splitted[7] ?? null,
+                            'LOID' => $splitted[8] ?? null,
+                            'PWD' => $splitted[9] ?? null,
+                            'SWVER' => $splitted[10] ?? null,
                         ];
                     }
                 }
@@ -429,10 +410,10 @@ class AN551604 extends FiberhomeService
     /**
      * Authorize ONTs
      */
-    public static function addOnu(string $interface, string $serial, string $ontType, string $pppoeUsername): ?CommandResult
+    public static function addOnu(string $ponInterface, string $serial, string $ontType, string $pppoeUsername): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $command = "ADD-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
+        $command = "ADD-ONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
 
         try {
             $response = self::$tl1Conn->exec($command);
@@ -460,10 +441,10 @@ class AN551604 extends FiberhomeService
     /**
      * Remove ONTs
      */
-    public static function delOnu(string $interface, string $serial): ?CommandResult
+    public static function delOnu(string $ponInterface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
-        $command = "DEL-ONU::OLTID=$ipOlt,PONID=$interface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;";
+        $command = "DEL-ONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;";
 
         try {
             $response = self::$tl1Conn->exec($command);
@@ -491,14 +472,14 @@ class AN551604 extends FiberhomeService
     /**
      * Configure ONTs VLAN
      */
-    public static function cfgLanPortVlan(string $interface, string $serial, string $portInterface, LanConfig $config): ?CommandResult
+    public static function cfgLanPortVlan(string $ponInterface, string $serial, string $portInterface, LanConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
 
         try {
             $lanServiceCommand = $config->buildCommand();
 
-            $command = "CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$lanServiceCommand;";
+            $command = "CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$lanServiceCommand;";
             $response = self::$tl1Conn->exec($command);
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
@@ -524,32 +505,27 @@ class AN551604 extends FiberhomeService
     /**
      * Configure ONTs VEIP
      */
-    public static function cfgVeipService(string $interface, string $serial, string $portInterface, VeipConfig $config): ?CommandResult
+    public static function cfgVeipService(string $ponInterface, string $serial, string $portInterface, VeipConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
-            $serial = self::$serials[$i];
+        try {
+            $veipServiceCommand = $config->buildCommand();
 
-            try {
-                $veipServiceCommand = $config->buildCommand();
+            $command = "CFG-VEIPSERVICE::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$veipServiceCommand;";
 
-                $command = "CFG-VEIPSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$veipServiceCommand;";
+            $response = self::$tl1Conn->exec($command);
 
-                $response = self::$tl1Conn->exec($command);
-
-                if (! str_contains($response, 'M  CTAG COMPLD')) {
-                    throw new \Exception($response);
-                }
-            } catch (\Exception $e) {
-                return CommandResult::create([
-                    'success' => false,
-                    'command' => $command,
-                    'error' => $e->getMessage(),
-                    'result' => [],
-                ]);
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
             }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
         }
 
         return CommandResult::create([
@@ -563,14 +539,14 @@ class AN551604 extends FiberhomeService
     /**
      * Set ONTs WAN Service
      */
-    public static function setWanService(string $interface, string $serial, WanConfig $config): ?CommandResult
+    public static function setWanService(string $ponInterface, string $serial, WanConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
 
         try {
             $wanServiceCommand = $config->buildCommand();
 
-            $command = "SET-WANSERVICE::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::$wanServiceCommand;";
+            $command = "SET-WANSERVICE::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::$wanServiceCommand;";
 
             $response = self::$tl1Conn->exec($command);
 

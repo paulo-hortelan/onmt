@@ -17,9 +17,7 @@ beforeEach(function () {
     $this->serialCMSZ = env('FIBERHOME_SERIAL_CMSZ');
     $this->serialFHTT = env('FIBERHOME_SERIAL_FHTT');
 
-    $this->interfaceALCL = env('FIBERHOME_INTERFACE_ALCL');
-    $this->interfaceCMSZ = env('FIBERHOME_INTERFACE_CMSZ');
-    $this->interfaceFHTT = env('FIBERHOME_INTERFACE_FHTT');
+    $this->ponInterface = env('FIBERHOME_PON_INTERFACE');
 
     $this->ontTypeALCL = env('FIBERHOME_ONT_TYPE_ALCL');
     $this->ontTypeCMSZ = env('FIBERHOME_ONT_TYPE_CMSZ');
@@ -39,14 +37,14 @@ describe('Fiberhome Provision Onts Router-Nokia', function () {
 
         $this->fiberhome->startRecordingCommands(
             description: 'Provision Router-Nokia',
-            ponInterface: $this->interfaceCMSZ,
-            interface: $this->interfaceCMSZ,
-            serial: $this->serialCMSZ
+            ponInterface: $this->ponInterface,
+            interface: null,
+            serial: $this->serialALCL
         );
 
-        $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
+        $this->fiberhome->serials([$this->serialALCL]);
 
-        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ontTypeALCL, $this->pppoeUsername);
+        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ponInterface, $this->ontTypeALCL, $this->pppoeUsername);
 
         expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -57,7 +55,7 @@ describe('Fiberhome Provision Onts Router-Nokia', function () {
             serviceType: 'DATA',
         );
 
-        $configuredOnts = $this->fiberhome->configureVeipOnts($this->portInterfaceALCL, $veipConfig);
+        $configuredOnts = $this->fiberhome->configureVeipOnts($this->ponInterface, $this->portInterfaceALCL, $veipConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -73,14 +71,14 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
 
         $this->fiberhome->startRecordingCommands(
             description: 'Provision Router-Fiberhome',
-            ponInterface: $this->interfaceCMSZ,
-            interface: $this->interfaceCMSZ,
-            serial: $this->serialCMSZ
+            ponInterface: null,
+            interface: $this->interfaceFHTT,
+            serial: $this->serialFHTT
         );
 
-        $this->fiberhome->interfaces([$this->interfaceFHTT])->serials([$this->serialFHTT]);
+        $this->fiberhome->serials([$this->serialFHTT]);
 
-        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ontTypeFHTT, $this->pppoeUsername);
+        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ponInterface, $this->ontTypeFHTT, $this->pppoeUsername);
 
         expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -106,7 +104,7 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
         $wanConfig->uPort = 0;
         $wanConfig->ssdId = null;
 
-        $configuredOnts = $this->fiberhome->configureWanOnts($wanConfig);
+        $configuredOnts = $this->fiberhome->configureWanOnts($this->ponInterface, $wanConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -114,7 +112,7 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
         $wanConfig->uPort = null;
         $wanConfig->ssdId = 1;
 
-        $configuredOnts = $this->fiberhome->configureWanOnts($wanConfig);
+        $configuredOnts = $this->fiberhome->configureWanOnts($this->ponInterface, $wanConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -122,7 +120,7 @@ describe('Fiberhome Provision Onts Router-Fiberhome', function () {
         $wanConfig->uPort = null;
         $wanConfig->ssdId = 5;
 
-        $configuredOnts = $this->fiberhome->configureWanOnts($wanConfig);
+        $configuredOnts = $this->fiberhome->configureWanOnts($this->ponInterface, $wanConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -138,14 +136,14 @@ describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
 
         $this->fiberhome->startRecordingCommands(
             description: 'Provision Bridge-Fiberhome',
-            ponInterface: $this->interfaceCMSZ,
+            ponInterface: null,
             interface: $this->interfaceCMSZ,
             serial: $this->serialCMSZ
         );
 
-        $this->fiberhome->interfaces([$this->interfaceCMSZ])->serials([$this->serialCMSZ]);
+        $this->fiberhome->serials([$this->serialCMSZ]);
 
-        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ontTypeFHTT, $this->pppoeUsername);
+        $provisionedOnts = $this->fiberhome->authorizeOnts($this->ponInterface, $this->ontTypeFHTT, $this->pppoeUsername);
 
         expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -154,11 +152,11 @@ describe('Fiberhome Provision Onts Bridge-Fiberhome', function () {
             cCos: 0,
         );
 
-        $configuredOnts = $this->fiberhome->configureLanOnts($this->portInterfaceCMSZ, $lanConfig);
+        $configuredOnts = $this->fiberhome->configureLanOnts($this->ponInterface, $this->portInterfaceCMSZ, $lanConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $commandBatchResult = $this->nokiaTL1->stopRecordingCommands();
+        $commandBatchResult = $this->fiberhome->stopRecordingCommands();
 
         expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });

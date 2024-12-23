@@ -573,14 +573,10 @@ class FX16 extends NokiaService
                     for ($i = 1; $i <= $numOnts; $i++) {
                         $splitted = preg_split('/\s+/', $splittedResponse[$key + $i + 1]);
 
-                        $alarmIdx = (int) $splitted[1];
-                        $interface = $splitted[2];
-                        $serial = $splitted[3];
-
                         $unregData[] = [
-                            'alarmIdx' => $alarmIdx ?? null,
-                            'interface' => $interface ?? null,
-                            'serial' => $serial ?? null,
+                            'alarm-idx' => (int) $splitted[1] ?? null,
+                            'interface' => $splitted[2] ?? null,
+                            'serial' => $splitted[3] ?? null,
                         ];
                     }
                 }

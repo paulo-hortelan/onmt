@@ -26,7 +26,7 @@ class LanConfig
         $command = '';
 
         foreach ($parameters as $key => $value) {
-            if (! empty($value)) {
+            if (isset($value)) {
                 $command .= "$key=$value,";
             }
         }

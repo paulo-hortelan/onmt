@@ -133,6 +133,13 @@ class FiberhomeService
         }
     }
 
+    private function validateSerials()
+    {
+        if (empty(self::$serials) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
+            throw new Exception('Serial(s) not found.');
+        }
+    }
+
     private function validateInterfacesSerials()
     {
         if (empty(self::$interfaces) || count(array_filter(self::$interfaces)) < count(self::$interfaces)) {
@@ -185,16 +192,30 @@ class FiberhomeService
             ]);
     }
 
+    public function stopRecordingCommands(): CommandResultBatch
+    {
+        if ($this->globalCommandBatch === null) {
+            throw new Exception('The Record Commands has not started');
+        }
+
+        $globalCommandBatch = $this->globalCommandBatch;
+
+        $this->globalCommandBatch = null;
+
+        return $globalCommandBatch;
+    }
+
     /**
      * Gets ONTs optical power
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameters 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Collection with info about each ONT power: 'rxPower', 'txPower'
      */
-    public function ontsOpticalPower(): ?Collection
+    public function ontsOpticalPower(string $ponInterface): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -203,18 +224,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstOMDDM($interface, $serial);
+            $response = AN551604::lstOMDDM($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -228,13 +249,14 @@ class FiberhomeService
     /**
      * Gets ONTs state info
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameter 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Collection with info about each ONT state: 'adminState', 'oprState', 'auth', 'lastOffTime'
      */
-    public function ontsStateInfo(): ?Collection
+    public function ontsStateInfo(string $ponInterface): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -243,18 +265,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstOnuState($interface, $serial);
+            $response = AN551604::lstOnuState($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -268,13 +290,14 @@ class FiberhomeService
     /**
      * Gets ONTs port info
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameter 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Collection with info about each ONT port: 'cVlan'
      */
-    public function ontsPortInfo(): ?Collection
+    public function ontsPortInfo(string $ponInterface): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -283,18 +306,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstPortVlan($interface, $serial);
+            $response = AN551604::lstPortVlan($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -308,11 +331,12 @@ class FiberhomeService
     /**
      * List ONTs LAN Info
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Info about ONT LAN
      */
-    public function ontsLanInfo(): ?Collection
+    public function ontsLanInfo(string $ponInterface): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -321,17 +345,24 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-            'ip' => self::$ipOlt,
-            'operator' => self::$operator,
-        ]);
+        for ($i = 0; $i < count(self::$serials); $i++) {
+            $serial = self::$serials[$i];
 
-        $response = AN551604::lstOnuLanInfo();
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
+                'serial' => $serial,
+                'operator' => self::$operator,
+            ]);
 
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
+            $response = AN551604::lstOnuLanInfo($ponInterface, $serial);
 
-        $finalResponse->push($commandResultBatch);
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
 
         return $finalResponse;
     }
@@ -429,15 +460,16 @@ class FiberhomeService
     /**
      * Authorize ONTs
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameter 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @param  string  $ontType  ONTs type. Example: 'HG260'
      * @param  string  $pppoeUsername  PPPOE username.
      * @return Collection Info about each ONT authorization
      */
-    public function authorizeOnts(string $ontType, string $pppoeUsername): ?Collection
+    public function authorizeOnts(string $ponInterface, string $ontType, string $pppoeUsername): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -446,18 +478,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::addOnu($interface, $serial, $ontType, $pppoeUsername);
+            $response = AN551604::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -471,15 +503,16 @@ class FiberhomeService
     /**
      * Configure ONTs LAN service
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameters 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @param  string  $portInface  Port interface. Example: 'NA-NA-NA-1'
      * @param  LanConfig  $config  LAN service configuration parameters
      * @return Collection Info about each ONT configuration
      */
-    public function configureLanOnts(string $portInterface, LanConfig $config): ?Collection
+    public function configureLanOnts(string $ponInterface, string $portInterface, LanConfig $config): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -488,18 +521,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::cfgLanPortVlan($interface, $serial, $portInterface, $config);
+            $response = AN551604::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -513,15 +546,16 @@ class FiberhomeService
     /**
      * Configure ONTs VEIP service
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameters 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @param  string  $portInterface  Port interface. Example: 'NA-NA-NA-1'
      * @param  VeipConfig  $config  VEIP service configuration parameters
      * @return Collection Info about each ONT configuration
      */
-    public function configureVeipOnts(string $portInterface, VeipConfig $config): ?Collection
+    public function configureVeipOnts(string $ponInterface, string $portInterface, VeipConfig $config): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -530,18 +564,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::cfgVeipService($interface, $serial, $portInterface, $config);
+            $response = AN551604::cfgVeipService($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -555,14 +589,15 @@ class FiberhomeService
     /**
      * Configure ONTs WAN service
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameters 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @param  WanConfig  $config  WAN service configurations parameters
      * @return Collection Info about each ONT configuration
      */
-    public function configureWanOnts(WanConfig $config): ?Collection
+    public function configureWanOnts(string $ponInterface, WanConfig $config): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {
@@ -571,18 +606,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::setWanService($interface, $serial, $config);
+            $response = AN551604::setWanService($ponInterface, $serial, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -596,11 +631,12 @@ class FiberhomeService
     /**
      * Remove/Deletes ONTs
      *
-     * Parameters 'interfaces' and 'serials' must already be provided
+     * Parameters 'serials' must already be provided
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Info about each ONT delete result
      */
-    public function removeOnts(): ?Collection
+    public function removeOnts(string $ponInterface): ?Collection
     {
         $this->validateInterfacesSerials();
         $this->validateTL1();
@@ -611,18 +647,18 @@ class FiberhomeService
 
         $finalResponse = collect();
 
-        for ($i = 0; $i < count(self::$interfaces); $i++) {
-            $interface = self::$interfaces[$i];
+        for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
-                'interface' => $interface,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::delOnu($interface, $serial);
+            $response = AN551604::delOnu($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
