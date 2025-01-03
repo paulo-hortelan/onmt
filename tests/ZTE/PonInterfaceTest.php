@@ -20,49 +20,36 @@ beforeEach(function () {
 
     $this->interfaceALCLC300 = env('ZTE_C300_INTERFACE_ALCL');
     $this->interfaceCMSZC300 = env('ZTE_C300_INTERFACE_CMSZ');
+
+    $this->ponInterfaceALCLC300 = env('ZTE_C300_PON_INTERFACE_ALCL');
 });
 
-describe('ZTE C300 - Ont Optical Power - Success', function () {
-    it('can get single power', function () {
+describe('ZTE C300 - Onts by pon interface - Success', function () {
+    it('can get onts by pon interface', function () {
         $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
 
-        $zte->interfaces([$this->interfaceALCLC300]);
+        $onts = $zte->ontsByPonInterface($this->ponInterfaceALCLC300);
 
-        $ontsPower = $zte->ontsOpticalPower();
+        dump($onts->toArray());
 
-        expect($ontsPower)->toBeInstanceOf(Collection::class);
+        expect($onts)->toBeInstanceOf(Collection::class);
 
-        $ontsPower->each(function ($batch) {
+        $onts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
             collect($batch->commands)->each(function ($commandResult) {
                 expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['up-olt-rx'])->toBeFloat();
             });
         });
     });
 
-});
-
-describe('ZTE Ont Optical Power By Serial - Success', function () {
-    it('can get single power - C300', function () {
+    it('can get the next free ont index', function () {
         $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
 
-        $zte->serials([$this->serialALCLC300]);
+        $ontIndex = $zte->getNextOntIndex($this->ponInterfaceALCLC300);
 
-        $ontsPower = $zte->ontsOpticalPowerBySerial();
-
-        expect($ontsPower)->toBeInstanceOf(Collection::class);
-
-        $ontsPower->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['up-olt-rx'])->toBeFloat();
-            });
-        });
+        expect($ontIndex)->toBeInt();
+        expect($ontIndex)->toBeGreaterThan(0);
     })->only();
 });

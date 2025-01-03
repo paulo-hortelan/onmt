@@ -49,7 +49,7 @@ class FX16 extends NokiaService
     public static function executeCommandTelnet(string $command): ?CommandResult
     {
         try {
-            self::$tl1Conn->exec($command);
+            self::$telnetConn->exec($command);
 
             return CommandResult::create([
                 'success' => true,
@@ -73,7 +73,7 @@ class FX16 extends NokiaService
     public static function executeCommandTL1(string $command): ?CommandResult
     {
         try {
-            self::$telnetConn->exec($command);
+            self::$tl1Conn->exec($command);
 
             return CommandResult::create([
                 'success' => true,
@@ -96,7 +96,6 @@ class FX16 extends NokiaService
      */
     public static function showEquipmentOntStatusPon(string $ponInterface): ?CommandResult
     {
-        $onts = [];
         $command = "show equipment ont status pon $ponInterface detail";
 
         try {
@@ -105,8 +104,6 @@ class FX16 extends NokiaService
             if (! str_contains($response, 'sernum')) {
                 throw new \Exception($response);
             }
-
-            dump($response);
 
             $ontsData = [];
             $ontsBlocks = explode("\n--------------------------------------------------------------------------------\n", $response);

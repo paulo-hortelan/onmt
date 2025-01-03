@@ -4,6 +4,7 @@ namespace PauloHortelan\Onmt\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class CommandResultBatch extends Model
 {
@@ -39,5 +40,27 @@ class CommandResultBatch extends Model
     public function allCommandsSuccessful(): bool
     {
         return $this->commands()->where('success', false)->doesntExist();
+    }
+
+    /**
+     * Associate commands with this batch.
+     */
+    public function associateCommand(CommandResult $commandResult)
+    {
+        $commandResult->associateBatch($this);
+
+        $this->load('commands');
+    }
+
+    /**
+     * Associate commands with this batch.
+     */
+    public function associateCommands(Collection $commandResults)
+    {
+        foreach ($commandResults as $commandResult) {
+            $commandResult->associateBatch($this);
+        }
+
+        $this->load('commands');
     }
 }

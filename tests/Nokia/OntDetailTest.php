@@ -26,8 +26,6 @@ describe('Nokia Optical Detail - Success', function () {
 
         $ontsDetail = $this->nokia->ontsDetail();
 
-        dump($ontsDetail->toArray());
-
         expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
         $ontsDetail->each(function ($batch) {

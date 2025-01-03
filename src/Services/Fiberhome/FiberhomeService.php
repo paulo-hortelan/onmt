@@ -638,7 +638,7 @@ class FiberhomeService
      */
     public function removeOnts(string $ponInterface): ?Collection
     {
-        $this->validateInterfacesSerials();
+        $this->validateSerials();
         $this->validateTL1();
 
         if (self::$model !== 'AN551604') {

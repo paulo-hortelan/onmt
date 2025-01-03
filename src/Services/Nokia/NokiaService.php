@@ -586,6 +586,7 @@ class NokiaService
     /**
      * Gets ONTs detail by PON interface - Telnet
      *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1/1'
      * @return Collection A collection of CommandResultBatch
      */
     public function ontsByPonInterface(string $ponInterface): ?Collection
