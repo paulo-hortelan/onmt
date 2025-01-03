@@ -4,11 +4,14 @@ namespace PauloHortelan\Onmt\Services\ZTE;
 
 use Exception;
 use Illuminate\Support\Collection;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\GemportConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServiceConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServicePortConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\SwitchportBindConfig;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterConfig;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanPortConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
@@ -298,6 +301,13 @@ class ZTEService
         }
     }
 
+    private function validateTerminalMode(string $terminalMode): void
+    {
+        if (! in_array($terminalMode, ['configure', 'interface-olt', 'interface-onu', 'pon-onu-mng'])) {
+            throw new Exception('Terminal mode '.$terminalMode.' is not supported.');
+        }
+    }
+
     public function setOperator(string $operator): object
     {
         self::$operator = $operator;
@@ -417,7 +427,6 @@ class ZTEService
     public function unconfiguredOnts(): ?Collection
     {
         $this->validateTelnet();
-        $this->validateModels();
 
         $finalResponse = collect();
 
@@ -434,6 +443,70 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONTs interface running config - Telnet
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsInterfaceRunningConfig(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$model === 'C300') {
+                $response = C300::showRunningConfigInterfaceGponOnu($interface);
+            }
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONTs running config - Telnet
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsRunningConfig(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$model === 'C300') {
+                $response = C300::showOnuRunningConfigGponOnu($interface);
+            }
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
 
         return $finalResponse;
     }
@@ -781,12 +854,14 @@ class ZTEService
      * Parameter 'interfaces' must already be provided
      *
      * @param  GemportConfig  $gemportConfig  Gemport settings
+     * @param  string  $terminalMode  Terminal mode to run: 'interface-onu', 'pon-onu-mng'
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureGemport(GemportConfig $gemportConfig): ?Collection
+    public function configureGemport(GemportConfig $gemportConfig, string $terminalMode): ?Collection
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateTerminalMode($terminalMode);
 
         $finalResponse = collect();
 
@@ -798,7 +873,7 @@ class ZTEService
             ]);
 
             if (self::$model === 'C300') {
-                if (self::$terminalMode !== "interface-onu-$interface") {
+                if ($terminalMode === 'interface-onu' && self::$terminalMode !== "interface-onu-$interface") {
                     $response = $this->setInterfaceOnuTerminalModel($interface);
 
                     $commandResultBatch->associateCommands($response->commands);
@@ -810,8 +885,19 @@ class ZTEService
                     }
                 }
 
-                $response = C300::gemport($gemportConfig);
+                if ($terminalMode === 'pon-onu-mng' && self::$terminalMode !== "pon-onu-mng-$interface") {
+                    $response = $this->setPonOnuMngTerminalModel($interface);
 
+                    $commandResultBatch->associateCommands($response->commands);
+
+                    if (! $commandResultBatch->allCommandsSuccessful()) {
+                        $finalResponse->push($commandResultBatch);
+
+                        continue;
+                    }
+                }
+
+                $response = C300::gemport($gemportConfig);
                 $commandResultBatch->associateCommand($response);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
@@ -988,7 +1074,7 @@ class ZTEService
     }
 
     /**
-     * Configures a VLAN conversion rule - Telnet
+     * Configures flow mode - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -1023,6 +1109,59 @@ class ZTEService
                 }
 
                 $response = C300::flowMode($flowModeConfig);
+
+                $commandResultBatch->associateCommand($response);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configures flow - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  FlowConfig  $flowConfig  Flow settings
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureFlow(FlowConfig $flowConfig): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$model === 'C300') {
+                if (self::$terminalMode !== "pon-onu-mng-$interface") {
+                    $response = $this->setPonOnuMngTerminalModel($interface);
+
+                    $commandResultBatch->associateCommands($response->commands);
+
+                    if (! $commandResultBatch->allCommandsSuccessful()) {
+                        $finalResponse->push($commandResultBatch);
+
+                        continue;
+                    }
+                }
+
+                $response = C300::flow($flowConfig);
 
                 $commandResultBatch->associateCommand($response);
 
@@ -1076,6 +1215,112 @@ class ZTEService
                 }
 
                 $response = C300::switchportBind($switchportBindConfig);
+
+                $commandResultBatch->associateCommand($response);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Creates a VLAN filtering mode - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  VlanFilterModeConfig  $vlanFilterModeConfig  Vlan-filter-mode settings
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureVlanFilterMode(VlanFilterModeConfig $vlanFilterModeConfig): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$model === 'C300') {
+                if (self::$terminalMode !== "pon-onu-mng-$interface") {
+                    $response = $this->setPonOnuMngTerminalModel($interface);
+
+                    $commandResultBatch->associateCommands($response->commands);
+
+                    if (! $commandResultBatch->allCommandsSuccessful()) {
+                        $finalResponse->push($commandResultBatch);
+
+                        continue;
+                    }
+                }
+
+                $response = C300::vlanFilterMode($vlanFilterModeConfig);
+
+                $commandResultBatch->associateCommand($response);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Creates a VLAN filtering item - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  VlanFilterConfig  $vlanFilterConfig  Vlan-filter-mode settings
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureVlanFilter(VlanFilterConfig $vlanFilterConfig): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$model === 'C300') {
+                if (self::$terminalMode !== "pon-onu-mng-$interface") {
+                    $response = $this->setPonOnuMngTerminalModel($interface);
+
+                    $commandResultBatch->associateCommands($response->commands);
+
+                    if (! $commandResultBatch->allCommandsSuccessful()) {
+                        $finalResponse->push($commandResultBatch);
+
+                        continue;
+                    }
+                }
+
+                $response = C300::vlanFilter($vlanFilterConfig);
 
                 $commandResultBatch->associateCommand($response);
 

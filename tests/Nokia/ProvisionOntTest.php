@@ -33,23 +33,23 @@ beforeEach(function () {
 
 describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', function () {
     it('can realize a complete provision and configuration', function () {
-        $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+        $nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
-        $this->fiberhome->startRecordingCommands(
+        $nokiaTelnet->startRecordingCommands(
             description: 'Provision Router-Nokia',
             ponInterface: $this->ponInterface,
             interface: null,
             serial: $this->serialALCL
         );
 
-        $ontIndex = $this->nokiaTelnet->getNextOntIndex($this->ponInterface);
+        $ontIndex = $nokiaTelnet->getNextOntIndex($this->ponInterface);
         $newInterface = $this->ponInterface.'/'.$ontIndex;
 
-        $this->nokiaTelnet->disconnect();
+        $nokiaTelnet->disconnect();
 
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
+        $nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
 
-        $this->nokiaTL1->interfaces([$newInterface]);
+        $nokiaTL1->interfaces([$newInterface]);
 
         $entOntConfig = new EntOntConfig(
             desc1: $this->pppoeUsername,
@@ -62,13 +62,13 @@ describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', fu
             voipAllowed: 'VEIP'
         );
 
-        $provisionedOnts = $this->nokiaTL1->provisionOnts($entOntConfig);
+        $provisionedOnts = $nokiaTL1->provisionOnts($entOntConfig);
 
         expect($provisionedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
         $edOntConfig = new EdOntConfig();
 
-        $editedOnts = $this->nokiaTL1->editProvisionedOnts($edOntConfig);
+        $editedOnts = $nokiaTL1->editProvisionedOnts($edOntConfig);
 
         expect($editedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -79,19 +79,19 @@ describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', fu
             ontCardHolderSlot: 14
         );
 
-        $entOntsCard = $this->nokiaTL1->planOntsCard($entOntCardConfig);
+        $entOntsCard = $nokiaTL1->planOntsCard($entOntCardConfig);
 
         expect($entOntsCard->first()->allCommandsSuccessful())->toBeTrue();
 
         $entLogPortConfig = new EntLogPortConfig(ontSlot: 14, ontPort: 1);
 
-        $entOntsLogicalPortLT = $this->nokiaTL1->createLogicalPortOnLT($entLogPortConfig);
+        $entOntsLogicalPortLT = $nokiaTL1->createLogicalPortOnLT($entLogPortConfig);
 
         expect($entOntsLogicalPortLT->first()->allCommandsSuccessful())->toBeTrue();
 
         $edOntVeipConfig = new EdOntVeipConfig(ontSlot: 14, ontPort: 1);
 
-        $editedOnts = $this->nokiaTL1->editVeipOnts($edOntVeipConfig);
+        $editedOnts = $nokiaTL1->editVeipOnts($edOntVeipConfig);
 
         expect($editedOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -102,7 +102,7 @@ describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', fu
             usbwProfName: 'HSI_1G_UP'
         );
 
-        $configuredOnts = $this->nokiaTL1->configureUpstreamQueue($qosUsQueueConfig);
+        $configuredOnts = $nokiaTL1->configureUpstreamQueue($qosUsQueueConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -113,7 +113,7 @@ describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', fu
             cmitMaxNumMacAddr: 1
         );
 
-        $configuredOnts = $this->nokiaTL1->boundBridgePortToVlan($vlanPortConfig);
+        $configuredOnts = $nokiaTL1->boundBridgePortToVlan($vlanPortConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
@@ -125,43 +125,43 @@ describe('Nokia Complete Provision and Configuration on ONTs - Router Nokia', fu
             portTransMode: 'SINGLETAGGED',
         );
 
-        $configuredOnts = $this->nokiaTL1->addEgressPortToVlan($vlanPortConfig);
+        $configuredOnts = $nokiaTL1->addEgressPortToVlan($vlanPortConfig);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069Vlan(110, 1);
+        $configuredOnts = $nokiaTL1->configureTr069Vlan(110, 1);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069Pppoe('teste_onu_mk2', '1234', 2, 3);
+        $configuredOnts = $nokiaTL1->configureTr069Pppoe('teste_onu_mk2', '1234', 2, 3);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069Wifi2_4Ghz('Wifi-Nokia-2.4Ghz', '12345678', 4, 5);
+        $configuredOnts = $nokiaTL1->configureTr069Wifi2_4Ghz('Wifi-Nokia-2.4Ghz', '12345678', 4, 5);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069Wifi5Ghz('Wifi-Nokia-5Ghz', '1234', 6, 7);
+        $configuredOnts = $nokiaTL1->configureTr069Wifi5Ghz('Wifi-Nokia-5Ghz', '1234', 6, 7);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069WebAccountPassword('ALC#FGU', 8);
+        $configuredOnts = $nokiaTL1->configureTr069WebAccountPassword('ALC#FGU', 8);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069AccountPassword('nokia123', 9);
+        $configuredOnts = $nokiaTL1->configureTr069AccountPassword('nokia123', 9);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $configuredOnts = $this->nokiaTL1->configureTr069DNS('186.224.0.18\,186.224.0.20', 12, 13, 14);
+        $configuredOnts = $nokiaTL1->configureTr069DNS('186.224.0.18\,186.224.0.20', 12, 13, 14);
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
-        $commandBatchResult = $this->nokiaTL1->stopRecordingCommands();
+        $commandBatchResult = $nokiaTL1->stopRecordingCommands();
 
         expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });
-})->skip();
+});
 
 describe('Nokia Complete Provision and Configuration on ONTs - Bridge Chima', function () {
     it('can realize a complete provision and configuration', function () {
@@ -273,4 +273,4 @@ describe('Nokia Complete Provision and Configuration on ONTs - Bridge Chima', fu
 
         expect($commandBatchResult->allCommandsSuccessful())->toBeTrue();
     });
-})->skip();
+});

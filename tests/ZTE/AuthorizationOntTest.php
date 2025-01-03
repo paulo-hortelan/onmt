@@ -1,11 +1,14 @@
 <?php
 
 use Illuminate\Support\Collection;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\GemportConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServiceConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServicePortConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\SwitchportBindConfig;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterConfig;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanPortConfig;
 use PauloHortelan\Onmt\Facades\ZTE;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
@@ -104,7 +107,7 @@ describe('ZTE C300 - Remove ONTs', function () {
             });
         });
     });
-});
+})->only();
 
 describe('ZTE C300 - Configure ONTs CMSZ', function () {
     it('can set name', function () {
@@ -186,7 +189,7 @@ describe('ZTE C300 - Configure ONTs CMSZ', function () {
             tcontId: 1
         );
 
-        $configuredOnts = $zte->configureGemport($gemportConfig);
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
 
         dump($configuredOnts->toArray());
 
@@ -204,11 +207,12 @@ describe('ZTE C300 - Configure ONTs CMSZ', function () {
         $gemportConfig = new GemportConfig(
             gemportId: 1,
             tcontId: null,
+            flowId: null,
             upstreamProfile: null,
             downstreamProfile: 'SMARTOLT-1G-DOWN'
         );
 
-        $configuredOnts = $zte->configureGemport($gemportConfig);
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
 
         dump($configuredOnts->toArray());
 
@@ -384,7 +388,7 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
         });
     });
 
-    it('can configure gemport', function () {
+    it('can configure gemport on interface-onu', function () {
         $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
 
         $zte->interfaces([$this->interfaceALCLC300]);
@@ -394,7 +398,7 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
             tcontId: 1
         );
 
-        $configuredOnts = $zte->configureGemport($gemportConfig);
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
 
         dump($configuredOnts->toArray());
 
@@ -412,11 +416,12 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
         $gemportConfig = new GemportConfig(
             gemportId: 1,
             tcontId: null,
+            flowId: null,
             upstreamProfile: null,
             downstreamProfile: 'SMARTOLT-1G-DOWN'
         );
 
-        $configuredOnts = $zte->configureGemport($gemportConfig);
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
 
         dump($configuredOnts->toArray());
 
@@ -496,13 +501,13 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
 
         $zte->interfaces([$this->interfaceALCLC300]);
 
-        $flowModeConfig = new FlowModeConfig(
+        $flowConfig = new FlowConfig(
             flowId: 1,
-            tagFilter: 'vlan-filter',
-            untagFilter: 'discard'
+            priority: 0,
+            vlan: 110
         );
 
-        $configuredOnts = $zte->configureFlowMode($flowModeConfig);
+        $configuredOnts = $zte->configureFlow($flowConfig);
 
         dump($configuredOnts->toArray());
 
@@ -518,33 +523,129 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
                 expect($commandResult->success)->toBeTrue();
             });
         });
-    })->only();
+    });
 
-    // it('can configure switchport-bind', function () {
-    //     $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+    it('can configure gemport on pon-onu-mng', function () {
+        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
 
-    //     $zte->interfaces([$this->interfaceALCLC300]);
+        $zte->interfaces([$this->interfaceALCLC300]);
 
-    //     $switchportBindConfig = new SwitchportBindConfig(
-    //         switch: 'switch_0/1',
-    //         veip: 1,
-    //     );
+        $gemportConfig = new GemportConfig(
+            gemportId: 1,
+            tcontId: null,
+            flowId: 1
+        );
 
-    //     $configuredOnts = $zte->configureSwitchportBind($switchportBindConfig);
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'pon-onu-mng');
 
-    //     dump($configuredOnts->toArray());
+        dump($configuredOnts->toArray());
 
-    //     $zte->disconnect();
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
 
-    //     expect($configuredOnts)->toBeInstanceOf(Collection::class);
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
 
-    //     $configuredOnts->each(function ($batch) {
-    //         expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-    //         expect($batch->commands)->toBeInstanceOf(Collection::class);
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
 
-    //         collect($batch->commands)->each(function ($commandResult) {
-    //             expect($commandResult->success)->toBeTrue();
-    //         });
-    //     });
-    // });
+    it('can configure switchport-bind', function () {
+        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+
+        $zte->interfaces([$this->interfaceALCLC300]);
+
+        $switchportBindConfig = new SwitchportBindConfig(
+            switchName: 'switch_0/1',
+            veip: null,
+            iphost: 1
+        );
+
+        $configuredOnts = $zte->configureSwitchportBind($switchportBindConfig);
+
+        dump($configuredOnts->toArray());
+
+        $switchportBindConfig = new SwitchportBindConfig(
+            switchName: 'switch_0/1',
+            veip: 1,
+            iphost: null
+        );
+
+        $configuredOnts = $zte->configureSwitchportBind($switchportBindConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure vlan-filter-mode', function () {
+        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+
+        $zte->interfaces([$this->interfaceALCLC300]);
+
+        $vlanFilterModeConfig = new VlanFilterModeConfig(
+            iphost: 1,
+            tagFilter: 'vlan-filter',
+            untagFilter: 'discard'
+        );
+
+        $configuredOnts = $zte->configureVlanFilterMode($vlanFilterModeConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure vlan-filter', function () {
+        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+
+        $zte->interfaces([$this->interfaceALCLC300]);
+
+        $vlanFilterConfig = new VlanFilterConfig(
+            iphost: 1,
+            priority: 0,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureVlanFilter($vlanFilterConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
 });

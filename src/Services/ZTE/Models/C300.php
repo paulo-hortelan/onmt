@@ -2,11 +2,14 @@
 
 namespace PauloHortelan\Onmt\Services\ZTE\Models;
 
+use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\GemportConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServiceConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServicePortConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\SwitchportBindConfig;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterConfig;
+use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanPortConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
@@ -543,6 +546,116 @@ class C300 extends ZTEService
     }
 
     /**
+     * Get interface-onu's running config - Telnet
+     */
+    public static function showRunningConfigInterfaceGponOnu($interface): ?CommandResult
+    {
+        $command = "show running-config interface gpon-onu_$interface";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! str_contains($response, 'interface gpon-onu_')) {
+                throw new \Exception($response);
+            }
+
+            $result = [];
+            $lines = explode("\n", $response);
+
+            $isInterfaceBlock = false;
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                if (preg_match('/^interface gpon-onu_\d+\/\d+\/\d+:\d+$/', $line)) {
+                    $isInterfaceBlock = true;
+
+                    continue;
+                }
+
+                if ($line === '!' || $line === 'end') {
+                    $isInterfaceBlock = false;
+
+                    continue;
+                }
+
+                if ($isInterfaceBlock && ! empty($line)) {
+                    $result[] = $line;
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $result,
+        ]);
+    }
+
+    /**
+     * Get ONTs running config - Telnet
+     */
+    public static function showOnuRunningConfigGponOnu($interface): ?CommandResult
+    {
+        $command = "show onu running config gpon-onu_$interface";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! str_contains($response, 'pon-onu-mng gpon-onu_')) {
+                throw new \Exception($response);
+            }
+
+            $result = [];
+            $lines = explode("\n", $response);
+
+            $isInterfaceBlock = false;
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                if (preg_match('/^pon-onu-mng gpon-onu_\d+\/\d+\/\d+:\d+$/', $line)) {
+                    $isInterfaceBlock = true;
+
+                    continue;
+                }
+
+                if ($line === '!' || $line === 'end') {
+                    $isInterfaceBlock = false;
+
+                    continue;
+                }
+
+                if ($isInterfaceBlock && ! empty($line)) {
+                    $result[] = $line;
+                }
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'error' => null,
+            'result' => $result,
+        ]);
+    }
+
+    /**
      * Register ONT - Telnet
      */
     public static function onuTypeSn(int $ontIndex, string $profile, string $serial): ?CommandResult
@@ -848,6 +961,96 @@ class C300 extends ZTEService
     public static function flowMode(FlowModeConfig $flowModeConfig): ?CommandResult
     {
         $command = $flowModeConfig->buildCommand();
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! empty($response)) {
+                throw new \Exception($response);
+            }
+
+            return CommandResult::make([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::make([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Configures flow - Telnet
+     */
+    public static function flow(FlowConfig $flowConfig): ?CommandResult
+    {
+        $command = $flowConfig->buildCommand();
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! empty($response)) {
+                throw new \Exception($response);
+            }
+
+            return CommandResult::make([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::make([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Configures vlan-filter-mode - Telnet
+     */
+    public static function vlanFilterMode(VlanFilterModeConfig $vlanFilterModeConfig): ?CommandResult
+    {
+        $command = $vlanFilterModeConfig->buildCommand();
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! empty($response)) {
+                throw new \Exception($response);
+            }
+
+            return CommandResult::make([
+                'success' => true,
+                'command' => $command,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::make([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Configures vlan-filter - Telnet
+     */
+    public static function vlanFilter(VlanFilterConfig $vlanFilterConfig): ?CommandResult
+    {
+        $command = $vlanFilterConfig->buildCommand();
 
         try {
             $response = self::$telnetConn->exec($command);

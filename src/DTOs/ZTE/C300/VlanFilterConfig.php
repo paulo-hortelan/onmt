@@ -2,27 +2,27 @@
 
 namespace PauloHortelan\Onmt\DTOs\ZTE\C300;
 
-class FlowConfig
+class VlanFilterConfig
 {
-    public int $flowId;
+    public int $iphost;
 
     public ?int $priority;
 
     public ?int $vlan;
 
     public function __construct(
-        int $flowId,
+        int $iphost,
         ?int $priority,
         ?int $vlan,
     ) {
-        $this->flowId = $flowId;
+        $this->iphost = $iphost;
         $this->priority = $priority;
         $this->vlan = $vlan;
     }
 
     public function buildCommand(): string
     {
-        $command = "flow {$this->flowId}";
+        $command = "vlan-filter iphost {$this->iphost}";
 
         if (isset($this->priority)) {
             $command .= " pri {$this->priority}";
