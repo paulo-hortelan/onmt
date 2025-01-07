@@ -17,16 +17,19 @@ beforeEach(function () {
     $this->ipServerC300 = env('ZTE_C300_OLT_IP');
     $this->usernameTelnetC300 = env('ZTE_C300_OLT_USERNAME_TELNET');
     $this->passwordTelnetC300 = env('ZTE_C300_OLT_PASSWORD_TELNET');
-
     $this->ipServerC600 = env('ZTE_C600_OLT_IP');
     $this->usernameTelnetC600 = env('ZTE_C600_OLT_USERNAME_TELNET');
     $this->passwordTelnetC600 = env('ZTE_C600_OLT_PASSWORD_TELNET');
 
     $this->serialALCLC300 = env('ZTE_C300_SERIAL_ALCL');
     $this->serialCMSZC300 = env('ZTE_C300_SERIAL_CMSZ');
+    $this->serialALCLC600 = env('ZTE_C600_SERIAL_ALCL');
+    $this->serialCMSZC600 = env('ZTE_C600_SERIAL_CMSZ');
 
     $this->ponInterfaceALCLC300 = env('ZTE_C300_PON_INTERFACE_ALCL');
     $this->ponInterfaceCMSZC300 = env('ZTE_C300_PON_INTERFACE_CMSZ');
+    $this->ponInterfaceALCLC600 = env('ZTE_C600_PON_INTERFACE_ALCL');
+    $this->ponInterfaceCMSZC600 = env('ZTE_C600_PON_INTERFACE_CMSZ');
 });
 
 describe('ZTE C300 - Complete Provision and Configuration ONTs - Bridge Chima', function () {
@@ -248,4 +251,187 @@ describe('ZTE C300 - Complete Provision and Configuration ONTs - Router Nokia', 
 
         expect($commandBatchResult->first()->allCommandsSuccessful())->toBeTrue();
     });
+});
+
+describe('ZTE C600 - Complete Provision and Configuration ONTs - Bridge Chima', function () {
+    it('can realize a complete provision and configuration', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->serials([$this->serialCMSZC600]);
+
+        $zte->startRecordingCommands(
+            description: 'Provision Bridge-Chima',
+            ponInterface: $this->ponInterfaceCMSZC600,
+            interface: null,
+            serial: $this->serialCMSZC600
+        );
+
+        $ontIndex = $zte->getNextOntIndex($this->ponInterfaceCMSZC600);
+
+        $authorizedOnts = $zte->provisionOnts($this->ponInterfaceCMSZC600, $ontIndex, 'BRIDGE');
+
+        expect($authorizedOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $interface = $this->ponInterfaceCMSZC600.':'.$ontIndex;
+
+        $zte->interfaces([$interface]);
+
+        $configuredOnts = $zte->setOntsName('test');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $configuredOnts = $zte->setOntsDescription('test');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $configuredOnts = $zte->configureTCont(1, '1G');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $gemportConfig = new GemportConfig(
+            gemportId: 1,
+            tcontId: 1
+        );
+
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $serviceConfig = new ServiceConfig(
+            serviceName: 1,
+            gemportId: 1,
+            vlan: 110,
+        );
+
+        $configuredOnts = $zte->configureService($serviceConfig);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $vlanPortConfig = new VlanPortConfig(
+            portName: 'eth_0/1',
+            mode: 'tag',
+            tag: 'vlan',
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureVlanPort($vlanPortConfig);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $servicePortConfig = new ServicePortConfig(
+            servicePortId: 1,
+            userVlan: 110,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureServicePort($servicePortConfig, 1);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $commandBatchResult = $zte->stopRecordingCommands();
+
+        ZTE::disconnect();
+
+        dump($commandBatchResult->toArray());
+
+        expect($commandBatchResult->first()->allCommandsSuccessful())->toBeTrue();
+    });
 })->only();
+
+describe('ZTE C600 - Complete Provision and Configuration ONTs - Router Nokia', function () {
+    it('can realize a complete provision and configuration', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->serials([$this->serialALCLC600]);
+
+        $zte->startRecordingCommands(
+            description: 'Provision Router-Nokia',
+            ponInterface: $this->ponInterfaceALCLC600,
+            interface: null,
+            serial: $this->serialALCLC600
+        );
+
+        $ontIndex = $zte->getNextOntIndex($this->ponInterfaceALCLC600);
+
+        $authorizedOnts = $zte->provisionOnts($this->ponInterfaceALCLC600, $ontIndex, 'ROUTER');
+
+        expect($authorizedOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $interface = $this->ponInterfaceALCLC600.':'.$ontIndex;
+
+        $zte->interfaces([$interface]);
+
+        $configuredOnts = $zte->setOntsName('test');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $configuredOnts = $zte->setOntsDescription('test');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $configuredOnts = $zte->configureTCont(1, '1G');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $gemportConfig = new GemportConfig(
+            gemportId: 1,
+            tcontId: 1
+        );
+
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $serviceConfig = new ServiceConfig(
+            serviceName: 1,
+            gemportId: 1,
+            veip: 1,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureService($serviceConfig);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $vlanPortConfig = new VlanPortConfig(
+            portName: 'eth_0/1',
+            mode: 'tag',
+            tag: 'vlan',
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureVlanPort($vlanPortConfig);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $servicePortConfig = new ServicePortConfig(
+            servicePortId: 1,
+            userVlan: 110,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureServicePort($servicePortConfig, 1);
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $commandBatchResult = $zte->stopRecordingCommands();
+
+        ZTE::disconnect();
+
+        dump($commandBatchResult->toArray());
+
+        expect($commandBatchResult->first()->allCommandsSuccessful())->toBeTrue();
+    });
+});

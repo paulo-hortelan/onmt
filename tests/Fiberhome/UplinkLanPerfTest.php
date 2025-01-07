@@ -21,7 +21,7 @@ beforeEach(function () {
     $this->fiberhome = Fiberhome::connect($ipOlt, $username, $password, 3337, $ipServer);
 });
 
-describe('Fiberhome Optical Lan Perf - Success', function () {
+describe('Fiberhome OLT Optical Lan Perf', function () {
     it('can get single lan info', function () {
         $this->fiberhome->interfaces([$this->interfaceALCL])->serials([$this->serialALCL]);
         $portInterface = 'NA-NA-1-1';
