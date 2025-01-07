@@ -16,15 +16,15 @@ beforeEach(function () {
 
     $this->interfaceALCL = env('NOKIA_INTERFACE_ALCL');
     $this->interfaceCMSZ = env('NOKIA_INTERFACE_CMSZ');
-
-    $this->nokia = Nokia::connectTelnet($ipServer, $username, $password, 23);
 });
 
 describe('Nokia Optical Detail - Success', function () {
     it('can get single detail', function () {
-        $this->nokia->interfaces([$this->interfaceALCL]);
+        $nokia = Nokia::connectTelnet($this->ipServer, $this->username, $this->password, 23);
 
-        $ontsDetail = $this->nokia->ontsDetail();
+        $nokia->interfaces([$this->interfaceALCL]);
+
+        $ontsDetail = $nokia->ontsDetail();
 
         expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
@@ -40,9 +40,11 @@ describe('Nokia Optical Detail - Success', function () {
     })->only();
 
     it('can get multiple details', function () {
-        $this->nokia->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
+        $nokia = Nokia::connectTelnet($this->ipServer, $this->username, $this->password, 23);
 
-        $ontsDetail = $this->nokia->ontsDetail();
+        $nokia->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
+
+        $ontsDetail = $nokia->ontsDetail();
 
         expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
@@ -60,9 +62,11 @@ describe('Nokia Optical Detail - Success', function () {
 
 describe('Nokia Optical Detail By Serial - Success', function () {
     it('can get single detail', function () {
-        $this->nokia->serials([$this->serialALCL]);
+        $nokia = Nokia::connectTelnet($this->ipServer, $this->username, $this->password, 23);
 
-        $ontsDetail = $this->nokia->ontsDetailBySerials();
+        $nokia->serials([$this->serialALCL]);
+
+        $ontsDetail = $nokia->ontsDetailBySerials();
 
         expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
@@ -77,17 +81,17 @@ describe('Nokia Optical Detail By Serial - Success', function () {
     });
 
     it('can get multiple details', function () {
-        $this->nokia->serials([$this->serialALCL, $this->serialCMSZ]);
+        $nokia = Nokia::connectTelnet($this->ipServer, $this->username, $this->password, 23);
 
-        $ontsDetail = $this->nokia->ontsDetailBySerials();
+        $nokia->serials([$this->serialALCL, $this->serialCMSZ]);
+
+        $ontsDetail = $nokia->ontsDetailBySerials();
 
         expect($ontsDetail)->toBeInstanceOf(Collection::class);
 
         $ontsDetail->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            var_dump($batch->toArray());
 
             collect($batch->commands)->each(function ($commandResult) {
                 expect($commandResult->success)->toBeTrue();
