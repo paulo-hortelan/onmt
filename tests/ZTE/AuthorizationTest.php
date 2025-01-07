@@ -98,7 +98,7 @@ describe('ZTE C600 - Authorize/Register ONTs', function () {
         $authorizedOnts = $zte->provisionOnts($this->ponInterfaceCMSZC600, $ontIndex, 'BRIDGE');
 
         dump($authorizedOnts->toArray());
-        $zte->disconnect();
+        ZTE::disconnect();
 
         expect($authorizedOnts)->toBeInstanceOf(Collection::class);
 
@@ -645,13 +645,13 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $configuredOnts = $zte->setOntsName('name-test-router');
 
         dump($configuredOnts->toArray());
 
-        $zte->disconnect();
+        ZTE::disconnect();
 
         expect($configuredOnts)->toBeInstanceOf(Collection::class);
 
@@ -674,7 +674,7 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $configuredOnts = $zte->setOntsDescription('description-test-router');
 
@@ -703,7 +703,7 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $configuredOnts = $zte->configureTCont(1, '1G');
 
@@ -732,7 +732,7 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $gemportConfig = new GemportConfig(
             gemportId: 1,
@@ -764,12 +764,11 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $servicePortConfig = new ServiceConfig(
             serviceName: 1,
             gemportId: 1,
-            veip: 1,
             vlan: 110
         );
 
@@ -800,7 +799,7 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $vlanPortConfig = new VlanPortConfig(
             portName: 'eth_0/1',
@@ -836,7 +835,7 @@ describe('ZTE C600 - Configure ONTs CMSZ', function () {
             model: 'C600'
         );
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceCMSZC600]);
 
         $servicePortConfig = new ServicePortConfig(
             servicePortId: 1,

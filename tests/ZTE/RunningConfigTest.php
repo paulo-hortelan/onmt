@@ -73,7 +73,7 @@ describe('ZTE C600 - Get running config', function () {
     it('can get interface-onu running config', function () {
         $zte = ZTE::connectTelnet($this->ipServerC600, $this->usernameTelnetC600, $this->passwordTelnetC600, 23, null, 'C600');
 
-        $zte->interfaces([$this->interfaceALCLC600]);
+        $zte->interfaces([$this->interfaceALCLC600, $this->interfaceCMSZC600]);
 
         $runningConfig = $zte->ontsInterfaceRunningConfig();
 
