@@ -1,14 +1,9 @@
 <?php
 
 use Illuminate\Support\Collection;
-use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowConfig;
-use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\GemportConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServiceConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServicePortConfig;
-use PauloHortelan\Onmt\DTOs\ZTE\C300\SwitchportBindConfig;
-use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterConfig;
-use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanPortConfig;
 use PauloHortelan\Onmt\Facades\ZTE;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
@@ -19,19 +14,23 @@ beforeEach(function () {
     $this->ipServerC300 = env('ZTE_C300_OLT_IP');
     $this->usernameTelnetC300 = env('ZTE_C300_OLT_USERNAME_TELNET');
     $this->passwordTelnetC300 = env('ZTE_C300_OLT_PASSWORD_TELNET');
-
     $this->ipServerC600 = env('ZTE_C600_OLT_IP');
     $this->usernameTelnetC600 = env('ZTE_C600_OLT_USERNAME_TELNET');
     $this->passwordTelnetC600 = env('ZTE_C600_OLT_PASSWORD_TELNET');
 
     $this->serialALCLC300 = env('ZTE_C300_SERIAL_ALCL');
     $this->serialCMSZC300 = env('ZTE_C300_SERIAL_CMSZ');
-
+    $this->serialALCLC600 = env('ZTE_C600_SERIAL_ALCL');
+    $this->serialCMSZC600 = env('ZTE_C600_SERIAL_CMSZ');
     $this->interfaceALCLC300 = env('ZTE_C300_INTERFACE_ALCL');
     $this->interfaceCMSZC300 = env('ZTE_C300_INTERFACE_CMSZ');
+    $this->interfaceALCLC600 = env('ZTE_C600_INTERFACE_ALCL');
+    $this->interfaceCMSZC600 = env('ZTE_C600_INTERFACE_CMSZ');
 
     $this->ponInterfaceALCLC300 = env('ZTE_C300_PON_INTERFACE_ALCL');
     $this->ponInterfaceCMSZC300 = env('ZTE_C300_PON_INTERFACE_CMSZ');
+    $this->ponInterfaceALCLC600 = env('ZTE_C600_PON_INTERFACE_ALCL');
+    $this->ponInterfaceCMSZC600 = env('ZTE_C600_PON_INTERFACE_CMSZ');
 });
 
 describe('ZTE C300 - Authorize/Register ONTs', function () {
@@ -67,7 +66,66 @@ describe('ZTE C300 - Authorize/Register ONTs', function () {
 
         $authorizedOnts = $zte->provisionOnts($this->ponInterfaceALCLC300, $ontIndex, 'ROUTER');
 
+        $zte->disconnect();
+
+        expect($authorizedOnts)->toBeInstanceOf(Collection::class);
+
+        $authorizedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+});
+
+describe('ZTE C600 - Authorize/Register ONTs', function () {
+    it('can provision CMSZ', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->serials([$this->serialCMSZC600]);
+
+        $ontIndex = $zte->getNextOntIndex($this->ponInterfaceCMSZC600);
+
+        $authorizedOnts = $zte->provisionOnts($this->ponInterfaceCMSZC600, $ontIndex, 'BRIDGE');
+
         dump($authorizedOnts->toArray());
+        $zte->disconnect();
+
+        expect($authorizedOnts)->toBeInstanceOf(Collection::class);
+
+        $authorizedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can provision ALCL', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->serials([$this->serialALCLC600]);
+
+        $ontIndex = $zte->getNextOntIndex($this->ponInterfaceALCLC600);
+
+        $authorizedOnts = $zte->provisionOnts($this->ponInterfaceALCLC600, $ontIndex, 'ROUTER');
 
         $zte->disconnect();
 
@@ -107,7 +165,38 @@ describe('ZTE C300 - Remove ONTs', function () {
             });
         });
     });
-})->only();
+});
+
+describe('ZTE C600 - Remove ONTs', function () {
+    it('can remove', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceCMSZC600, $this->interfaceALCLC600]);
+
+        $removedOnts = $zte->removeOnts();
+
+        dump($removedOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($removedOnts)->toBeInstanceOf(Collection::class);
+
+        $removedOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+});
 
 describe('ZTE C300 - Configure ONTs CMSZ', function () {
     it('can set name', function () {
@@ -318,11 +407,17 @@ describe('ZTE C300 - Configure ONTs CMSZ', function () {
     });
 });
 
-describe('ZTE C300 - Configure ONTs ALCL', function () {
+describe('ZTE C600 - Configure ONTs ALCL', function () {
     it('can set name', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
 
-        $zte->interfaces([$this->interfaceALCLC300]);
+        $zte->interfaces([$this->interfaceALCLC600]);
 
         $configuredOnts = $zte->setOntsName('name-test-router');
 
@@ -343,9 +438,15 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
     });
 
     it('can set description', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
 
-        $zte->interfaces([$this->interfaceALCLC300]);
+        $zte->interfaces([$this->interfaceALCLC600]);
 
         $configuredOnts = $zte->setOntsDescription('description-test-router');
 
@@ -366,11 +467,17 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
     });
 
     it('can configure tcont', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
 
-        $zte->interfaces([$this->interfaceALCLC300]);
+        $zte->interfaces([$this->interfaceALCLC600]);
 
-        $configuredOnts = $zte->configureTCont(1, 'SMARTOLT-1G-UP');
+        $configuredOnts = $zte->configureTCont(1, '1G');
 
         dump($configuredOnts->toArray());
 
@@ -389,9 +496,15 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
     });
 
     it('can configure gemport on interface-onu', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
 
-        $zte->interfaces([$this->interfaceALCLC300]);
+        $zte->interfaces([$this->interfaceALCLC600]);
 
         $gemportConfig = new GemportConfig(
             gemportId: 1,
@@ -412,13 +525,218 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
                 expect($commandResult->success)->toBeTrue();
             });
         });
+    });
+
+    it('can configure service', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $servicePortConfig = new ServiceConfig(
+            serviceName: 1,
+            gemportId: 1,
+            veip: 1,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureService($servicePortConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure vlan port', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $vlanPortConfig = new VlanPortConfig(
+            portName: 'eth_0/1',
+            mode: 'tag',
+            tag: 'vlan',
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureVlanPort($vlanPortConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure serviceport', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $servicePortConfig = new ServicePortConfig(
+            servicePortId: 1,
+            userVlan: 110,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureServicePort($servicePortConfig, 1);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+});
+
+describe('ZTE C600 - Configure ONTs CMSZ', function () {
+    it('can set name', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $configuredOnts = $zte->setOntsName('name-test-router');
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can set description', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $configuredOnts = $zte->setOntsDescription('description-test-router');
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure tcont', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $configuredOnts = $zte->configureTCont(1, '1G');
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure gemport on interface-onu', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
 
         $gemportConfig = new GemportConfig(
             gemportId: 1,
-            tcontId: null,
-            flowId: null,
-            upstreamProfile: null,
-            downstreamProfile: 'SMARTOLT-1G-DOWN'
+            tcontId: 1
         );
 
         $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
@@ -437,201 +755,96 @@ describe('ZTE C300 - Configure ONTs ALCL', function () {
         });
     });
 
-    it('can configure serviceport', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
+    it('can configure service', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
 
-        $zte->interfaces([$this->interfaceALCLC300]);
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $servicePortConfig = new ServiceConfig(
+            serviceName: 1,
+            gemportId: 1,
+            veip: 1,
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureService($servicePortConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure vlan port', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
+
+        $vlanPortConfig = new VlanPortConfig(
+            portName: 'eth_0/1',
+            mode: 'tag',
+            tag: 'vlan',
+            vlan: 110
+        );
+
+        $configuredOnts = $zte->configureVlanPort($vlanPortConfig);
+
+        dump($configuredOnts->toArray());
+
+        $zte->disconnect();
+
+        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+
+        $configuredOnts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure serviceport', function () {
+        $zte = ZTE::connectTelnet(
+            ipOlt: $this->ipServerC600,
+            username: $this->usernameTelnetC600,
+            password: $this->passwordTelnetC600,
+            port: 23,
+            model: 'C600'
+        );
+
+        $zte->interfaces([$this->interfaceALCLC600]);
 
         $servicePortConfig = new ServicePortConfig(
             servicePortId: 1,
-            vport: 1,
             userVlan: 110,
             vlan: 110
         );
 
-        $configuredOnts = $zte->configureServicePort($servicePortConfig);
-
-        dump($configuredOnts->toArray());
-
-        $zte->disconnect();
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure flow mode', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
-
-        $zte->interfaces([$this->interfaceALCLC300]);
-
-        $flowModeConfig = new FlowModeConfig(
-            flowId: 1,
-            tagFilter: 'vlan-filter',
-            untagFilter: 'discard'
-        );
-
-        $configuredOnts = $zte->configureFlowMode($flowModeConfig);
-
-        dump($configuredOnts->toArray());
-
-        $zte->disconnect();
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure flow', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
-
-        $zte->interfaces([$this->interfaceALCLC300]);
-
-        $flowConfig = new FlowConfig(
-            flowId: 1,
-            priority: 0,
-            vlan: 110
-        );
-
-        $configuredOnts = $zte->configureFlow($flowConfig);
-
-        dump($configuredOnts->toArray());
-
-        $zte->disconnect();
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure gemport on pon-onu-mng', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
-
-        $zte->interfaces([$this->interfaceALCLC300]);
-
-        $gemportConfig = new GemportConfig(
-            gemportId: 1,
-            tcontId: null,
-            flowId: 1
-        );
-
-        $configuredOnts = $zte->configureGemport($gemportConfig, 'pon-onu-mng');
-
-        dump($configuredOnts->toArray());
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure switchport-bind', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
-
-        $zte->interfaces([$this->interfaceALCLC300]);
-
-        $switchportBindConfig = new SwitchportBindConfig(
-            switchName: 'switch_0/1',
-            veip: null,
-            iphost: 1
-        );
-
-        $configuredOnts = $zte->configureSwitchportBind($switchportBindConfig);
-
-        dump($configuredOnts->toArray());
-
-        $switchportBindConfig = new SwitchportBindConfig(
-            switchName: 'switch_0/1',
-            veip: 1,
-            iphost: null
-        );
-
-        $configuredOnts = $zte->configureSwitchportBind($switchportBindConfig);
-
-        dump($configuredOnts->toArray());
-
-        $zte->disconnect();
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure vlan-filter-mode', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
-
-        $zte->interfaces([$this->interfaceALCLC300]);
-
-        $vlanFilterModeConfig = new VlanFilterModeConfig(
-            iphost: 1,
-            tagFilter: 'vlan-filter',
-            untagFilter: 'discard'
-        );
-
-        $configuredOnts = $zte->configureVlanFilterMode($vlanFilterModeConfig);
-
-        dump($configuredOnts->toArray());
-
-        $zte->disconnect();
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure vlan-filter', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
-
-        $zte->interfaces([$this->interfaceALCLC300]);
-
-        $vlanFilterConfig = new VlanFilterConfig(
-            iphost: 1,
-            priority: 0,
-            vlan: 110
-        );
-
-        $configuredOnts = $zte->configureVlanFilter($vlanFilterConfig);
+        $configuredOnts = $zte->configureServicePort($servicePortConfig, 1);
 
         dump($configuredOnts->toArray());
 

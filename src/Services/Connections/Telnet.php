@@ -220,7 +220,7 @@ class Telnet
             case 'ZTE-C600':
                 $userPrompt = 'Username:';
                 $passPrompt = 'Password:';
-                $promptRegex = '[>#]';
+                $promptRegex = '[#]';
                 break;
 
             case 'Nokia-FX16':

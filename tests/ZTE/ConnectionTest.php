@@ -32,18 +32,18 @@ describe('ZTE C300 Connection Telnet', function () {
     });
 });
 
-// describe('ZTE C600 Connection Telnet', function () {
-//     it('can create', function () {
-//         $telnet = new Telnet($this->ipServerC600, 23, 3, 3);
+describe('ZTE C600 Connection Telnet', function () {
+    it('can create', function () {
+        $telnet = new Telnet($this->ipServerC600, 23, 3, 3);
 
-//         $this->assertInstanceOf(Telnet::class, $telnet);
-//     });
+        $this->assertInstanceOf(Telnet::class, $telnet);
+    });
 
-//     it('can login', function () {
-//         $zte = ZTE::connectTelnet($this->ipServerC600, $this->usernameTelnetC600, $this->passwordTelnetC600, 23);
+    it('can login', function () {
+        $zte = ZTE::connectTelnet($this->ipServerC600, $this->usernameTelnetC600, $this->passwordTelnetC600, 23, null, 'C600');
 
-//         expect($zte)->toBeInstanceOf(ZTEService::class);
+        expect($zte)->toBeInstanceOf(ZTEService::class);
 
-//         $zte->disconnect();
-//     });
-// });
+        $zte->disconnect();
+    });
+});

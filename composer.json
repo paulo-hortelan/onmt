@@ -36,11 +36,13 @@
     "autoload": {
         "psr-4": {
             "PauloHortelan\\Onmt\\": "src/",
+            "PauloHortelan\\Onmt\\Facades\\": "src/Facades",
             "PauloHortelan\\Onmt\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
+            "PauloHortelan\\Onmt\\Facades\\": "src/Facades",
             "PauloHortelan\\Onmt\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",

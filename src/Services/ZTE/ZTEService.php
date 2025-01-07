@@ -19,6 +19,7 @@ use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\ZTE\Models\C300;
+use PauloHortelan\Onmt\Services\ZTE\Models\C600;
 
 class ZTEService
 {
@@ -26,9 +27,9 @@ class ZTEService
 
     protected static ?Telnet $telnetConn = null;
 
-    protected static string $model = 'C300';
+    protected static string $model;
 
-    protected static ?string $operator;
+    protected static ?string $operator = null;
 
     protected static $terminalMode;
 
@@ -44,7 +45,7 @@ class ZTEService
 
     private ?CommandResultBatch $globalCommandBatch = null;
 
-    public function connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): object
+    public function connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'C300'): object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
@@ -53,6 +54,7 @@ class ZTEService
         }
 
         self::$ipOlt = $ipOlt;
+        self::$model = $model;
         self::$terminalMode = '';
         self::$operator = config('onmt.default_operator');
 
@@ -80,10 +82,14 @@ class ZTEService
     public function disableTerminalLength(): ?CommandResult
     {
         $this->validateTelnet();
-        $this->validateModels();
+        $this->validateModels(['C300', 'C600']);
 
         if (self::$model === 'C300') {
             return C300::terminalLength0();
+        }
+
+        if (self::$model === 'C600') {
+            return C600::terminalLength0();
         }
 
         throw new Exception('No connection established.');
@@ -154,117 +160,6 @@ class ZTEService
         return $this;
     }
 
-    public function setConfigureTerminalModel(): ?CommandResultBatch
-    {
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-            'ip' => self::$ipOlt,
-            'operator' => self::$operator,
-        ]);
-
-        $response = C300::end();
-
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
-
-        if (! $commandResultBatch->allCommandsSuccessful()) {
-            return $commandResultBatch;
-        }
-
-        $response = C300::configureTerminal();
-
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
-
-        if (! $commandResultBatch->allCommandsSuccessful()) {
-            return $commandResultBatch;
-        }
-
-        self::$terminalMode = 'configure';
-
-        return $commandResultBatch;
-    }
-
-    public function setInterfaceOltTerminalModel(string $ponInterface)
-    {
-        if (self::$terminalMode !== 'configure') {
-            $response = $this->setConfigureTerminalModel();
-            $commandResultBatch = $this->globalCommandBatch ?? $response;
-        } else {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'pon_interface' => $ponInterface,
-                'operator' => self::$operator,
-            ]);
-        }
-
-        $response = C300::interfaceGponOlt($ponInterface);
-
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
-
-        if (! $commandResultBatch->allCommandsSuccessful()) {
-            return $commandResultBatch;
-        }
-
-        self::$terminalMode = "interface-olt-$ponInterface";
-
-        return $commandResultBatch;
-    }
-
-    public function setInterfaceOnuTerminalModel(string $interface): ?CommandResultBatch
-    {
-        if (self::$terminalMode !== 'configure') {
-            $response = $this->setConfigureTerminalModel();
-            $commandResultBatch = $this->globalCommandBatch ?? $response;
-        } else {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-        }
-
-        $response = C300::interfaceGponOnu($interface);
-
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
-
-        if (! $commandResultBatch->allCommandsSuccessful()) {
-            return $commandResultBatch;
-        }
-
-        self::$terminalMode = "interface-onu-$interface";
-
-        return $commandResultBatch;
-    }
-
-    public function setPonOnuMngTerminalModel(string $interface): ?CommandResultBatch
-    {
-        if (self::$terminalMode !== 'configure') {
-            $response = $this->setConfigureTerminalModel();
-            $commandResultBatch = $this->globalCommandBatch ?? $response;
-        } else {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-        }
-
-        $response = C300::ponOnuMng($interface);
-
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
-
-        if (! $commandResultBatch->allCommandsSuccessful()) {
-            return $commandResultBatch;
-        }
-
-        self::$terminalMode = "pon-onu-mng-$interface";
-
-        return $commandResultBatch;
-    }
-
     private function validateTelnet(): void
     {
         if (empty(self::$telnetConn)) {
@@ -294,10 +189,10 @@ class ZTEService
         }
     }
 
-    private function validateModels(): void
+    private function validateModels(array $models): void
     {
-        if (! in_array(self::$model, ['C300', 'C600'])) {
-            throw new Exception('Model '.self::$model.' is not supported.');
+        if (! in_array(self::$model, $models)) {
+            throw new Exception('Model '.self::$model.' does not support this operation.');
         }
     }
 
@@ -306,6 +201,13 @@ class ZTEService
         if (! in_array($terminalMode, ['configure', 'interface-olt', 'interface-onu', 'pon-onu-mng'])) {
             throw new Exception('Terminal mode '.$terminalMode.' is not supported.');
         }
+    }
+
+    private function createModelClass(): string
+    {
+        $namespace = 'PauloHortelan\Onmt\Services\ZTE\Models';
+
+        return $namespace.'\\'.self::$model;
     }
 
     public function setOperator(string $operator): object
@@ -352,16 +254,231 @@ class ZTEService
     }
 
     /**
-     * Gets ONTs optical power by serial - Telnet
+     * Change terminal mode to 'configure terminal'
+     */
+    public function setConfigureTerminalModel(): ?CommandResultBatch
+    {
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
+
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
+
+        $response = $modelClass::end();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        $response = $modelClass::configureTerminal();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = 'configure';
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Enters gpon olt interface terminal mode
+     */
+    public function setInterfaceOltTerminalModel(string $ponInterface)
+    {
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
+
+        if (self::$terminalMode !== 'configure') {
+            $response = $this->setConfigureTerminalModel();
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = $modelClass::interfaceGponOlt($ponInterface);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = "interface-olt-$ponInterface";
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Enters gpon onu interface terminal mode
+     */
+    public function setInterfaceOnuTerminalModel(string $interface): ?CommandResultBatch
+    {
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
+
+        if (self::$terminalMode !== 'configure') {
+            $response = $this->setConfigureTerminalModel();
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = $modelClass::interfaceGponOnu($interface);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = "interface-onu-$interface";
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Enters gpon onu interface terminal mode
+     */
+    public function setInterfaceVportTerminalModel(string $interface, int $vport): ?CommandResultBatch
+    {
+        $this->validateModels(['C600']);
+
+        $modelClass = $this->createModelClass();
+
+        if (self::$terminalMode !== 'configure') {
+            $response = $this->setConfigureTerminalModel();
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = $modelClass::interfaceVport($interface, $vport);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        $parts = explode(':', $interface);
+        $ponInterface = $parts[0];
+        $ontIndex = $parts[1];
+
+        self::$terminalMode = "interface vport-$ponInterface.$ontIndex:$vport";
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Enters pon onu mng terminal mode
+     */
+    public function setPonOnuMngTerminalModel(string $interface): ?CommandResultBatch
+    {
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
+
+        if (self::$terminalMode !== 'configure') {
+            $response = $this->setConfigureTerminalModel();
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = $modelClass::ponOnuMng($interface);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = "pon-onu-mng-$interface";
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Gets ONTs optical power - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsOpticalPower(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = $modelClass::showPonPowerAttenuation($interface);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONTs interface by serial - Telnet
      *
      * Parameter 'serials' must already be provided
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsOpticalPowerBySerial(): ?Collection
+    public function ontsInterface(): ?Collection
     {
         $this->validateTelnet();
         $this->validateSerials();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -372,9 +489,7 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                $response = C300::showGponOnuBySn($serial);
-            }
+            $response = $modelClass::showGponOnuBySn($serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -396,6 +511,7 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300']);
 
         $finalResponse = collect();
 
@@ -427,6 +543,9 @@ class ZTEService
     public function unconfiguredOnts(): ?Collection
     {
         $this->validateTelnet();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -435,9 +554,7 @@ class ZTEService
             'operator' => self::$operator,
         ]);
 
-        if (self::$model === 'C300') {
-            $response = C300::showGponOnuUncfg();
-        }
+        $response = $modelClass::showGponOnuUncfg();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -456,6 +573,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -466,9 +586,7 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                $response = C300::showRunningConfigInterfaceGponOnu($interface);
-            }
+            $response = $modelClass::showRunningConfigInterfaceGponOnu($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -488,6 +606,7 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300']);
 
         $finalResponse = collect();
 
@@ -498,9 +617,7 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                $response = C300::showOnuRunningConfigGponOnu($interface);
-            }
+            $response = C300::showOnuRunningConfigGponOnu($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -520,6 +637,9 @@ class ZTEService
     public function ontsByPonInterface(string $ponInterface): ?Collection
     {
         $this->validateTelnet();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -529,9 +649,7 @@ class ZTEService
             'operator' => self::$operator,
         ]);
 
-        if (self::$model === 'C300') {
-            $response = C300::showGponOnuState($ponInterface);
-        }
+        $response = $modelClass::showGponOnuState($ponInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -589,6 +707,9 @@ class ZTEService
     public function removeOnts(): ?Collection
     {
         $this->validateTelnet();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -603,28 +724,26 @@ class ZTEService
             $ponInterface = $parts[0];
             $ontIndex = $parts[1];
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "interface-olt-$ponInterface") {
-                    $response = $this->setInterfaceOltTerminalModel($ponInterface);
+            if (self::$terminalMode !== "interface-olt-$ponInterface") {
+                $response = $this->setInterfaceOltTerminalModel($ponInterface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::noOnu($ontIndex);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
+
+            $response = $modelClass::noOnu($ontIndex);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -646,6 +765,10 @@ class ZTEService
     public function provisionOnts(string $ponInterface, int $ontIndex, string $profile): ?Collection
     {
         $this->validateTelnet();
+        $this->validateSerials();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -657,29 +780,26 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "interface-olt-$ponInterface") {
-                    $response = $this->setInterfaceOltTerminalModel($ponInterface);
+            if (self::$terminalMode !== "interface-olt-$ponInterface") {
+                $response = $this->setInterfaceOltTerminalModel($ponInterface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::onuTypeSn($ontIndex, $profile, $serial);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            $response = $modelClass::onuTypeSn($ontIndex, $profile, $serial);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -700,6 +820,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -710,29 +833,26 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "interface-onu-$interface") {
-                    $response = $this->setInterfaceOnuTerminalModel($interface);
+            if (self::$terminalMode !== "interface-onu-$interface") {
+                $response = $this->setInterfaceOnuTerminalModel($interface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::name($name);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            $response = $modelClass::name($name);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -753,6 +873,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -763,29 +886,26 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "interface-onu-$interface") {
-                    $response = $this->setInterfaceOnuTerminalModel($interface);
+            if (self::$terminalMode !== "interface-onu-$interface") {
+                $response = $this->setInterfaceOnuTerminalModel($interface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::description($description);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            $response = $modelClass::description($description);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -807,6 +927,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -817,29 +940,26 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "interface-onu-$interface") {
-                    $response = $this->setInterfaceOnuTerminalModel($interface);
+            if (self::$terminalMode !== "interface-onu-$interface") {
+                $response = $this->setInterfaceOnuTerminalModel($interface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::tcont($tcontId, $profileName);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            $response = $modelClass::tcont($tcontId, $profileName);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -861,7 +981,10 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
         $this->validateTerminalMode($terminalMode);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -872,40 +995,37 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if ($terminalMode === 'interface-onu' && self::$terminalMode !== "interface-onu-$interface") {
-                    $response = $this->setInterfaceOnuTerminalModel($interface);
+            if ($terminalMode === 'interface-onu' && self::$terminalMode !== "interface-onu-$interface") {
+                $response = $this->setInterfaceOnuTerminalModel($interface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                if ($terminalMode === 'pon-onu-mng' && self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $response = $this->setPonOnuMngTerminalModel($interface);
-
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::gemport($gemportConfig);
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            if ($terminalMode === 'pon-onu-mng' && self::$terminalMode !== "pon-onu-mng-$interface") {
+                $response = $this->setPonOnuMngTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = $modelClass::gemport($gemportConfig);
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -920,12 +1040,16 @@ class ZTEService
      * Parameter 'interfaces' must already be provided
      *
      * @param  ServicePortConfig  $servicePortConfig  Service port settings
+     * @param  int  $vport  Vport number, used for C600
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureServicePort(ServicePortConfig $servicePortConfig): ?Collection
+    public function configureServicePort(ServicePortConfig $servicePortConfig, ?int $vport = null): ?Collection
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -948,17 +1072,34 @@ class ZTEService
                         continue;
                     }
                 }
+            }
 
-                $response = C300::servicePort($servicePortConfig);
+            if (self::$model === 'C600') {
+                $parts = explode(':', $interface);
+                $ponInterface = $parts[0];
+                $ontIndex = $parts[1];
 
-                $commandResultBatch->associateCommand($response);
+                if (self::$terminalMode !== "interface vport-$ponInterface.$ontIndex:$vport") {
+                    $response = $this->setInterfaceVportTerminalModel($interface, $vport);
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
-                    $finalResponse->push($commandResultBatch);
+                    $commandResultBatch->associateCommands($response->commands);
 
-                    continue;
+                    if (! $commandResultBatch->allCommandsSuccessful()) {
+                        $finalResponse->push($commandResultBatch);
+
+                        continue;
+                    }
                 }
+            }
 
+            $response = $modelClass::servicePort($servicePortConfig, $vport);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -979,6 +1120,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -989,29 +1133,26 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $response = $this->setPonOnuMngTerminalModel($interface);
+            if (self::$terminalMode !== "pon-onu-mng-$interface") {
+                $response = $this->setPonOnuMngTerminalModel($interface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::service($serviceConfig);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            $response = $modelClass::service($serviceConfig);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1032,6 +1173,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -1042,29 +1186,26 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $response = $this->setPonOnuMngTerminalModel($interface);
+            if (self::$terminalMode !== "pon-onu-mng-$interface") {
+                $response = $this->setPonOnuMngTerminalModel($interface);
 
-                    $commandResultBatch->associateCommands($response->commands);
-
-                    if (! $commandResultBatch->allCommandsSuccessful()) {
-                        $finalResponse->push($commandResultBatch);
-
-                        continue;
-                    }
-                }
-
-                $response = C300::vlanPort($vlanPortConfig);
-
-                $commandResultBatch->associateCommand($response);
+                $commandResultBatch->associateCommands($response->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
+            }
 
+            $response = $modelClass::vlanPort($vlanPortConfig);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
             }
 
             $finalResponse->push($commandResultBatch);

@@ -424,8 +424,6 @@ class FX16 extends NokiaService
         try {
             $response = self::$telnetConn->exec($command);
 
-            dump($response);
-
             if (! str_contains($response, 'ont-idx')) {
                 throw new \Exception($response);
             }

@@ -340,12 +340,12 @@ class C300 extends ZTEService
         try {
             $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, 'Search Result')) {
+            if (! str_contains($response, 'Search result')) {
                 throw new \Exception($response);
             }
 
-            if (preg_match('/gpon-onu.*/m', $response, $match)) {
-                $ontInterface = trim($match[0]);
+            if (preg_match('/gpon-onu_(.*)/', $response, $match)) {
+                $ontInterface = trim($match[1]);
             }
         } catch (\Exception $e) {
             return CommandResult::create([

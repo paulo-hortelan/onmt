@@ -22,7 +22,7 @@ beforeEach(function () {
     $this->interfaceCMSZC300 = env('ZTE_C300_INTERFACE_CMSZ');
 });
 
-describe('ZTE C300 - Ont Detail Info - Success', function () {
+describe('ZTE C300 - Ont Detail Info', function () {
     it('can get detail info', function () {
         $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
 
