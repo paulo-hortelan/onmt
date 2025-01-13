@@ -20,6 +20,26 @@ You can install the package via composer:
 composer require paulo-hortelan/onmt
 ```
 
+## Publishing
+
+You can publish config using the following Artisan command:
+
+```bash
+php artisan vendor:publish --tag=onmt-config
+```
+
+You can publish migrations using the following Artisan command:
+
+```bash
+php artisan vendor:publish --tag=onmt-migrations
+```
+
+You can publish models using the following Artisan command:
+
+```bash
+php artisan vendor:publish --tag=onmt-models
+```
+
 <!-- ## Register the recorder
 
 Add the `RequestsGraphRecorder` inside `config/pulse.php`. (If you don\'t have this file make sure you have published the config file of Larave Pulse using `php artisan vendor:publish --tag=pulse-config`) -->

@@ -30,4 +30,16 @@ class OnmtServiceProvider extends PackageServiceProvider
             return new ZTEService();
         });
     }
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        /*
+         * Publish models to the application's `app/Models` directory.
+         */
+        $this->publishes([
+            __DIR__.'/../src/Models' => app_path('Models'),
+        ], 'onmt-models');
+    }
 }
