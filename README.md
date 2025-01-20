@@ -22,21 +22,11 @@ composer require paulo-hortelan/onmt
 
 ## Publishing
 
-You can publish config using the following Artisan command:
+You can publish assets using the following Artisan commands:
 
 ```bash
 php artisan vendor:publish --tag=onmt-config
-```
-
-You can publish migrations using the following Artisan command:
-
-```bash
 php artisan vendor:publish --tag=onmt-migrations
-```
-
-You can publish models using the following Artisan command:
-
-```bash
 php artisan vendor:publish --tag=onmt-models
 ```
 

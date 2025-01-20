@@ -14,6 +14,7 @@ class CommandResult extends Model
     protected $fillable = [
         'success',
         'command',
+        'response',
         'error',
         'result',
         'batch_id',

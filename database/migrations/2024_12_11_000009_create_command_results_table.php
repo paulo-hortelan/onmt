@@ -12,6 +12,7 @@ class CreateCommandResultsTable extends Migration
             $table->id();
             $table->boolean('success');
             $table->string('command');
+            $table->longText('response')->nullable();
             $table->text('error')->nullable();
             $table->json('result')->nullable();
             $table->timestamp('created_at')->useCurrent();

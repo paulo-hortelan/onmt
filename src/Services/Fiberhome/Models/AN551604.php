@@ -2,13 +2,13 @@
 
 namespace PauloHortelan\Onmt\Services\Fiberhome\Models;
 
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 
-class AN551604 extends FiberhomeService
+class AN5516_04 extends FiberhomeService
 {
     /**
      * Returns the ONTs optical power
@@ -60,6 +60,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $ontsOpticalPower,
         ]);
@@ -112,6 +113,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $opticalState,
         ]);
@@ -158,6 +160,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $ontsPortInfo,
         ]);
@@ -214,6 +217,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $ontsLanInfo,
         ]);
@@ -271,6 +275,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $oltUplinksLanPerf,
         ]);
@@ -310,7 +315,7 @@ class AN551604 extends FiberhomeService
                     for ($i = 1; $i <= $numOnts; $i++) {
                         $splitted = preg_split('/\\t/', $response[$key + $i]);
 
-                        $unRegData = [
+                        $unRegData[] = [
                             'SLOTNO' => (int) $splitted[0] ?? null,
                             'PONNO' => (int) $splitted[1] ?? null,
                             'MAC' => $splitted[2] ?? null,
@@ -335,6 +340,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $unRegData,
         ]);
@@ -402,6 +408,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $regOnts,
         ]);
@@ -433,6 +440,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => [],
         ]);
@@ -464,6 +472,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => [],
         ]);
@@ -497,6 +506,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => [],
         ]);
@@ -531,6 +541,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => [],
         ]);
@@ -565,6 +576,7 @@ class AN551604 extends FiberhomeService
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => [],
         ]);

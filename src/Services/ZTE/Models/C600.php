@@ -35,7 +35,7 @@ class C600 extends C300
                     $parts = preg_split('/\s+/', $line);
 
                     if (count($parts) >= 3) {
-                        $onuInfo['onulist'][] = [
+                        $onuInfo[] = [
                             'onu-index' => $parts[0],
                             'model' => $parts[1],
                             'serial-number' => $parts[2],
@@ -55,6 +55,7 @@ class C600 extends C300
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $onuInfo,
         ]);
@@ -124,6 +125,7 @@ class C600 extends C300
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $ontsList,
         ]);
@@ -146,6 +148,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -176,6 +179,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -210,6 +214,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -240,6 +245,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -313,6 +319,7 @@ class C600 extends C300
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $ontOpticalPower,
         ]);
@@ -335,6 +342,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -365,6 +373,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -407,6 +416,7 @@ class C600 extends C300
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $ontInterface ?? null,
         ]);
@@ -494,6 +504,7 @@ class C600 extends C300
         return CommandResult::create([
             'success' => true,
             'command' => $command,
+            'response' => $response,
             'error' => null,
             'result' => $result,
         ]);
@@ -516,6 +527,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -546,6 +558,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -576,6 +589,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -606,6 +620,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -636,6 +651,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -666,6 +682,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);
@@ -696,6 +713,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
+                'response' => $response,
                 'error' => null,
                 'result' => [],
             ]);

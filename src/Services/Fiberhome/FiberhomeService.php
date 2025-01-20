@@ -4,15 +4,15 @@ namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
 use Illuminate\Support\Collection;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Connections\TL1;
-use PauloHortelan\Onmt\Services\Fiberhome\Models\AN551604;
+use PauloHortelan\Onmt\Services\Fiberhome\Models\AN5516_04;
 
 class FiberhomeService
 {
@@ -22,7 +22,7 @@ class FiberhomeService
 
     protected static ?Telnet $telnetConn = null;
 
-    protected static string $model = 'AN551604';
+    protected static string $model = 'AN5516-04';
 
     protected static ?string $operator;
 
@@ -205,6 +205,13 @@ class FiberhomeService
         return $globalCommandBatch;
     }
 
+    private function validateModels(array $models): void
+    {
+        if (! in_array(self::$model, $models)) {
+            throw new Exception('Model '.self::$model.' does not support this operation.');
+        }
+    }
+
     /**
      * Gets ONTs optical power
      *
@@ -218,9 +225,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -235,7 +240,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstOMDDM($ponInterface, $serial);
+            $response = AN5516_04::lstOMDDM($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -259,9 +264,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -276,7 +279,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstOnuState($ponInterface, $serial);
+            $response = AN5516_04::lstOnuState($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -300,9 +303,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -317,7 +318,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstPortVlan($ponInterface, $serial);
+            $response = AN5516_04::lstPortVlan($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -339,9 +340,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -356,7 +355,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::lstOnuLanInfo($ponInterface, $serial);
+            $response = AN5516_04::lstOnuLanInfo($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -376,9 +375,7 @@ class FiberhomeService
     {
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -387,7 +384,7 @@ class FiberhomeService
             'operator' => self::$operator,
         ]);
 
-        $response = AN551604::lstLanPerf($portInterface);
+        $response = AN5516_04::lstLanPerf($portInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -406,9 +403,7 @@ class FiberhomeService
     {
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -417,7 +412,7 @@ class FiberhomeService
             'operator' => self::$operator,
         ]);
 
-        $response = AN551604::lstUnregOnu();
+        $response = AN5516_04::lstUnregOnu();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -436,9 +431,7 @@ class FiberhomeService
     {
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -447,7 +440,7 @@ class FiberhomeService
             'operator' => self::$operator,
         ]);
 
-        $response = AN551604::lstOnu();
+        $response = AN5516_04::lstOnu();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -472,9 +465,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -489,7 +480,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
+            $response = AN5516_04::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -515,9 +506,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -532,7 +521,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
+            $response = AN5516_04::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -558,9 +547,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -575,7 +562,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::cfgVeipService($ponInterface, $serial, $portInterface, $config);
+            $response = AN5516_04::cfgVeipService($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -600,9 +587,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -617,7 +602,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::setWanService($ponInterface, $serial, $config);
+            $response = AN5516_04::setWanService($ponInterface, $serial, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -641,9 +626,7 @@ class FiberhomeService
         $this->validateSerials();
         $this->validateTL1();
 
-        if (self::$model !== 'AN551604') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
 
@@ -658,7 +641,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN551604::delOnu($ponInterface, $serial);
+            $response = AN5516_04::delOnu($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
