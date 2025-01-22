@@ -7,9 +7,9 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
 uses()->group('Nokia');
 
 beforeEach(function () {
-    $ipServer = env('NOKIA_OLT_IP');
-    $username = env('NOKIA_OLT_USERNAME_TELNET');
-    $password = env('NOKIA_OLT_PASSWORD_TELNET');
+    $this->ipServer = env('NOKIA_OLT_IP');
+    $this->username = env('NOKIA_OLT_USERNAME_TELNET');
+    $this->password = env('NOKIA_OLT_PASSWORD_TELNET');
 
     $this->serialALCL = env('NOKIA_SERIAL_ALCL');
     $this->serialCMSZ = env('NOKIA_SERIAL_CMSZ');

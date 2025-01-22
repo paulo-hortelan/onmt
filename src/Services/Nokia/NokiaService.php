@@ -394,9 +394,8 @@ class NokiaService
 
             $response = FX16::showEquipmentOntOptics($interface);
 
-            $commandResultBatch->addCommand($response);
-
-            $commandResultBatch->serial = $serial;
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
