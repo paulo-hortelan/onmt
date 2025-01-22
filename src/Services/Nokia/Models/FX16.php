@@ -200,6 +200,10 @@ class FX16 extends NokiaService
         try {
             $response = self::$telnetConn->exec($command);
 
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
             return CommandResult::create([
                 'success' => true,
                 'command' => $command,
@@ -226,6 +230,10 @@ class FX16 extends NokiaService
 
         try {
             $response = self::$telnetConn->exec($command);
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
 
             return CommandResult::create([
                 'success' => true,
