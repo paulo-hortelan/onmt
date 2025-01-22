@@ -377,16 +377,6 @@ class NokiaService
             $interface = $response->result['interface'] ?? null;
 
             if (empty($interface)) {
-                $response = CommandResult::create([
-                    'success' => false,
-                    'command' => null,
-                    'error' => null,
-                    'result' => [],
-                ]);
-
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
-
                 $finalResponse->push($commandResultBatch);
 
                 continue;
