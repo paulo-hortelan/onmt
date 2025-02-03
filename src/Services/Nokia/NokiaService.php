@@ -257,7 +257,7 @@ class NokiaService
                 'pon_interface' => $ponInterface,
                 'interface' => $interface,
                 'serial' => $serial,
-                'operator' => $operator,
+                'operator' => self::$operator ?? $operator,
             ]);
     }
 
