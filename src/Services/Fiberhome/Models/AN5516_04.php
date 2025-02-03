@@ -26,11 +26,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/ONUID/', $column)) {
-                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+                    $splitted = preg_split('/\\t/', $splittedResponse[$key + 1]);
 
                     $ontsOpticalPower = [
                         'RxPower' => (float) str_replace(',', '.', $splitted[1]) ?? null,
@@ -83,11 +83,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/ONUID/', $column)) {
-                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+                    $splitted = preg_split('/\\t/', $splittedResponse[$key + 1]);
 
                     $adminState = $splitted[1];
                     $oprState = $splitted[2];
@@ -137,11 +137,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/ONUIP/', $column)) {
-                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+                    $splitted = preg_split('/\\t/', $splittedResponse[$key + 1]);
 
                     $cvLan = isset($splitted[6]) ? (int) $splitted[6] : null;
 
@@ -185,11 +185,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/AdminStatus/', $column)) {
-                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+                    $splitted = preg_split('/\\t/', $splittedResponse[$key + 1]);
 
                     $adminStatus = $splitted[0];
                     $operStatus = $splitted[1];
@@ -243,11 +243,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/AdminStatus/', $column)) {
-                    $splitted = preg_split('/\\t/', $response[$key + 1]);
+                    $splitted = preg_split('/\\t/', $splittedResponse[$key + 1]);
 
                     $adminStatus = $splitted[0];
                     $operStatus = $splitted[1];
@@ -302,11 +302,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/SLOTNO/', $column)) {
-                    $numOnts = count($response) - $key - 2;
+                    $numOnts = count($splittedResponse) - $key - 2;
 
                     if ($numOnts === 0) {
                         return CommandResult::create([
@@ -318,7 +318,7 @@ class AN5516_04 extends FiberhomeService
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\\t/', $response[$key + $i]);
+                        $splitted = preg_split('/\\t/', $splittedResponse[$key + $i]);
 
                         $unRegData[] = [
                             'SLOTNO' => (int) $splitted[0] ?? null,
@@ -368,11 +368,11 @@ class AN5516_04 extends FiberhomeService
                 throw new \Exception($response);
             }
 
-            $response = preg_split("/\r\n|\n|\r/", $response);
+            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($response as $key => $column) {
+            foreach ($splittedResponse as $key => $column) {
                 if (preg_match('/OLTID/', $column)) {
-                    $numOnts = count($response) - $key - 2;
+                    $numOnts = count($splittedResponse) - $key - 2;
 
                     if ($numOnts === 0) {
                         return CommandResult::create([
@@ -384,7 +384,7 @@ class AN5516_04 extends FiberhomeService
                     }
 
                     for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\\t/', $response[$key + $i]);
+                        $splitted = preg_split('/\\t/', $splittedResponse[$key + $i]);
 
                         $regOnts[] = [
                             'OLTID' => $splitted[0] ?? null,
