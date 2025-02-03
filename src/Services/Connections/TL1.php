@@ -81,7 +81,9 @@ class TL1 extends Telnet
                     $promptRegex = '(;\\r\\n\\r\\n<)';
                     $this->setRegexPrompt($promptRegex);
                     break;
-                case 'Fiberhome-AN5516_04':
+                case 'Fiberhome-AN5516-04':
+                case 'Fiberhome-AN5516-06':
+                case 'Fiberhome-AN5516-06B':
                     $this->setPrompt(';');
                     $this->write("LOGIN:::CTAG::UN=$username,PWD=$password;");
                     $promptRegex = ';';
