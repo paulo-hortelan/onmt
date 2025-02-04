@@ -579,6 +579,7 @@ class FX16 extends NokiaService
                         return CommandResult::create([
                             'success' => true,
                             'command' => $command,
+                            'response' => $response,
                             'error' => null,
                             'result' => [],
                         ]);
