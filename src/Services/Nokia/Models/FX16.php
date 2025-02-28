@@ -95,6 +95,37 @@ class FX16 extends NokiaService
     }
 
     /**
+     * Configure ONT admin state - Telnet
+     */
+    public static function adminEquipmentOntInterfaceRebootWithActiveImage(string $interface): ?CommandResult
+    {
+        $command = "admin equipment ont interface $interface reboot with-active-image";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
      * Get ONTs info by PON interface - Telnet
      */
     public static function showEquipmentOntStatusPon(string $ponInterface): ?CommandResult

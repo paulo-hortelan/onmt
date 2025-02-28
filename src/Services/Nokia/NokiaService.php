@@ -308,6 +308,93 @@ class NokiaService
     }
 
     /**
+     * Reboot ONTs - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsReboot(): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Reboot ONTs',
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = FX16::adminEquipmentOntInterfaceRebootWithActiveImage($interface);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Reboot ONTs by serial - Telnet
+     *
+     * Parameter 'serials' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsRebootBySerials(): ?Collection
+    {
+        $this->validateSerials();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$serials as $serial) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Reboot ONTs by serial',
+                'ip' => self::$ipOlt,
+                'serial' => $serial,
+                'operator' => self::$operator,
+            ]);
+
+            $response = FX16::showEquipmentOntIndex($serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $interface = $response->result['interface'] ?? null;
+
+            if (empty($interface)) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $response = FX16::adminEquipmentOntInterfaceRebootWithActiveImage($interface);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
      * Gets ONTs detail - Telnet
      *
      * Parameter 'interfaces' must already be provided
@@ -327,6 +414,7 @@ class NokiaService
 
         foreach (self::$interfaces as $interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Get ONTs detail',
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
