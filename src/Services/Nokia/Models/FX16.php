@@ -135,7 +135,7 @@ class FX16 extends NokiaService
         try {
             $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, 'sernum')) {
+            if (! str_contains($response, 'pon table')) {
                 throw new \Exception($response);
             }
 
