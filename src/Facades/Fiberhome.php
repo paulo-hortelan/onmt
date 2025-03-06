@@ -4,9 +4,9 @@ namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\LanConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\VeipConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\WanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 /**

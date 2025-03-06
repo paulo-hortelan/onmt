@@ -76,6 +76,18 @@ describe('ZTE C300 - Complete Provision and Configuration ONTs - Bridge Chima', 
 
         expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
 
+        $gemportConfig = new GemportConfig(
+            gemportId: 1,
+            tcontId: null,
+            flowId: null,
+            upstreamProfile: null,
+            downstreamProfile: 'SMARTOLT-1G-DOWN'
+        );
+
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
         $servicePortConfig = new ServicePortConfig(
             servicePortId: 1,
             vport: 1,
@@ -156,6 +168,18 @@ describe('ZTE C300 - Complete Provision and Configuration ONTs - Router Nokia', 
         $gemportConfig = new GemportConfig(
             gemportId: 1,
             tcontId: 1
+        );
+
+        $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');
+
+        expect($configuredOnts->first()->allCommandsSuccessful())->toBeTrue();
+
+        $gemportConfig = new GemportConfig(
+            gemportId: 1,
+            tcontId: null,
+            flowId: null,
+            upstreamProfile: null,
+            downstreamProfile: 'SMARTOLT-1G-DOWN'
         );
 
         $configuredOnts = $zte->configureGemport($gemportConfig, 'interface-onu');

@@ -1,6 +1,6 @@
 <?php
 
-namespace PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04;
+namespace PauloHortelan\Onmt\DTOs\Fiberhome\AN551604;
 
 class WanConfig
 {

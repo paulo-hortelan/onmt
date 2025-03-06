@@ -46,8 +46,6 @@ describe('ZTE C300 - Remove ONTs', function () {
 
         $removedOnts = $zte->removeOnts();
 
-        dump($removedOnts->toArray());
-
         $zte->disconnect();
 
         expect($removedOnts)->toBeInstanceOf(Collection::class);
@@ -701,8 +699,7 @@ describe('ZTE C600 - Authorize/Register ONTs', function () {
 
         $authorizedOnts = $zte->provisionOnts($this->ponInterfaceCMSZC600, $ontIndex, 'BRIDGE');
 
-        dump($authorizedOnts->toArray());
-        ZTE::disconnect();
+        $zte->disconnect();
 
         expect($authorizedOnts)->toBeInstanceOf(Collection::class);
 

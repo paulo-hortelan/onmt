@@ -4,15 +4,15 @@ namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
 use Illuminate\Support\Collection;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\LanConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\VeipConfig;
-use PauloHortelan\Onmt\DTOs\Fiberhome\AN5516_04\WanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
+use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Connections\TL1;
-use PauloHortelan\Onmt\Services\Fiberhome\Models\AN5516_04;
+use PauloHortelan\Onmt\Services\Fiberhome\Models\AN551604;
 
 class FiberhomeService
 {
@@ -240,7 +240,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::lstOMDDM($ponInterface, $serial);
+            $response = AN551604::lstOMDDM($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -279,7 +279,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::lstOnuState($ponInterface, $serial);
+            $response = AN551604::lstOnuState($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -318,7 +318,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::lstPortVlan($ponInterface, $serial);
+            $response = AN551604::lstPortVlan($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -355,7 +355,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::lstOnuLanInfo($ponInterface, $serial);
+            $response = AN551604::lstOnuLanInfo($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -384,7 +384,7 @@ class FiberhomeService
             'operator' => self::$operator,
         ]);
 
-        $response = AN5516_04::lstLanPerf($portInterface);
+        $response = AN551604::lstLanPerf($portInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -412,7 +412,7 @@ class FiberhomeService
             'operator' => self::$operator,
         ]);
 
-        $response = AN5516_04::lstUnregOnu();
+        $response = AN551604::lstUnregOnu();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -440,7 +440,7 @@ class FiberhomeService
             'operator' => self::$operator,
         ]);
 
-        $response = AN5516_04::lstOnu();
+        $response = AN551604::lstOnu();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -480,7 +480,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
+            $response = AN551604::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -521,7 +521,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
+            $response = AN551604::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -562,7 +562,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::cfgVeipService($ponInterface, $serial, $portInterface, $config);
+            $response = AN551604::cfgVeipService($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -602,7 +602,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::setWanService($ponInterface, $serial, $config);
+            $response = AN551604::setWanService($ponInterface, $serial, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -641,7 +641,7 @@ class FiberhomeService
                 'operator' => self::$operator,
             ]);
 
-            $response = AN5516_04::delOnu($ponInterface, $serial);
+            $response = AN551604::delOnu($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
