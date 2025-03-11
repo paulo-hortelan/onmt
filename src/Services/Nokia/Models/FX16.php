@@ -443,7 +443,13 @@ class FX16 extends NokiaService
                 }
             }
 
-            extract($interfaceDetails);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $interfaceDetails,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
@@ -452,14 +458,6 @@ class FX16 extends NokiaService
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $interfaceDetails,
-        ]);
     }
 
     /**
@@ -516,23 +514,22 @@ class FX16 extends NokiaService
                 }
             }
 
-            extract($swDownloadDetails);
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $swDownloadDetails,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $swDownloadDetails,
-        ]);
     }
 
     /**
@@ -561,8 +558,7 @@ class FX16 extends NokiaService
                 $lastChgOprStat = trim($match[1]);
             }
 
-            $portDetail[] = [
-                'interface' => $interface,
+            $portDetail = [
                 'oprStatus' => $oprStatus ?? null,
                 'adminStatus' => $adminStatus ?? null,
                 'lastChgOprStat' => $lastChgOprStat ?? null,
@@ -579,6 +575,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
