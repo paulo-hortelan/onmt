@@ -319,29 +319,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Reboot ONTs',
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::adminEquipmentOntInterfaceRebootWithActiveImage($interface);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) {
+            return FX16::adminEquipmentOntInterfaceRebootWithActiveImage($interface);
+        }, 'Reboot ONTs');
     }
 
     /**
@@ -406,29 +386,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Get ONTs detail',
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::showEquipmentOntOptics($interface);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) {
+            return FX16::showEquipmentOntOptics($interface);
+        }, 'Get ONTs detail');
     }
 
     /**
@@ -493,29 +453,9 @@ class NokiaService
         $this->validateSerials();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$serials as $serial) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Get ONTs interface by serial',
-                'ip' => self::$ipOlt,
-                'serial' => $serial,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::showEquipmentOntIndex($serial);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($serial) {
+            return FX16::showEquipmentOntIndex($serial);
+        }, 'Get ONTs interface by serial');
     }
 
     /**
@@ -530,29 +470,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Gets ONTs interface detail',
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::showEquipmentOntInterface($interface);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) {
+            return FX16::showEquipmentOntInterface($interface);
+        }, 'Gets ONTs interface detail');
     }
 
     /**
@@ -567,29 +487,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Gets ONTs software download details',
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::showEquipmentOntSwDownload($interface);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) {
+            return FX16::showEquipmentOntSwDownload($interface);
+        }, 'Gets ONTs software download details');
     }
 
     /**
@@ -604,29 +504,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'description' => 'Gets ONts port detail',
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::showInterfacePort($interface);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) {
+            return FX16::showInterfacePortOnt($interface);
+        }, 'Gets ONTs port detail');
     }
 
     /**
@@ -740,16 +620,10 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTelnet();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
+        return $this->executeBatchCommand(function ($interface) {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
                 'description' => 'Remove ONTs',
+                'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
@@ -760,12 +634,8 @@ class NokiaService
             $response = FX16::configureEquipmentOntNoInterface($interface);
             $response->associateBatch($commandResultBatch);
 
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+            return $response;
+        }, 'Remove ONTs');
     }
 
     /**
@@ -781,28 +651,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entOnt($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entOnt($interface, $config);
+        }, 'Provision ONTs');
     }
 
     /**
@@ -818,28 +669,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::edOnt($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::edOnt($interface, $config);
+        }, 'Edit provisioned ONTs');
     }
 
     /**
@@ -855,28 +687,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entOntsCard($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entOntsCard($interface, $config);
+        }, 'Plan ONT card');
     }
 
     /**
@@ -892,27 +705,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entLogPort($interface, $config);
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entLogPort($interface, $config);
+        }, 'Create logical port on LT');
     }
 
     /**
@@ -928,28 +723,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::edOntVeip($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::edOntVeip($interface, $config);
+        }, 'Edit VEIP on ONTs');
     }
 
     /**
@@ -965,6 +741,13 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::setQosUsQueue($interface, $config);
+        }, 'Configure Upstream Queue');
+    }
+
+    private function executeBatchCommand(callable $command, string $description): Collection
+    {
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
         }
@@ -976,9 +759,11 @@ class NokiaService
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
+                'description' => $description,
             ]);
 
-            $response = FX16::setQosUsQueue($interface, $config);
+            $response = $command($interface);
+
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
@@ -1001,28 +786,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::setVlanPort($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::setVlanPort($interface, $config);
+        }, 'Bound bridge port to VLAN');
     }
 
     /**
@@ -1038,28 +804,9 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entVlanEgPort($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entVlanEgPort($interface, $config);
+        }, 'Add egress port to VLAN');
     }
 
     /**
@@ -1076,35 +823,15 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
         $config = new EntHguTr069SparamConfig(
             paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.X_CT-COM_WANGponLinkConfig.VLANIDMark',
             paramValue: $vlan,
             sParamId: $sParamId
         );
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entHguTr069Sparam($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entHguTr069Sparam($interface, $config);
+        }, 'Configure TR069');
     }
 
     /**
@@ -1123,10 +850,6 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
         $configs = [
             new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Username',
@@ -1140,29 +863,11 @@ class NokiaService
             ),
         ];
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
-
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
-
-                return $response;
+        return $this->executeBatchCommand(function ($interface) use ($configs) {
+            return collect($configs)->map(function ($config) use ($interface) {
+                return FX16::entHguTr069Sparam($interface, $config);
             });
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        }, 'Configure TR069');
     }
 
     /**
@@ -1181,10 +886,6 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
         $configs = [
             new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID',
@@ -1198,29 +899,11 @@ class NokiaService
             ),
         ];
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
-
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
-
-                return $response;
+        return $this->executeBatchCommand(function ($interface) use ($configs) {
+            return collect($configs)->map(function ($config) use ($interface) {
+                return FX16::entHguTr069Sparam($interface, $config);
             });
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        }, 'Configure TR069');
     }
 
     /**
@@ -1239,10 +922,6 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
         $configs = [
             new EntHguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.SSID',
@@ -1256,29 +935,11 @@ class NokiaService
             ),
         ];
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
-
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
-
-                return $response;
+        return $this->executeBatchCommand(function ($interface) use ($configs) {
+            return collect($configs)->map(function ($config) use ($interface) {
+                return FX16::entHguTr069Sparam($interface, $config);
             });
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        }, 'Configure TR069');
     }
 
     /**
@@ -1295,35 +956,15 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
         $config = new EntHguTr069SparamConfig(
             paramName: 'InternetGatewayDevice.X_Authentication.WebAccount.Password',
             paramValue: $password,
             sParamId: $sParamId
         );
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entHguTr069Sparam($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entHguTr069Sparam($interface, $config);
+        }, 'Configure TR069');
     }
 
     /**
@@ -1340,35 +981,15 @@ class NokiaService
         $this->validateInterfaces();
         $this->validateTL1();
 
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
-
         $config = new EntHguTr069SparamConfig(
             paramName: 'InternetGatewayDevice.X_Authentication.Account.Password',
             paramValue: $password,
             sParamId: $sParamId
         );
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            $response = FX16::entHguTr069Sparam($interface, $config);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        return $this->executeBatchCommand(function ($interface) use ($config) {
+            return FX16::entHguTr069Sparam($interface, $config);
+        }, 'Configure TR069');
     }
 
     /**
@@ -1386,10 +1007,6 @@ class NokiaService
     {
         $this->validateInterfaces();
         $this->validateTL1();
-
-        if (self::$model !== 'FX16') {
-            throw new Exception('Model '.self::$model.' is not supported.');
-        }
 
         $configs = [
             new EntHguTr069SparamConfig(
@@ -1409,28 +1026,10 @@ class NokiaService
             ),
         ];
 
-        $finalResponse = collect();
-
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'description' => 'Configure TR069',
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
-
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
-
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
-
-                return $response;
+        return $this->executeBatchCommand(function ($interface) use ($configs) {
+            return collect($configs)->map(function ($config) use ($interface) {
+                return FX16::entHguTr069Sparam($interface, $config);
             });
-
-            $finalResponse->push($commandResultBatch);
-        }
-
-        return $finalResponse;
+        }, 'Configure TR069');
     }
 }
