@@ -538,7 +538,7 @@ class FX16 extends NokiaService
     /**
      * Returns the ONT port details - Telnet
      */
-    public static function showInterfacePort(string $interface): ?CommandResult
+    public static function showInterfacePortOnt(string $interface): ?CommandResult
     {
         $command = "show interface port ont:$interface detail";
 
