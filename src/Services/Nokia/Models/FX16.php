@@ -201,6 +201,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -325,6 +326,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -373,12 +375,11 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return $ontsInterface;
     }
 
     /**
@@ -454,6 +455,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
