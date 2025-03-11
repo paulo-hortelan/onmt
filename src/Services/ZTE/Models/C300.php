@@ -22,6 +22,8 @@ class C300 extends ZTEService
      */
     public static function executeCommandTelnet(string $command): ?CommandResult
     {
+        $response = null;
+
         try {
             $response = self::$telnetConn->exec($command);
 
@@ -36,6 +38,7 @@ class C300 extends ZTEService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -47,6 +50,7 @@ class C300 extends ZTEService
      */
     public static function terminalLength0(): ?CommandResult
     {
+        $response = null;
         $command = 'terminal length 0';
 
         try {
@@ -63,6 +67,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -74,6 +79,7 @@ class C300 extends ZTEService
      */
     public static function configureTerminal(): ?CommandResult
     {
+        $response = null;
         $command = 'configure terminal';
 
         try {
@@ -94,6 +100,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -105,6 +112,7 @@ class C300 extends ZTEService
      */
     public static function exit(): ?CommandResult
     {
+        $response = null;
         $command = 'exit';
 
         try {
@@ -121,6 +129,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -132,6 +141,7 @@ class C300 extends ZTEService
      */
     public static function end(): ?CommandResult
     {
+        $response = null;
         $command = 'end';
 
         try {
@@ -148,6 +158,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -159,6 +170,7 @@ class C300 extends ZTEService
      */
     public static function showThis(): ?CommandResult
     {
+        $response = null;
         $command = 'show this';
 
         try {
@@ -175,6 +187,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -206,6 +219,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -237,6 +251,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -268,6 +283,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -326,6 +342,7 @@ class C300 extends ZTEService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -357,22 +374,23 @@ class C300 extends ZTEService
             if (preg_match('/gpon-onu_(.*)/', $response, $match)) {
                 $ontInterface = trim($match[1]);
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontInterface ?? null,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $ontInterface ?? null,
-        ]);
     }
 
     /**
@@ -420,22 +438,23 @@ class C300 extends ZTEService
                 }
 
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontDetailInfo,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $ontDetailInfo,
-        ]);
     }
 
     /**
@@ -452,6 +471,7 @@ class C300 extends ZTEService
                 return CommandResult::create([
                     'success' => true,
                     'command' => $command,
+                    'response' => $response,
                     'error' => null,
                     'result' => [
                         [
@@ -490,22 +510,23 @@ class C300 extends ZTEService
                 }
             }
 
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontsList,
+            ]);
+
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $ontsList,
-        ]);
     }
 
     /**
@@ -541,22 +562,23 @@ class C300 extends ZTEService
                     }
                 }
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $onuInfo,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $onuInfo,
-        ]);
     }
 
     /**
@@ -597,22 +619,23 @@ class C300 extends ZTEService
                     $result[] = $line;
                 }
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $result,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $result,
-        ]);
     }
 
     /**
@@ -653,22 +676,23 @@ class C300 extends ZTEService
                     $result[] = $line;
                 }
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $result,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $result,
-        ]);
     }
 
     /**
@@ -696,6 +720,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -727,6 +752,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -758,6 +784,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -789,6 +816,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -820,6 +848,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -851,6 +880,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -882,6 +912,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -913,6 +944,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -944,6 +976,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -975,6 +1008,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -1006,6 +1040,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -1037,6 +1072,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -1068,6 +1104,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -1099,6 +1136,7 @@ class C300 extends ZTEService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);

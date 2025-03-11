@@ -380,6 +380,8 @@ class FX16 extends NokiaService
                 'result' => [],
             ]);
         }
+
+        return $ontsInterface;
     }
 
     /**
@@ -626,6 +628,14 @@ class FX16 extends NokiaService
                     }
                 }
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $unregData,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
@@ -634,14 +644,6 @@ class FX16 extends NokiaService
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $unregData,
-        ]);
     }
 
     /**
