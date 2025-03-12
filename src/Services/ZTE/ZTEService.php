@@ -511,7 +511,9 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300']);
+        $this->validateModels(['C300', 'C600']);
+
+        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -522,9 +524,7 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            if (self::$model === 'C300') {
-                $response = C300::showGponOnuDetailInfo($interface);
-            }
+            $response = $modelClass::showGponOnuDetailInfo($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');

@@ -326,6 +326,70 @@ class C600 extends C300
     }
 
     /**
+     * Get ONT detail info - Telnet
+     */
+    public static function showGponOnuDetailInfo(string $interface): ?CommandResult
+    {
+        $command = "show gpon onu detail-info gpon_onu-$interface";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! str_contains($response, 'ONU interface')) {
+                throw new \Exception($response);
+            }
+
+            $ontDetailInfo = [
+                'alarm-history' => [],
+            ];
+
+            $lines = explode("\n", $response);
+            $inHistorySection = false;
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+
+                if (! $inHistorySection && preg_match('/^(.*?):\s+(.*)$/', $line, $matches)) {
+                    $key = strtolower(str_replace(' ', '-', trim($matches[1])));
+                    $value = trim($matches[2]);
+                    $ontDetailInfo[$key] = $value ?? null;
+                }
+
+                if (str_contains($line, 'Authpass Time')) {
+                    $inHistorySection = true;
+
+                    continue;
+                }
+
+                if ($inHistorySection && preg_match('/^\s*\d+\s+([0-9\-]+\s[0-9:]+)\s{2,}([0-9\-]+\s[0-9:]+|0000-00-00 00:00:00)\s*(.*)$/', $line, $matches)) {
+                    $ontDetailInfo['alarm-history'][] = [
+                        'authpass-time' => $matches[1],
+                        'offline-time' => $matches[2],
+                        'cause' => empty($matches[3]) ? null : trim($matches[3]),
+                    ];
+                }
+
+            }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontDetailInfo,
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
      * Register ONT - Telnet
      */
     public static function onuTypeSn(int $ontIndex, string $profile, string $serial): ?CommandResult
