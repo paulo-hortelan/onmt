@@ -304,34 +304,36 @@ class AN551604 extends FiberhomeService
 
             $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
 
-            foreach ($splittedResponse as $key => $column) {
-                if (preg_match('/SLOTNO/', $column)) {
-                    $numOnts = count($splittedResponse) - $key - 2;
+            $headerIndex = null;
+            foreach ($splittedResponse as $key => $line) {
+                if (preg_match('/^MAC\t/', $line)) {
+                    $headerIndex = $key;
+                    break;
+                }
+            }
 
-                    if ($numOnts === 0) {
-                        return CommandResult::create([
-                            'success' => true,
-                            'command' => $command,
-                            'response' => $response,
-                            'error' => null,
-                            'result' => [],
-                        ]);
+            if ($headerIndex !== null) {
+                $dataIndex = $headerIndex + 1;
+
+                while ($dataIndex < count($splittedResponse) &&
+                       ! preg_match('/^-{10,}$/', $splittedResponse[$dataIndex])) {
+
+                    $line = trim($splittedResponse[$dataIndex]);
+                    if (! empty($line)) {
+                        $splitted = preg_split('/\t/', $line);
+
+                        if (count($splitted) >= 6) {
+                            $unRegData[] = [
+                                'MAC' => $splitted[0] ?? null,
+                                'LOID' => $splitted[1] ?? null,
+                                'PWD' => $splitted[2] ?? null,
+                                'ERROR' => $splitted[3] ?? null,
+                                'AUTHTIME' => $splitted[4] ?? null,
+                                'DT' => $splitted[5] ?? null,
+                            ];
+                        }
                     }
-
-                    for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\\t/', $splittedResponse[$key + $i]);
-
-                        $unRegData[] = [
-                            'SLOTNO' => (int) $splitted[0] ?? null,
-                            'PONNO' => (int) $splitted[1] ?? null,
-                            'MAC' => $splitted[2] ?? null,
-                            'LOID' => $splitted[3] ?? null,
-                            'PWD' => $splitted[4] ?? null,
-                            'ERROR' => $splitted[5] ?? null,
-                            'AUTHTIME' => $splitted[6] ?? null,
-                            'DT' => $splitted[7] ?? null,
-                        ];
-                    }
+                    $dataIndex++;
                 }
             }
         } catch (\Exception $e) {
