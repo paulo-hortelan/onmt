@@ -10,28 +10,46 @@ use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 
 /**
- * @method static self connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null) Connect to the OLT via TL1.
- * @method static void disconnect() Disconnect from the OLT.
- * @method static self timeout(int $connTimeout, int $streamTimeout) Set the TL1 connection and stream timeouts.
- * @method static self interfaces(array $interfaces) Set the interfaces to be used for operations.
- * @method static self serials(array $serials) Set the ONT serials to be used for operations.
- * @method static void enableDebug() Enable debug mode for the TL1 session.
- * @method static void disableDebug() Disable debug mode for the TL1 session.
- * @method static self setOperator(string $operator) Set the operator for the current session.
- * @method static void startRecordingCommands(?string $description = null, ?string $ponInterface = null, ?string $interface = null, ?string $serial = null, ?string $operator = null) Start recording commands in a batch.
- * @method static CommandResultBatch stopRecordingCommands() Stop recording commands and return the batch.
- * @method static Collection|null ontsOpticalPower(string $ponInterface) Get ONTs optical power. Parameter 'serials' must already be provided.
- * @method static Collection|null ontsStateInfo(string $ponInterface) Get ONTs state info. Parameter 'serials' must already be provided.
- * @method static Collection|null ontsPortInfo(string $ponInterface) Get ONTs port info. Parameter 'serials' must already be provided.
- * @method static Collection|null ontsLanInfo(string $ponInterface) List ONTs LAN info. Parameter 'serials' must already be provided.
- * @method static Collection|null oltUplinksLanPerf(string $portInterface) List OLT uplink's LAN performance.
- * @method static Collection|null unregisteredOnts() List unregistered ONTs.
- * @method static Collection|null registeredOnts() List registered ONTs.
- * @method static Collection|null authorizeOnts(string $ponInterface, string $ontType, string $pppoeUsername) Authorize ONTs. Parameter 'serials' must already be provided.
- * @method static Collection|null configureLanOnts(string $ponInterface, string $portInterface, LanConfig $config) Configure ONTs LAN service. Parameter 'serials' must already be provided.
- * @method static Collection|null configureVeipOnts(string $ponInterface, string $portInterface, VeipConfig $config) Configure ONTs VEIP service. Parameter 'serials' must already be provided.
- * @method static Collection|null configureWanOnts(string $ponInterface, WanConfig $config) Configure ONTs WAN service. Parameter 'serials' must already be provided.
- * @method static Collection|null removeOnts(string $ponInterface) Remove/Delete ONTs. Parameter 'serials' must already be provided.
+ * Fiberhome OLT Management Facade
+ *
+ * This facade provides an interface to manage Fiberhome OLTs
+ * (AN5516-04, AN5516-06, AN5516-06B models) through TL1 connections.
+ *
+ * == CONNECTION MANAGEMENT ==
+ *
+ * @method static self connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null) Establishes TL1 connection to Fiberhome OLT with specified credentials. The $ipServer parameter defaults to $ipOlt if not provided.
+ * @method static void disconnect() Terminates the current TL1 connection to the OLT.
+ * @method static void enableDebug() Enables verbose debug output for the TL1 session for troubleshooting purposes.
+ * @method static void disableDebug() Disables debug output for the TL1 session.
+ *
+ * == CONFIGURATION SETUP ==
+ * @method static self timeout(int $connTimeout, int $streamTimeout) Configures connection timeout (in seconds) and stream timeout (in seconds) for TL1 operations.
+ * @method static self interfaces(array $interfaces) Sets the ONU interfaces to operate on - primarily used for future compatibility.
+ * @method static self serials(array $serials) Sets the ONT serial numbers to operate on. All serials are automatically converted to uppercase.
+ * @method static self setOperator(string $operator) Sets the operator name for logging/tracking operations.
+ *
+ * == COMMAND RECORDING ==
+ * @method static void startRecordingCommands(?string $description = null, ?string $ponInterface = null, ?string $interface = null, ?string $serial = null, ?string $operator = null) Starts recording all executed commands in a batch with optional metadata. Limited to single interface or serial.
+ * @method static CommandResultBatch stopRecordingCommands() Stops command recording and returns the complete command batch results.
+ *
+ * == ONT INFORMATION RETRIEVAL ==
+ * @method static Collection|null ontsOpticalPower(string $ponInterface) Retrieves optical power levels (TX/RX) for ONTs specified by serials() on the given PON interface (e.g., 'NA-NA-1-1').
+ * @method static Collection|null ontsStateInfo(string $ponInterface) Gets operational state information (admin state, operational state, authentication status) for ONTs specified by serials() on the given PON interface.
+ * @method static Collection|null ontsPortInfo(string $ponInterface) Gets port configuration information (including VLAN settings) for ONTs specified by serials() on the given PON interface.
+ * @method static Collection|null ontsLanInfo(string $ponInterface) Gets LAN port details for ONTs specified by serials() on the given PON interface.
+ * @method static Collection|null oltUplinksLanPerf(string $portInterface) Retrieves performance statistics for an OLT uplink port (e.g., 'NA-NA-1-1').
+ * @method static Collection|null unregisteredOnts(string $ponInterface) Lists all discovered but not yet provisioned ONTs on the specified PON interface.
+ * @method static Collection|null registeredOnts() Lists all registered/provisioned ONTs on the entire OLT.
+ *
+ * == ONT MANAGEMENT ==
+ * @method static Collection|null rebootOnts(string $ponInterface) Reboots ONTs specified by serials() on the given PON interface. Useful after configuration changes.
+ * @method static Collection|null removeOnts(string $ponInterface) Removes/deletes ONTs specified by serials() from the given PON interface.
+ *
+ * == ONT PROVISIONING ==
+ * @method static Collection|null authorizeOnts(string $ponInterface, string $ontType, string $pppoeUsername) Authorizes/provisions ONTs specified by serials() on the given PON interface using the specified ONT type (e.g., 'HG260') and PPPoE username.
+ * @method static Collection|null configureLanOnts(string $ponInterface, string $portInterface, LanConfig $config) Configures LAN port settings (including VLAN tagging) for ONTs specified by serials() on the given PON and port interfaces.
+ * @method static Collection|null configureVeipOnts(string $ponInterface, string $portInterface, VeipConfig $config) Configures Virtual Ethernet Interface Point (VEIP) service for ONTs specified by serials() on the given PON and port interfaces.
+ * @method static Collection|null configureWanOnts(string $ponInterface, WanConfig $config) Configures WAN service settings (Internet connectivity parameters) for ONTs specified by serials() on the given PON interface.
  *
  * @see \PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService
  */
