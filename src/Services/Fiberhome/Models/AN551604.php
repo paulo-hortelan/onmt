@@ -293,7 +293,7 @@ class AN551604 extends FiberhomeService
     {
         $unRegData = [];
         $ipOlt = self::$ipOlt;
-        $command = "LST-UNREGONU::OLTID=$ipOlt,PONID=$ponInterface,:CTAG::;";
+        $command = "LST-UNREGONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::;";
 
         try {
             $response = self::$tl1Conn->exec($command);
