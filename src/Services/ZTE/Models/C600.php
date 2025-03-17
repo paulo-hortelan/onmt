@@ -723,6 +723,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -754,6 +755,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -785,6 +787,7 @@ class C600 extends C300
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);

@@ -28,11 +28,11 @@ describe('ZTE C300 - Ont Detail Info', function () {
 
         $zte->interfaces([$this->interfaceALCLC300]);
 
-        $ontsDetailInfo = $zte->ontsDetailInfo();
+        $detailOntsInfo = $zte->detailOntsInfo();
 
-        expect($ontsDetailInfo)->toBeInstanceOf(Collection::class);
+        expect($detailOntsInfo)->toBeInstanceOf(Collection::class);
 
-        $ontsDetailInfo->each(function ($batch) {
+        $detailOntsInfo->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 

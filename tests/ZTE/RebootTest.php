@@ -25,17 +25,19 @@ beforeEach(function () {
     $this->interfaceCMSZC600 = env('ZTE_C600_INTERFACE_CMSZ');
 });
 
-describe('ZTE C300 - ONT Interface', function () {
-    it('can get interface by serial', function () {
+describe('ZTE C300', function () {
+    it('can reboot a ont', function () {
         $zte = ZTE::connectTelnet($this->ipServerC300, $this->usernameTelnetC300, $this->passwordTelnetC300, 23);
 
-        $zte->serials([$this->serialALCLC300]);
+        $zte->interfaces([$this->interfaceCMSZC300]);
 
-        $interfaceOnts = $zte->interfaceOnts();
+        $result = $zte->rebootOnts();
 
-        expect($interfaceOnts)->toBeInstanceOf(Collection::class);
+        dump($result->toArray());
 
-        $interfaceOnts->each(function ($batch) {
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
@@ -44,10 +46,10 @@ describe('ZTE C300 - ONT Interface', function () {
             });
         });
     });
-});
+})->only();
 
-describe('ZTE C600 - ONT Interface', function () {
-    it('can get interface by serial', function () {
+describe('ZTE C600', function () {
+    it('can reboot a ont', function () {
         $zte = ZTE::connectTelnet($this->ipServerC600, $this->usernameTelnetC600, $this->passwordTelnetC600, 23, null, 'C600');
 
         $zte->serials([$this->serialALCLC600]);
@@ -67,4 +69,4 @@ describe('ZTE C600 - ONT Interface', function () {
             });
         });
     });
-})->only();
+});

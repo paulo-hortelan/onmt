@@ -39,6 +39,8 @@ class ZTEService
 
     protected static string $ipOlt = '';
 
+    protected array $supportedModels = ['C300', 'C600'];
+
     public static array $serials = [];
 
     public static array $interfaces = []; // Example: ['1/7/9:1']
@@ -51,6 +53,10 @@ class ZTEService
 
         if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
             throw new Exception('Provided IP(s) are not valid(s).');
+        }
+
+        if (! in_array($model, $this->supportedModels)) {
+            throw new Exception('Provided Model is not supported.');
         }
 
         self::$ipOlt = $ipOlt;
@@ -82,7 +88,6 @@ class ZTEService
     public function disableTerminalLength(): ?CommandResult
     {
         $this->validateTelnet();
-        $this->validateModels(['C300', 'C600']);
 
         if (self::$model === 'C300') {
             return C300::terminalLength0();
@@ -258,8 +263,6 @@ class ZTEService
      */
     public function setConfigureTerminalModel(): ?CommandResultBatch
     {
-        $this->validateModels(['C300', 'C600']);
-
         $modelClass = $this->createModelClass();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -295,8 +298,6 @@ class ZTEService
      */
     public function setInterfaceOltTerminalModel(string $ponInterface)
     {
-        $this->validateModels(['C300', 'C600']);
-
         $modelClass = $this->createModelClass();
 
         if (self::$terminalMode !== 'configure') {
@@ -329,8 +330,6 @@ class ZTEService
      */
     public function setInterfaceOnuTerminalModel(string $interface): ?CommandResultBatch
     {
-        $this->validateModels(['C300', 'C600']);
-
         $modelClass = $this->createModelClass();
 
         if (self::$terminalMode !== 'configure') {
@@ -401,8 +400,6 @@ class ZTEService
      */
     public function setPonOnuMngTerminalModel(string $interface): ?CommandResultBatch
     {
-        $this->validateModels(['C300', 'C600']);
-
         $modelClass = $this->createModelClass();
 
         if (self::$terminalMode !== 'configure') {
@@ -441,7 +438,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -472,11 +468,10 @@ class ZTEService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsInterface(): ?Collection
+    public function interfaceOnts(): ?Collection
     {
         $this->validateTelnet();
         $this->validateSerials();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -507,11 +502,10 @@ class ZTEService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsDetailInfo(): ?Collection
+    public function detailOntsInfo(): ?Collection
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -543,7 +537,6 @@ class ZTEService
     public function unconfiguredOnts(): ?Collection
     {
         $this->validateTelnet();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -569,11 +562,10 @@ class ZTEService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsInterfaceRunningConfig(): ?Collection
+    public function interfaceOntsRunningConfig(): ?Collection
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -637,7 +629,6 @@ class ZTEService
     public function ontsByPonInterface(string $ponInterface): ?Collection
     {
         $this->validateTelnet();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -655,6 +646,68 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
+    }
+
+    /**
+     * Reboot ONTs - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function rebootOnts(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $modelClass = $this->createModelClass();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Reboot ONTs',
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== "pon-onu-mng-$interface") {
+                $response = $this->setPonOnuMngTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = $modelClass::reboot();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $response = $modelClass::yes();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
 
         return $finalResponse;
     }
@@ -707,7 +760,6 @@ class ZTEService
     public function removeOnts(): ?Collection
     {
         $this->validateTelnet();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -766,7 +818,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateSerials();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -820,7 +871,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -873,7 +923,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -927,7 +976,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -981,7 +1029,7 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
+
         $this->validateTerminalMode($terminalMode);
 
         $modelClass = $this->createModelClass();
@@ -1047,7 +1095,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -1120,7 +1167,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 
@@ -1173,7 +1219,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-        $this->validateModels(['C300', 'C600']);
 
         $modelClass = $this->createModelClass();
 

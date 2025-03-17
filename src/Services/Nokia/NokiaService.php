@@ -314,7 +314,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsReboot(): ?Collection
+    public function rebootOnts(): ?Collection
     {
         $this->validateInterfaces();
         $this->validateTelnet();
@@ -351,7 +351,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsRebootBySerials(): ?Collection
+    public function rebootOntsBySerials(): ?Collection
     {
         $this->validateSerials();
         $this->validateTelnet();
@@ -401,7 +401,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsDetail(): ?Collection
+    public function detailOnts(): ?Collection
     {
         $this->validateInterfaces();
         $this->validateTelnet();
@@ -438,7 +438,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsDetailBySerials(): ?Collection
+    public function detailOntsBySerials(): ?Collection
     {
         $this->validateSerials();
         $this->validateTelnet();
@@ -488,7 +488,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsInterface(): ?Collection
+    public function interfaceOnts(): ?Collection
     {
         $this->validateSerials();
         $this->validateTelnet();
@@ -525,7 +525,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsInterfaceDetail(): ?Collection
+    public function interfaceOntsDetail(): ?Collection
     {
         $this->validateInterfaces();
         $this->validateTelnet();
@@ -562,7 +562,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsSwDownloadDetail(): ?Collection
+    public function swDownloadDetailOnts(): ?Collection
     {
         $this->validateInterfaces();
         $this->validateTelnet();
@@ -599,7 +599,7 @@ class NokiaService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsPortDetail(): ?Collection
+    public function portDetailOnts(): ?Collection
     {
         $this->validateInterfaces();
         $this->validateTelnet();

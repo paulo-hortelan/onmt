@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'default_operator' => env('ONMT_DEFAULT_OPERATOR', null),
+    'default_operator' => env('ONMT_DEFAULT_OPERATOR', ''),
 ];

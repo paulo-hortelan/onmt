@@ -24,7 +24,7 @@ describe('Nokia Optical Interface', function () {
     it('can get ont interface detail', function () {
         $this->nokia->interfaces(['1/1/1/1/3']);
 
-        $downloadDetails = $this->nokia->ontsSwDownloadDetail();
+        $downloadDetails = $this->nokia->swDownloadDetailOnts();
 
         expect($downloadDetails)->toBeInstanceOf(Collection::class);
 

@@ -42,50 +42,60 @@
 
         <env name="NOKIA_OLT_IP" value=""/>
         <env name="NOKIA_OLT_USERNAME_TELNET" value=""/>
+        <env name="NOKIA_OLT_USERNAME_TL1" value=""/>
         <env name="NOKIA_OLT_PASSWORD_TELNET" value=""/>
-        <env name="NOKIA_SERIAL_1" value=""/>
-        <env name="NOKIA_SERIAL_2" value=""/>
-        <env name="NOKIA_SERIAL_3" value=""/>
-        <env name="NOKIA_INTERFACE_1" value=""/>
-        <env name="NOKIA_INTERFACE_2" value=""/>
-        <env name="NOKIA_INTERFACE_3" value=""/>
+        <env name="NOKIA_OLT_PASSWORD_TL1" value=""/>
+        <env name="NOKIA_SERIAL_ALCL" value=""/>
+        <env name="NOKIA_SERIAL_CMSZ" value=""/>
+        <env name="NOKIA_INTERFACE_ALCL" value=""/>
+        <env name="NOKIA_SERIAL_CMSZ" value=""/>
+        <env name="NOKIA_PON_INTERFACE" value=""/>
+        <env name="NOKIA_PPPOE_USERNAME" value=""/>
 
-        <env name="ZTE_OLT_IP" value=""/>
-        <env name="ZTE_OLT_USERNAME" value=""/>
-        <env name="ZTE_OLT_PASSWORD" value=""/>
-        <env name="ZTE_SERIAL_1" value=""/>
-        <env name="ZTE_SERIAL_2" value=""/>
-        <env name="ZTE_SERIAL_3" value=""/>
-        <env name="ZTE_INTERFACE_1" value=""/>
-        <env name="ZTE_INTERFACE_2" value=""/>
-        <env name="ZTE_INTERFACE_3" value=""/>             
+        <env name="ZTE_C300_OLT_IP" value=""/>
+        <env name="ZTE_C300_OLT_USERNAME_TELNET" value=""/>
+        <env name="ZTE_C300_OLT_PASSWORD_TELNET" value=""/>
+        <env name="ZTE_C300_SERIAL_CMSZ" value=""/>
+        <env name="ZTE_C300_SERIAL_ALCL" value=""/>
+        <env name="ZTE_C300_INTERFACE_CMSZ" value=""/>
+        <env name="ZTE_C300_INTERFACE_ALCL" value=""/>
+        <env name="ZTE_C300_PON_INTERFACE_CMSZ" value=""/>
+        <env name="ZTE_C300_PON_INTERFACE_ALCL" value=""/>
+
+        <env name="ZTE_C600_OLT_IP" value=""/>
+        <env name="ZTE_C600_OLT_USERNAME_TELNET" value=""/>
+        <env name="ZTE_C600_OLT_PASSWORD_TELNET" value=""/>
+        <env name="ZTE_C600_SERIAL_CMSZ" value=""/>
+        <env name="ZTE_C600_SERIAL_ALCL" value=""/>
+        <env name="ZTE_C600_INTERFACE_CMSZ" value=""/>
+        <env name="ZTE_C600_INTERFACE_ALCL" value=""/>
+        <env name="ZTE_C600_PON_INTERFACE_CMSZ" value=""/>
+        <env name="ZTE_C600_PON_INTERFACE_ALCL" value="" />
 
         <env name="FIBERHOME_OLT_IP" value=""/>
         <env name="FIBERHOME_IP_SERVER" value=""/>
         <env name="FIBERHOME_OLT_USERNAME_TL1" value=""/>
         <env name="FIBERHOME_OLT_PASSWORD_TL1" value=""/>
         <env name="FIBERHOME_SERIAL_ALCL" value=""/>
-        <env name="FIBERHOME_SERIAL_2" value=""/>
-        <env name="FIBERHOME_SERIAL_3" value=""/>
-        <env name="FIBERHOME_INTERFACE_ALCL" value=""/>
-        <env name="FIBERHOME_INTERFACE_2" value=""/>
-        <env name="FIBERHOME_INTERFACE_3" value=""/> 
-        <env name="FIBERHOME_MODEL_TYPE_1" value=""/>
+        <env name="FIBERHOME_SERIAL_CMSZ" value=""/>
+        <env name="FIBERHOME_SERIAL_FHTT" value=""/>
+        <env name="FIBERHOME_PON_INTERFACE" value=""/>
         <env name="FIBERHOME_ONT_TYPE_ALCL" value=""/>
-        <env name="FIBERHOME_ONT_TYPE_2" value=""/>
-        <env name="FIBERHOME_PPPOE_USERNAME_1" value=""/>
-        <env name="FIBERHOME_PPPOE_USERNAME_2" value=""/>
-        <env name="FIBERHOME_PORT_INTERFACE_1" value=""/>
-        <env name="FIBERHOME_PORT_INTERFACE_2" value=""/>
-        <env name="FIBERHOME_VLAN_1" value=""/>
-        <env name="FIBERHOME_VLAN_2" value=""/>
-        <env name="FIBERHOME_CCOS_1" value=""/>
-        <env name="FIBERHOME_CCOS_2" value=""/>
-        <env name="FIBERHOME_SERVICE_ID_1" value=""/>
-        <env name="FIBERHOME_SERVICE_ID_2" value=""/>    
-        <env name="FIBERHOME_SERVICE_MODEL_PROFILE_1" value=""/>
-        <env name="FIBERHOME_SERVICE_MODEL_PROFILE_2" value=""/> 
-        <env name="FIBERHOME_SERVICE_TYPE_1" value=""/>
-        <env name="FIBERHOME_SERVICE_TYPE_2" value=""/>   
+        <env name="FIBERHOME_ONT_TYPE_CMSZ" value=""/>
+        <env name="FIBERHOME_ONT_TYPE_FHTT" value=""/>
+        <env name="FIBERHOME_PORT_INTERFACE_ALCL" value=""/>
+        <env name="FIBERHOME_PORT_INTERFACE_CMSZ" value=""/>
+        <env name="FIBERHOME_PORT_INTERFACE_FHTT" value=""/>
+        <env name="FIBERHOME_PPPOE_USERNAME" value=""/>
+
+        <env name="DATACOM_DM4612_OLT_IP" value=""/>
+        <env name="DATACOM_DM4612_OLT_USERNAME_TELNET" value=""/>
+        <env name="DATACOM_DM4612_OLT_PASSWORD_TELNET" value=""/>
+        <env name="DATACOM_DM4612_SERIAL_CMSZ" value=""/>
+        <env name="DATACOM_DM4612_SERIAL_ALCL" value=""/>
+        <env name="DATACOM_DM4612_INTERFACE_CMSZ" value=""/>
+        <env name="DATACOM_DM4612_INTERFACE_ALCL" value=""/>
+        <env name="DATACOM_DM4612_PON_INTERFACE_CMSZ" value=""/>
+        <env name="DATACOM_DM4612_PON_INTERFACE_ALCL" value="" />
     </php>    
 </phpunit>

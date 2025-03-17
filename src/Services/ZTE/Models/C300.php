@@ -166,6 +166,35 @@ class C300 extends ZTEService
     }
 
     /**
+     * Yes - Telnet
+     */
+    public static function yes(): ?CommandResult
+    {
+        $response = null;
+        $command = 'yes';
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            return CommandResult::make([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::make([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
      * Show current terminal/interface info - Telnet
      */
     public static function showThis(): ?CommandResult
@@ -1133,6 +1162,44 @@ class C300 extends ZTEService
                 'result' => [],
             ]);
         } catch (\Exception $e) {
+            return CommandResult::make([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Reboot (needs to be confirm [yes/no]) - Telnet
+     */
+    public static function reboot(): ?CommandResult
+    {
+        $command = 'reboot';
+
+        try {
+            self::$telnetConn->changePromptRegex(':');
+
+            $response = self::$telnetConn->exec($command);
+
+            if (! empty($response)) {
+                throw new \Exception($response);
+            }
+
+            self::$telnetConn->resetPromptRegex();
+
+            return CommandResult::make([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            self::$telnetConn->resetPromptRegex();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,

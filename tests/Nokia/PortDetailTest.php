@@ -21,7 +21,7 @@ describe('Nokia Port Detail', function () {
     it('can get single detail', function () {
         $this->nokia->interfaces([$this->interfaceALCL]);
 
-        $details = $this->nokia->ontsPortDetail();
+        $details = $this->nokia->portDetailOnts();
 
         expect($details)->toBeInstanceOf(Collection::class);
 
@@ -38,7 +38,7 @@ describe('Nokia Port Detail', function () {
     it('can get multiple details', function () {
         $this->nokia->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
 
-        $details = $this->nokia->ontsPortDetail();
+        $details = $this->nokia->portDetailOnts();
 
         $details->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);

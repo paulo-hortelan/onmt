@@ -24,11 +24,11 @@ describe('Nokia Optical Detail - Success', function () {
 
         $nokia->interfaces([$this->interfaceALCL]);
 
-        $ontsDetail = $nokia->ontsDetail();
+        $detailOnts = $nokia->detailOnts();
 
-        expect($ontsDetail)->toBeInstanceOf(Collection::class);
+        expect($detailOnts)->toBeInstanceOf(Collection::class);
 
-        $ontsDetail->each(function ($batch) {
+        $detailOnts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
@@ -44,11 +44,11 @@ describe('Nokia Optical Detail - Success', function () {
 
         $nokia->interfaces([$this->interfaceALCL, $this->interfaceCMSZ]);
 
-        $ontsDetail = $nokia->ontsDetail();
+        $detailOnts = $nokia->detailOnts();
 
-        expect($ontsDetail)->toBeInstanceOf(Collection::class);
+        expect($detailOnts)->toBeInstanceOf(Collection::class);
 
-        $ontsDetail->each(function ($batch) {
+        $detailOnts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
@@ -66,11 +66,11 @@ describe('Nokia Optical Detail By Serial - Success', function () {
 
         $nokia->serials([$this->serialALCL]);
 
-        $ontsDetail = $nokia->ontsDetailBySerials();
+        $detailOnts = $nokia->detailOntsBySerials();
 
-        expect($ontsDetail)->toBeInstanceOf(Collection::class);
+        expect($detailOnts)->toBeInstanceOf(Collection::class);
 
-        $ontsDetail->each(function ($batch) {
+        $detailOnts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
@@ -85,11 +85,11 @@ describe('Nokia Optical Detail By Serial - Success', function () {
 
         $nokia->serials([$this->serialALCL, $this->serialCMSZ]);
 
-        $ontsDetail = $nokia->ontsDetailBySerials();
+        $detailOnts = $nokia->detailOntsBySerials();
 
-        expect($ontsDetail)->toBeInstanceOf(Collection::class);
+        expect($detailOnts)->toBeInstanceOf(Collection::class);
 
-        $ontsDetail->each(function ($batch) {
+        $detailOnts->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 

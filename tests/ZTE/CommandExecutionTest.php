@@ -31,13 +31,13 @@ describe('ZTE C300', function () {
         expect($result->command)->toBe('terminal length 0');
     });
 
-    it('can execute command to ontsDetailInfo', function () {
+    it('can execute command to detailOntsInfo', function () {
         $zteservice = new ZTEService();
         $interface = '1/1/1:1';
 
         $zteservice->interfaces([$interface]);
 
-        $result = $zteservice->ontsDetailInfo();
+        $result = $zteservice->detailOntsInfo();
 
         expect($result)->toBeInstanceOf(Collection::class);
         expect($result->first())->toBeInstanceOf(CommandResultBatch::class);

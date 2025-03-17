@@ -91,9 +91,6 @@ class TL1 extends Telnet
                     $this->waitPrompt();
                     break;
             }
-
-            // var_dump($this->prompt);
-            // $this->waitPrompt();
         } catch (\Exception $e) {
             throw new \Exception('Login failed: '.$e->getMessage());
         }

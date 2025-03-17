@@ -35,10 +35,10 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static CommandResultBatch|null setInterfaceVportTerminalModel(string $interface, int $vport) Enter GPON ONU Vport terminal mode (C600 only).
  * @method static CommandResultBatch|null setPonOnuMngTerminalModel(string $interface) Enter PON ONU management terminal mode.
  * @method static Collection|null ontsOpticalPower() Get ONTs optical power.
- * @method static Collection|null ontsInterface() Get ONTs interface by serial.
- * @method static Collection|null ontsDetailInfo() Get ONTs detail info (C300 only).
+ * @method static Collection|null interfaceOnts() Get ONTs interface by serial.
+ * @method static Collection|null detailOntsInfo() Get ONTs detail info (C300 only).
  * @method static Collection|null unconfiguredOnts() Get unconfigured ONTs.
- * @method static Collection|null ontsInterfaceRunningConfig() Get ONTs interface running config.
+ * @method static Collection|null interfaceOntsRunningConfig() Get ONTs interface running config.
  * @method static Collection|null ontsRunningConfig() Get ONTs running config (C300 only).
  * @method static Collection|null ontsByPonInterface(string $ponInterface) Get ONTs by PON interface.
  * @method static int|null getNextOntIndex(string $ponInterface) Get the next free ONT index for a PON interface.

@@ -52,6 +52,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -105,6 +106,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -152,6 +154,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -209,6 +212,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -267,6 +271,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -284,11 +289,11 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the unregistered ONTs
      */
-    public static function lstUnregOnu(): ?CommandResult
+    public static function lstUnregOnu(string $ponInterface): ?CommandResult
     {
         $unRegData = [];
         $ipOlt = self::$ipOlt;
-        $command = "LST-UNREGONU::OLTID=$ipOlt:CTAG::;";
+        $command = "LST-UNREGONU::OLTID=$ipOlt,PONID=$ponInterface,:CTAG::;";
 
         try {
             $response = self::$tl1Conn->exec($command);
@@ -307,6 +312,7 @@ class AN551604 extends FiberhomeService
                         return CommandResult::create([
                             'success' => true,
                             'command' => $command,
+                            'response' => $response,
                             'error' => null,
                             'result' => [],
                         ]);
@@ -332,6 +338,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -400,6 +407,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -432,6 +440,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -464,6 +473,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -498,6 +508,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -533,6 +544,7 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -568,6 +580,40 @@ class AN551604 extends FiberhomeService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+
+        return CommandResult::create([
+            'success' => true,
+            'command' => $command,
+            'response' => $response,
+            'error' => null,
+            'result' => [],
+        ]);
+    }
+
+    /**
+     * Reset ONUTs (restarts only)
+     */
+    public static function resetOnu(string $ponInterface, string $serial): ?CommandResult
+    {
+        $ipOlt = self::$ipOlt;
+
+        try {
+            $command = "RESET-ONU::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+
+            $response = self::$tl1Conn->exec($command);
+
+            if (! str_contains($response, 'M  CTAG COMPLD')) {
+                throw new \Exception($response);
+            }
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);

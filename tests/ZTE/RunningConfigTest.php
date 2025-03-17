@@ -31,7 +31,7 @@ describe('ZTE C300 - Get running config', function () {
 
         $zte->interfaces([$this->interfaceCMSZC300, $this->interfaceALCLC300]);
 
-        $runningConfig = $zte->ontsInterfaceRunningConfig();
+        $runningConfig = $zte->interfaceOntsRunningConfig();
 
         dump($runningConfig->toArray());
 
@@ -75,7 +75,7 @@ describe('ZTE C600 - Get running config', function () {
 
         $zte->interfaces([$this->interfaceALCLC600, $this->interfaceCMSZC600]);
 
-        $runningConfig = $zte->ontsInterfaceRunningConfig();
+        $runningConfig = $zte->interfaceOntsRunningConfig();
 
         dump($runningConfig->toArray());
 

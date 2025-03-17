@@ -23,7 +23,7 @@ describe('Nokia Optical Interface', function () {
     it('can get interface', function () {
         $this->nokia->serials([$this->serialALCL]);
 
-        $interfaces = $this->nokia->ontsInterface();
+        $interfaces = $this->nokia->interfaceOnts();
 
         expect($interfaces)->toBeInstanceOf(Collection::class);
 
@@ -40,7 +40,7 @@ describe('Nokia Optical Interface', function () {
     it('can get ont interface detail', function () {
         $this->nokia->interfaces(['1/1/1/1/3']);
 
-        $interfaces = $this->nokia->ontsInterfaceDetail();
+        $interfaces = $this->nokia->interfaceOntsDetail();
 
         expect($interfaces)->toBeInstanceOf(Collection::class);
 

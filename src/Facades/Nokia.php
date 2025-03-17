@@ -30,12 +30,12 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static void startRecordingCommands(?string $description = null, ?string $ponInterface = null, ?string $interface = null, ?string $serial = null, ?string $operator = null) Start recording commands in a batch.
  * @method static CommandResultBatch stopRecordingCommands() Stop recording commands and return the batch.
  * @method static Collection|null executeCommand(string $command) Execute a command on the OLT.
- * @method static Collection|null ontsDetail() Get ONTs detail. Parameter 'interfaces' must already be provided.
- * @method static Collection|null ontsDetailBySerials() Get ONTs detail by serials. Parameter 'serials' must already be provided.
- * @method static Collection|null ontsInterface() Get ONTs interface by serials. Parameter 'serials' must already be provided.
- * @method static Collection|null ontsInterfaceDetail() Get ONTs interface detail. Parameter 'interfaces' must already be provided.
- * @method static Collection|null ontsSwDownloadDetail() Get ONTs software download detail. Parameter 'interfaces' must already be provided.
- * @method static Collection|null ontsPortDetail() Get ONTs port detail. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null detailOnts() Get ONTs detail. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null detailOntsBySerials() Get ONTs detail by serials. Parameter 'serials' must already be provided.
+ * @method static Collection|null interfaceOnts() Get ONTs interface by serials. Parameter 'serials' must already be provided.
+ * @method static Collection|null interfaceOntsDetail() Get ONTs interface detail. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null swDownloadDetailOnts() Get ONTs software download detail. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null portDetailOnts() Get ONTs port detail. Parameter 'interfaces' must already be provided.
  * @method static Collection|null unregisteredOnts() Get the unregistered ONTs.
  * @method static Collection|null ontsByPonInterface(string $ponInterface) Get ONTs detail by PON interface.
  * @method static int|null getNextOntIndex(string $ponInterface) Get the next free ONT index for a PON interface.

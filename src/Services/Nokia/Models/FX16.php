@@ -381,7 +381,7 @@ class FX16 extends NokiaService
             ]);
         }
 
-        return $ontsInterface;
+        return $interfaceOnts;
     }
 
     /**

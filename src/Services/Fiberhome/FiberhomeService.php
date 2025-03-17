@@ -397,9 +397,10 @@ class FiberhomeService
     /**
      * List unregistered ONTs
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Info about each unregistered ONT
      */
-    public function unregisteredOnts(): ?Collection
+    public function unregisteredOnts(string $ponInterface): ?Collection
     {
         $this->validateTL1();
 
@@ -409,10 +410,11 @@ class FiberhomeService
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
+            'pon_interface' => $ponInterface,
             'operator' => self::$operator,
         ]);
 
-        $response = AN551604::lstUnregOnu();
+        $response = AN551604::lstUnregOnu($ponInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -446,6 +448,45 @@ class FiberhomeService
         $commandResultBatch->load('commands');
 
         $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
+    }
+
+    /**
+     * Authorize ONTs
+     *
+     * Parameter 'serials' must already be provided
+     *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
+     * @return Collection Info about each ONT authorization
+     */
+    public function rebootOnts(string $ponInterface): ?Collection
+    {
+        $this->validateSerials();
+        $this->validateTL1();
+
+        $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
+
+        $finalResponse = collect();
+
+        for ($i = 0; $i < count(self::$serials); $i++) {
+            $serial = self::$serials[$i];
+
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'interface' => null,
+                'serial' => $serial,
+                'operator' => self::$operator,
+            ]);
+
+            $response = AN551604::resetOnu($ponInterface, $serial);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
 
         return $finalResponse;
     }

@@ -31,6 +31,28 @@ describe('ZTE C300 - Ont Optical Power', function () {
 
         $zte->interfaces([$this->interfaceCMSZC300]);
 
+        $result = $zte->ontsOpticalPower();
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+                expect($commandResult->result['up-olt-rx'])->toBeFloat();
+            });
+        });
+    });
+})->only();
+
+describe('ZTE C600 - Ont Optical Power', function () {
+    it('can get optical power', function () {
+        $zte = ZTE::connectTelnet($this->ipServerC600, $this->usernameTelnetC600, $this->passwordTelnetC600, 23, null, 'C600');
+
+        $zte->interfaces([$this->interfaceCMSZC600]);
+
         $ontsPower = $zte->ontsOpticalPower();
 
         expect($ontsPower)->toBeInstanceOf(Collection::class);
@@ -46,27 +68,3 @@ describe('ZTE C300 - Ont Optical Power', function () {
         });
     });
 });
-
-describe('ZTE C600 - Ont Optical Power', function () {
-    it('can get optical power', function () {
-        $zte = ZTE::connectTelnet($this->ipServerC600, $this->usernameTelnetC600, $this->passwordTelnetC600, 23, null, 'C600');
-
-        $zte->interfaces([$this->interfaceCMSZC600]);
-
-        $ontsPower = $zte->ontsOpticalPower();
-
-        dump($ontsPower->toArray());
-
-        expect($ontsPower)->toBeInstanceOf(Collection::class);
-
-        $ontsPower->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['up-olt-rx'])->toBeFloat();
-            });
-        });
-    });
-})->only();

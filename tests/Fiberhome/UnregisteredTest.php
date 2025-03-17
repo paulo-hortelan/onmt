@@ -12,12 +12,14 @@ beforeEach(function () {
     $username = env('FIBERHOME_OLT_USERNAME_TL1');
     $password = env('FIBERHOME_OLT_PASSWORD_TL1');
 
+    $this->ponInterface = env('FIBERHOME_PON_INTERFACE');
+
     $this->fiberhome = Fiberhome::connectTL1($ipOlt, $username, $password, 3337, $ipServer);
 });
 
 describe('Fiberhome Unregistered Onts - Success', function () {
     it('can get unregistered onts', function () {
-        $unregisteredOnts = $this->fiberhome->unregisteredOnts();
+        $unregisteredOnts = $this->fiberhome->unregisteredOnts($this->ponInterface);
 
         expect($unregisteredOnts)->toBeInstanceOf(Collection::class);
 

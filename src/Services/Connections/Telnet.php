@@ -40,6 +40,8 @@ class Telnet
 
     protected string $prompt = '';
 
+    protected string $promptRegex = '';
+
     protected bool $stripPrompt = true;
 
     protected string $eol = "\r\n";
@@ -205,50 +207,56 @@ class Telnet
      */
     public function login($username, $password, $hostType = 'linux'): void
     {
+        $this->username = $username;
+        $this->password = $password;
+        $this->hostType = $hostType;
+
         $userPrompt = '';
         $passPrompt = '';
-        $promptRegex = '';
 
         switch ($hostType) {
             case 'linux': // General Linux/UNIX
                 $userPrompt = 'login:';
                 $passPrompt = 'Password:';
-                $promptRegex = '\$';
                 break;
 
             case 'ZTE-C300':
             case 'ZTE-C600':
                 $userPrompt = 'Username:';
                 $passPrompt = 'Password:';
-                $promptRegex = '[#]';
                 break;
 
             case 'Nokia-FX16':
                 $userPrompt = 'login: ';
                 $passPrompt = 'password: ';
-                $promptRegex = '[#]';
                 break;
 
             case 'ios': // Cisco IOS, IOS-XE, IOS-XR
                 $userPrompt = 'Username:';
                 $passPrompt = 'Password:';
-                $promptRegex = '[>#]';
                 break;
 
             case 'digistar':
                 $passPrompt = 'Password: ';
-                $promptRegex = '[>]';
                 break;
 
             case 'phyhome':
                 $userPrompt = 'Username(1-32 chars):';
                 $passPrompt = 'Password(1-16 chars):';
-                $promptRegex = '[>]';
+                break;
+
+            case 'Datacom-DM4612':
+                $userPrompt = 'login:';
+                $passPrompt = 'Password:';
                 break;
         }
 
+        $promptRegex = $this->getPromptRegexForHostType($hostType);
+        $this->promptRegex = $promptRegex;
+
         try {
             $this->writeCommand($userPrompt, $username);
+
             $this->writeCommand($passPrompt, $password);
 
             $this->setRegexPrompt($promptRegex);
@@ -623,5 +631,51 @@ class Telnet
     public function disableDebug(): void
     {
         $this->debug = false;
+    }
+
+    /**
+     * Changes the promptRegex to a new value
+     *
+     * @param  string  $promptRegex  New regex to use as prompt
+     * @return $this
+     */
+    public function changePromptRegex(string $promptRegex)
+    {
+        $this->promptRegex = $promptRegex;
+        $this->setRegexPrompt($promptRegex);
+
+        return $this;
+    }
+
+    /**
+     * Resets the promptRegex to default value based on hostType
+     *
+     * @return $this
+     */
+    public function resetPromptRegex()
+    {
+        $promptRegex = $this->getPromptRegexForHostType($this->hostType);
+
+        $this->promptRegex = $promptRegex;
+        $this->setRegexPrompt($promptRegex);
+
+        return $this;
+    }
+
+    /**
+     * Get the appropriate prompt regex for a given host type
+     *
+     * @param  string  $hostType  The type of host
+     * @return string The prompt regex pattern
+     */
+    private function getPromptRegexForHostType(string $hostType): string
+    {
+        return match ($hostType) {
+            'linux' => '\$',
+            'ZTE-C300', 'ZTE-C600', 'Nokia-FX16', 'Datacom-DM4612' => '[#]',
+            'ios' => '[>#]',
+            'digistar', 'phyhome' => '[>]',
+            default => '\$',
+        };
     }
 }
