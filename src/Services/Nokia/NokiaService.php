@@ -31,7 +31,7 @@ class NokiaService
 
     protected static ?TL1 $tl1Conn = null;
 
-    protected static string $model = 'FX16';
+    protected static string $model;
 
     protected static ?string $operator;
 
@@ -41,21 +41,24 @@ class NokiaService
 
     protected static string $ipOlt = '';
 
+    protected array $supportedModels = ['FX16'];
+
     public static array $serials = [];
 
     public static array $interfaces = [];
 
     private ?CommandResultBatch $globalCommandBatch = null;
 
-    public function connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): object
+    public function connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'FX16'): object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
-            throw new Exception('Provided IP(s) are not valid(s).');
-        }
+        $this->validateIPs($ipOlt, $ipServer);
+
+        $this->validateModel($model, $this->supportedModels);
 
         self::$ipOlt = $ipOlt;
+        self::$model = $model;
         self::$operator = config('onmt.default_operator');
 
         self::$telnetConn = Telnet::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);

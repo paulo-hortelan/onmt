@@ -22,7 +22,7 @@ class FiberhomeService
 
     protected static ?Telnet $telnetConn = null;
 
-    protected static string $model = 'AN5516-04';
+    protected static string $model;
 
     protected static ?string $operator;
 
@@ -32,21 +32,24 @@ class FiberhomeService
 
     protected static string $ipOlt = '';
 
+    protected array $supportedModels = ['AN5516-04', 'AN5516-06', 'AN5516-06B'];
+
     public static array $serials = [];
 
     public static array $interfaces = [];
 
     private ?CommandResultBatch $globalCommandBatch = null;
 
-    public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): ?object
+    public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'AN5516-04'): ?object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
-            throw new Exception('Provided IP(s) are not valid(s).');
-        }
+        $this->validateIPs($ipOlt, $ipServer);
+
+        $this->validateModel($model, $this->supportedModels);
 
         self::$ipOlt = $ipOlt;
+        self::$model = $model;
         self::$operator = config('onmt.default_operator');
 
         self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout, $username, $password, 'Fiberhome-'.self::$model);
@@ -222,9 +225,8 @@ class FiberhomeService
      */
     public function ontsOpticalPower(string $ponInterface): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -261,9 +263,8 @@ class FiberhomeService
      */
     public function ontsStateInfo(string $ponInterface): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -300,9 +301,8 @@ class FiberhomeService
      */
     public function ontsPortInfo(string $ponInterface): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -337,9 +337,8 @@ class FiberhomeService
      */
     public function ontsLanInfo(string $ponInterface): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -374,7 +373,6 @@ class FiberhomeService
     public function oltUplinksLanPerf(string $portInterface): ?Collection
     {
         $this->validateTL1();
-
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -403,7 +401,6 @@ class FiberhomeService
     public function unregisteredOnts(string $ponInterface): ?Collection
     {
         $this->validateTL1();
-
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -432,7 +429,6 @@ class FiberhomeService
     public function registeredOnts(): ?Collection
     {
         $this->validateTL1();
-
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -462,9 +458,8 @@ class FiberhomeService
      */
     public function rebootOnts(string $ponInterface): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -503,9 +498,8 @@ class FiberhomeService
      */
     public function authorizeOnts(string $ponInterface, string $ontType, string $pppoeUsername): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -544,9 +538,8 @@ class FiberhomeService
      */
     public function configureLanOnts(string $ponInterface, string $portInterface, LanConfig $config): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -585,9 +578,8 @@ class FiberhomeService
      */
     public function configureVeipOnts(string $ponInterface, string $portInterface, VeipConfig $config): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -625,9 +617,8 @@ class FiberhomeService
      */
     public function configureWanOnts(string $ponInterface, WanConfig $config): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
@@ -664,9 +655,8 @@ class FiberhomeService
      */
     public function removeOnts(string $ponInterface): ?Collection
     {
-        $this->validateSerials();
         $this->validateTL1();
-
+        $this->validateSerials();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();

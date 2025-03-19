@@ -51,13 +51,9 @@ class ZTEService
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
-        if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
-            throw new Exception('Provided IP(s) are not valid(s).');
-        }
+        $this->validateIPs($ipOlt, $ipServer);
 
-        if (! in_array($model, $this->supportedModels)) {
-            throw new Exception('Provided Model is not supported.');
-        }
+        $this->validateModel($model, $this->supportedModels);
 
         self::$ipOlt = $ipOlt;
         self::$model = $model;
