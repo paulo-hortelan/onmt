@@ -22,6 +22,8 @@ class FX16 extends NokiaService
      */
     public static function environmentInhibitAlarms(): ?CommandResult
     {
+        $response = null;
+
         $command = 'environment inhibit-alarms';
 
         try {
@@ -38,6 +40,7 @@ class FX16 extends NokiaService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -49,6 +52,8 @@ class FX16 extends NokiaService
      */
     public static function executeCommandTelnet(string $command): ?CommandResult
     {
+        $response = null;
+
         try {
             $response = self::$telnetConn->exec($command);
 
@@ -63,6 +68,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -74,6 +80,8 @@ class FX16 extends NokiaService
      */
     public static function executeCommandTL1(string $command): ?CommandResult
     {
+        $response = null;
+
         try {
             $response = self::$tl1Conn->exec($command);
 
@@ -88,6 +96,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -119,6 +128,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -247,6 +257,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -278,6 +289,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -640,6 +652,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -671,6 +684,7 @@ class FX16 extends NokiaService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -705,6 +719,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -739,6 +754,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -772,6 +788,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -804,6 +821,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -836,6 +854,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -869,6 +888,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -902,6 +922,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -911,11 +932,11 @@ class FX16 extends NokiaService
     /**
      * Adds a egress port to the VLAN - TL1
      */
-    public static function entVlanEgPort(string $interface, VlanEgPortConfig $config): ?CommandResult
+    public static function vlanEgPort(string $mode, string $interface, VlanEgPortConfig $config): ?CommandResult
     {
         $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
         $buildCommand = $config->buildCommand();
-        $command = "ENT-VLANEGPORT::$accessIdentifier:::$buildCommand;";
+        $command = "$mode-VLANEGPORT::$accessIdentifier:::$buildCommand;";
 
         try {
             $response = self::$tl1Conn->exec($command, false);
@@ -935,6 +956,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -944,11 +966,12 @@ class FX16 extends NokiaService
     /**
      * Provisions a new HGU TR069 short key-value pair - TL1
      */
-    public static function entHguTr069Sparam(string $interface, EntHguTr069SparamConfig $config): ?CommandResult
+    public static function hguTr069Sparam(string $mode, string $interface, EntHguTr069SparamConfig $config): ?CommandResult
     {
         $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
         $buildCommand = $config->buildCommand();
-        $command = "ENT-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
+
+        $command = "$mode-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
 
         try {
             $response = self::$tl1Conn->exec($command, false);
@@ -968,6 +991,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);

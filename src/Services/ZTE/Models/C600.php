@@ -477,6 +477,14 @@ class C600 extends C300
             if (preg_match('/gpon_onu-(.*)/', $response, $match)) {
                 $ontInterface = trim($match[1]);
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontInterface ?? null,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
@@ -486,14 +494,6 @@ class C600 extends C300
                 'result' => [],
             ]);
         }
-
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $ontInterface ?? null,
-        ]);
     }
 
     /**

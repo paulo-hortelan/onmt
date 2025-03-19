@@ -20,10 +20,12 @@ use PauloHortelan\Onmt\Services\Concerns\Validations;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Nokia\Models\FX16;
+use PauloHortelan\Onmt\Services\Nokia\Traits\ValidationTrait;
 
 class NokiaService
 {
     use Assertations, Validations;
+    use ValidationTrait;
 
     protected static ?Telnet $telnetConn = null;
 
@@ -998,8 +1000,8 @@ class NokiaService
      */
     public function boundBridgePortToVlan(VlanPortConfig $config): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1031,12 +1033,14 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  VlanEgPortConfig  $config  VLAN egress port configuration parameters
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function addEgressPortToVlan(VlanEgPortConfig $config): ?Collection
+    public function addEgressPortToVlan(VlanEgPortConfig $config, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1051,7 +1055,7 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            $response = FX16::entVlanEgPort($interface, $config);
+            $response = FX16::vlanEgPort($mode, $interface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -1069,12 +1073,14 @@ class NokiaService
      *
      * @param  int  $vlan  VLAN value
      * @param  int  $sParamId  Parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1): ?Collection
+    public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1096,7 +1102,7 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            $response = FX16::entHguTr069Sparam($interface, $config);
+            $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -1116,12 +1122,14 @@ class NokiaService
      * @param  string  $password  PPPOE password
      * @param  int  $sParamIdUsername  PPPOE username parameter index
      * @param  int  $sParamIdPassword  PPPOE password parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3): ?Collection
+    public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1150,8 +1158,8 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
+            collect($configs)->map(function ($config) use ($mode, $interface, $commandResultBatch) {
+                $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
                 $response->associateBatch($commandResultBatch);
                 $commandResultBatch->load('commands');
@@ -1174,12 +1182,14 @@ class NokiaService
      * @param  string  $preSharedKey  Wifi password
      * @param  int  $sParamIdSsid  SSID parameter index
      * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5): ?Collection
+    public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1208,8 +1218,8 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
+            collect($configs)->map(function ($config) use ($mode, $interface, $commandResultBatch) {
+                $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
                 $response->associateBatch($commandResultBatch);
                 $commandResultBatch->load('commands');
@@ -1232,12 +1242,14 @@ class NokiaService
      * @param  string  $preSharedKey  Wifi password
      * @param  int  $sParamIdSsid  SSID parameter index
      * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7): ?Collection
+    public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1266,8 +1278,8 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
+            collect($configs)->map(function ($config) use ($mode, $interface, $commandResultBatch) {
+                $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
                 $response->associateBatch($commandResultBatch);
                 $commandResultBatch->load('commands');
@@ -1288,12 +1300,14 @@ class NokiaService
      *
      * @param  string  $password  Password value
      * @param  int  $sParamId  Parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069WebAccountPassword(string $password, int $sParamId = 8): ?Collection
+    public function configureTr069WebAccountPassword(string $password, int $sParamId = 8, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1315,7 +1329,7 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            $response = FX16::entHguTr069Sparam($interface, $config);
+            $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -1333,12 +1347,14 @@ class NokiaService
      *
      * @param  string  $password  Password value
      * @param  int  $sParamId  Parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069AccountPassword(string $password, int $sParamId = 9): ?Collection
+    public function configureTr069AccountPassword(string $password, int $sParamId = 9, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1360,7 +1376,7 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            $response = FX16::entHguTr069Sparam($interface, $config);
+            $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -1380,12 +1396,14 @@ class NokiaService
      * @param  int  $sParamIdLan  LAN parameter index
      * @param  int  $sParamIdWan  WAN parameter index
      * @param  int  $sParamIdWan2  WAN part 2 parameter index
+     * @param  string  $mode  TR069 mode (ENT or ED)
      * @return Collection A collection of CommandResultBatch
      */
-    public function configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14): ?Collection
+    public function configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14, string $mode = 'ENT'): ?Collection
     {
-        $this->validateInterfaces();
         $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
 
         if (self::$model !== 'FX16') {
             throw new Exception('Model '.self::$model.' is not supported.');
@@ -1419,8 +1437,8 @@ class NokiaService
                 'operator' => self::$operator,
             ]);
 
-            collect($configs)->map(function ($config) use ($interface, $commandResultBatch) {
-                $response = FX16::entHguTr069Sparam($interface, $config);
+            collect($configs)->map(function ($config) use ($mode, $interface, $commandResultBatch) {
+                $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
                 $response->associateBatch($commandResultBatch);
                 $commandResultBatch->load('commands');
