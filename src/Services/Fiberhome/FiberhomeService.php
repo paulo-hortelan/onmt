@@ -61,21 +61,19 @@ class FiberhomeService
 
     public function disconnect(): void
     {
-        if (isset(self::$telnetConn)) {
+        if (self::$telnetConn !== null) {
             self::$telnetConn->destroy();
             self::$telnetConn = null;
-
-            return;
         }
 
-        if (isset(self::$tl1Conn)) {
+        if (self::$tl1Conn !== null) {
             self::$tl1Conn->destroy();
             self::$tl1Conn = null;
-
-            return;
         }
 
-        throw new Exception('No connection established.');
+        if (self::$telnetConn === null && self::$tl1Conn === null) {
+            throw new Exception('No connection established.');
+        }
     }
 
     public function timeout(int $connTimeout, int $streamTimeout): object

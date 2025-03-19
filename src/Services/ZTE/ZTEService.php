@@ -70,15 +70,14 @@ class ZTEService
 
     public function disconnect(): void
     {
-        if (isset(self::$telnetConn)) {
+        if (self::$telnetConn !== null) {
             self::$telnetConn->destroy();
             self::$telnetConn = null;
-            self::$terminalMode = '';
-
-            return;
         }
 
-        throw new Exception('No connection established.');
+        if (self::$telnetConn === null) {
+            throw new Exception('No connection established.');
+        }
     }
 
     public function disableTerminalLength(): ?CommandResult
