@@ -61,6 +61,10 @@ class FiberhomeService
 
     public function disconnect(): void
     {
+        if (self::$telnetConn === null && self::$tl1Conn === null) {
+            throw new Exception('No connection established.');
+        }
+
         if (self::$telnetConn !== null) {
             self::$telnetConn->destroy();
             self::$telnetConn = null;
@@ -69,10 +73,6 @@ class FiberhomeService
         if (self::$tl1Conn !== null) {
             self::$tl1Conn->destroy();
             self::$tl1Conn = null;
-        }
-
-        if (self::$telnetConn === null && self::$tl1Conn === null) {
-            throw new Exception('No connection established.');
         }
     }
 

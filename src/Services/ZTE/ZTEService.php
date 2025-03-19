@@ -70,13 +70,13 @@ class ZTEService
 
     public function disconnect(): void
     {
+        if (self::$telnetConn === null) {
+            throw new Exception('No connection established.');
+        }
+
         if (self::$telnetConn !== null) {
             self::$telnetConn->destroy();
             self::$telnetConn = null;
-        }
-
-        if (self::$telnetConn === null) {
-            throw new Exception('No connection established.');
         }
     }
 
