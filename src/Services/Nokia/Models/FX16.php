@@ -22,8 +22,6 @@ class FX16 extends NokiaService
      */
     public static function environmentInhibitAlarms(): ?CommandResult
     {
-        $response = null;
-
         $command = 'environment inhibit-alarms';
 
         try {
@@ -40,7 +38,7 @@ class FX16 extends NokiaService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -52,8 +50,6 @@ class FX16 extends NokiaService
      */
     public static function executeCommandTelnet(string $command): ?CommandResult
     {
-        $response = null;
-
         try {
             $response = self::$telnetConn->exec($command);
 
@@ -68,7 +64,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -80,8 +76,6 @@ class FX16 extends NokiaService
      */
     public static function executeCommandTL1(string $command): ?CommandResult
     {
-        $response = null;
-
         try {
             $response = self::$tl1Conn->exec($command);
 
@@ -96,7 +90,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -128,7 +122,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -207,23 +201,24 @@ class FX16 extends NokiaService
                     $ontsData[] = $ontAttributes;
                 }
             }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontsData,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
 
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $ontsData,
-        ]);
     }
 
     /**
@@ -257,7 +252,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -289,7 +284,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -334,23 +329,24 @@ class FX16 extends NokiaService
             }
 
             extract($ontDetails);
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontDetails,
+            ]);
         } catch (\Exception $e) {
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
 
-        return CommandResult::create([
-            'success' => true,
-            'command' => $command,
-            'response' => $response,
-            'error' => null,
-            'result' => $ontDetails,
-        ]);
     }
 
     /**
@@ -387,13 +383,11 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
         }
-
-        return $interfaceOnts;
     }
 
     /**
@@ -469,7 +463,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -541,7 +535,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -591,7 +585,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -652,7 +646,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -684,7 +678,7 @@ class FX16 extends NokiaService
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -719,7 +713,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -754,7 +748,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -788,7 +782,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -821,7 +815,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -854,7 +848,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -888,7 +882,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -922,7 +916,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -956,7 +950,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);
@@ -991,7 +985,7 @@ class FX16 extends NokiaService
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
-                'response' => $response,
+                'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
             ]);

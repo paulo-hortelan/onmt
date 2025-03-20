@@ -11,18 +11,18 @@ beforeEach(function () {
     $username = env('NOKIA_OLT_USERNAME_TELNET');
     $password = env('NOKIA_OLT_PASSWORD_TELNET');
 
-    $this->nokia = Nokia::connectTelnet($ipOlt, $username, $password, 23);
+    $this->nokia = Nokia::timeout(80, 80)->connectTelnet($ipOlt, $username, $password, 23);
 });
 
 describe('Nokia Unregistered Onts - Success', function () {
     it('can get unregistered onts', function () {
-        $unregisteredOnts = $this->nokia->unregisteredOnts();
+        $result = $this->nokia->unregisteredOnts();
 
-        expect($unregisteredOnts)->toBeInstanceOf(Collection::class);
+        dump($result->toArray());
 
-        $tests = CommandResultBatch::all();
+        expect($result)->toBeInstanceOf(Collection::class);
 
-        $unregisteredOnts->each(function ($batch) {
+        $result->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 

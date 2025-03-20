@@ -40,8 +40,6 @@ describe('ZTE C600 - Unconfigured Onts - Success', function () {
 
         $unconfiguredOnts = $zte->unconfiguredOnts();
 
-        dump($unconfiguredOnts->toArray());
-
         expect($unconfiguredOnts)->toBeInstanceOf(Collection::class);
 
         $unconfiguredOnts->each(function ($batch) {
@@ -53,4 +51,4 @@ describe('ZTE C600 - Unconfigured Onts - Success', function () {
             });
         });
     });
-})->only();
+});
