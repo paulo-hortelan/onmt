@@ -16,14 +16,14 @@ use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanPortConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
-use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\ZTE\Models\C300;
 use PauloHortelan\Onmt\Services\ZTE\Models\C600;
 
 class ZTEService
 {
-    use Assertations, Validations;
+    use Assertations, ValidationsTrait;
 
     protected static ?Telnet $telnetConn = null;
 

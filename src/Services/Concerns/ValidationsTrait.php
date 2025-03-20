@@ -4,7 +4,7 @@ namespace PauloHortelan\Onmt\Services\Concerns;
 
 use Exception;
 
-trait Validations
+trait ValidationsTrait
 {
     /**
      * Verify if string is a valid IP

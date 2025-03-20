@@ -9,14 +9,14 @@ use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
-use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Fiberhome\Models\AN551604;
 
 class FiberhomeService
 {
-    use Assertations, Validations;
+    use Assertations, ValidationsTrait;
 
     protected static ?TL1 $tl1Conn = null;
 

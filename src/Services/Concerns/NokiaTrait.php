@@ -1,8 +1,8 @@
 <?php
 
-namespace PauloHortelan\Onmt\Services\Nokia\Traits;
+namespace PauloHortelan\Onmt\Services\Concerns;
 
-trait ValidationTrait
+trait NokiaTrait
 {
     /**
      * Validates the mode parameter.

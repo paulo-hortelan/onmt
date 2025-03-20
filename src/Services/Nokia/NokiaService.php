@@ -16,16 +16,15 @@ use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
-use PauloHortelan\Onmt\Services\Concerns\Validations;
+use PauloHortelan\Onmt\Services\Concerns\NokiaTrait;
+use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Connections\TL1;
 use PauloHortelan\Onmt\Services\Nokia\Models\FX16;
-use PauloHortelan\Onmt\Services\Nokia\Traits\ValidationTrait;
 
 class NokiaService
 {
-    use Assertations, Validations;
-    use ValidationTrait;
+    use Assertations, NokiaTrait, ValidationsTrait;
 
     protected static ?Telnet $telnetConn = null;
 
