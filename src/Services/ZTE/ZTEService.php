@@ -203,13 +203,6 @@ class ZTEService
         }
     }
 
-    private function createModelClass(): string
-    {
-        $namespace = 'PauloHortelan\Onmt\Services\ZTE\Models';
-
-        return $namespace.'\\'.self::$model;
-    }
-
     public function setOperator(string $operator): object
     {
         self::$operator = $operator;
@@ -258,14 +251,12 @@ class ZTEService
      */
     public function setConfigureTerminalModel(): ?CommandResultBatch
     {
-        $modelClass = $this->createModelClass();
-
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
 
-        $response = $modelClass::end();
+        $response = self::$model === 'C300' ? C300::end() : C600::end();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -274,7 +265,7 @@ class ZTEService
             return $commandResultBatch;
         }
 
-        $response = $modelClass::configureTerminal();
+        $response = self::$model === 'C300' ? C300::configureTerminal() : C600::configureTerminal();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -293,8 +284,6 @@ class ZTEService
      */
     public function setInterfaceOltTerminalModel(string $ponInterface)
     {
-        $modelClass = $this->createModelClass();
-
         if (self::$terminalMode !== 'configure') {
             $response = $this->setConfigureTerminalModel();
             $commandResultBatch = $this->globalCommandBatch ?? $response;
@@ -306,7 +295,7 @@ class ZTEService
             ]);
         }
 
-        $response = $modelClass::interfaceGponOlt($ponInterface);
+        $response = self::$model === 'C300' ? C300::interfaceGponOlt($ponInterface) : C600::interfaceGponOlt($ponInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -325,8 +314,6 @@ class ZTEService
      */
     public function setInterfaceOnuTerminalModel(string $interface): ?CommandResultBatch
     {
-        $modelClass = $this->createModelClass();
-
         if (self::$terminalMode !== 'configure') {
             $response = $this->setConfigureTerminalModel();
             $commandResultBatch = $this->globalCommandBatch ?? $response;
@@ -338,7 +325,7 @@ class ZTEService
             ]);
         }
 
-        $response = $modelClass::interfaceGponOnu($interface);
+        $response = self::$model === 'C300' ? C300::interfaceGponOnu($interface) : C600::interfaceGponOnu($interface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -359,8 +346,6 @@ class ZTEService
     {
         $this->validateModels(['C600']);
 
-        $modelClass = $this->createModelClass();
-
         if (self::$terminalMode !== 'configure') {
             $response = $this->setConfigureTerminalModel();
             $commandResultBatch = $this->globalCommandBatch ?? $response;
@@ -372,7 +357,7 @@ class ZTEService
             ]);
         }
 
-        $response = $modelClass::interfaceVport($interface, $vport);
+        $response = C600::interfaceVport($interface, $vport);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -395,8 +380,6 @@ class ZTEService
      */
     public function setPonOnuMngTerminalModel(string $interface): ?CommandResultBatch
     {
-        $modelClass = $this->createModelClass();
-
         if (self::$terminalMode !== 'configure') {
             $response = $this->setConfigureTerminalModel();
             $commandResultBatch = $this->globalCommandBatch ?? $response;
@@ -408,7 +391,7 @@ class ZTEService
             ]);
         }
 
-        $response = $modelClass::ponOnuMng($interface);
+        $response = self::$model === 'C300' ? C300::ponOnuMng($interface) : C600::ponOnuMng($interface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -434,8 +417,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -445,7 +426,9 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            $response = $modelClass::showPonPowerAttenuation($interface);
+            $response = self::$model === 'C300'
+                ? C300::showPonPowerAttenuation($interface)
+                : C600::showPonPowerAttenuation($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -468,8 +451,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateSerials();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
@@ -479,7 +460,9 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            $response = $modelClass::showGponOnuBySn($serial);
+            $response = self::$model === 'C300'
+                ? C300::showGponOnuBySn($serial)
+                : C600::showGponOnuBySn($serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -502,8 +485,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -513,7 +494,9 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            $response = $modelClass::showGponOnuDetailInfo($interface);
+            $response = self::$model === 'C300'
+                ? C300::showGponOnuDetailInfo($interface)
+                : C600::showGponOnuDetailInfo($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -533,8 +516,6 @@ class ZTEService
     {
         $this->validateTelnet();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -542,7 +523,9 @@ class ZTEService
             'operator' => self::$operator,
         ]);
 
-        $response = $modelClass::showGponOnuUncfg();
+        $response = self::$model === 'C300'
+            ? C300::showGponOnuUncfg()
+            : C600::showGponOnuUncfg();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -562,8 +545,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -573,7 +554,9 @@ class ZTEService
                 'operator' => self::$operator,
             ]);
 
-            $response = $modelClass::showRunningConfigInterfaceGponOnu($interface);
+            $response = self::$model === 'C300'
+                ? C300::showRunningConfigInterfaceGponOnu($interface)
+                : C600::showRunningConfigInterfaceGponOnu($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -625,8 +608,6 @@ class ZTEService
     {
         $this->validateTelnet();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -635,7 +616,9 @@ class ZTEService
             'operator' => self::$operator,
         ]);
 
-        $response = $modelClass::showGponOnuState($ponInterface);
+        $response = self::$model === 'C300'
+            ? C300::showGponOnuState($ponInterface)
+            : C600::showGponOnuState($ponInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -656,8 +639,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-
-        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -681,7 +662,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::reboot();
+            $response = self::$model === 'C300' ? C300::reboot() : C600::reboot();
 
             $commandResultBatch->associateCommand($response);
 
@@ -691,7 +672,7 @@ class ZTEService
                 continue;
             }
 
-            $response = $modelClass::yes();
+            $response = self::$model === 'C300' ? C300::yes() : C600::yes();
 
             $commandResultBatch->associateCommand($response);
 
@@ -756,8 +737,6 @@ class ZTEService
     {
         $this->validateTelnet();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -783,7 +762,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::noOnu($ontIndex);
+            $response = self::$model === 'C300' ? C300::noOnu($ontIndex) : C600::noOnu($ontIndex);
 
             $commandResultBatch->associateCommand($response);
 
@@ -814,8 +793,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateSerials();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
@@ -838,7 +815,9 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::onuTypeSn($ontIndex, $profile, $serial);
+            $response = self::$model === 'C300'
+                ? C300::onuTypeSn($ontIndex, $profile, $serial)
+                : C600::onuTypeSn($ontIndex, $profile, $serial);
 
             $commandResultBatch->associateCommand($response);
 
@@ -867,8 +846,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -890,7 +867,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::name($name);
+            $response = self::$model === 'C300' ? C300::name($name) : C600::name($name);
 
             $commandResultBatch->associateCommand($response);
 
@@ -919,8 +896,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -942,7 +917,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::description($description);
+            $response = self::$model === 'C300' ? C300::description($description) : C600::description($description);
 
             $commandResultBatch->associateCommand($response);
 
@@ -972,8 +947,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -995,7 +968,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::tcont($tcontId, $profileName);
+            $response = self::$model === 'C300' ? C300::tcont($tcontId, $profileName) : C600::tcont($tcontId, $profileName);
 
             $commandResultBatch->associateCommand($response);
 
@@ -1026,8 +999,6 @@ class ZTEService
         $this->validateInterfaces();
 
         $this->validateTerminalMode($terminalMode);
-
-        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -1062,7 +1033,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::gemport($gemportConfig);
+            $response = self::$model === 'C300' ? C300::gemport($gemportConfig) : C600::gemport($gemportConfig);
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
@@ -1090,8 +1061,6 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-
-        $modelClass = $this->createModelClass();
 
         $finalResponse = collect();
 
@@ -1134,7 +1103,9 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::servicePort($servicePortConfig, $vport);
+            $response = self::$model === 'C300'
+                ? C300::servicePort($servicePortConfig, $vport)
+                : C600::servicePort($servicePortConfig, $vport);
 
             $commandResultBatch->associateCommand($response);
 
@@ -1163,8 +1134,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -1186,7 +1155,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::service($serviceConfig);
+            $response = self::$model === 'C300' ? C300::service($serviceConfig) : C600::service($serviceConfig);
 
             $commandResultBatch->associateCommand($response);
 
@@ -1215,8 +1184,6 @@ class ZTEService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -1238,7 +1205,7 @@ class ZTEService
                 }
             }
 
-            $response = $modelClass::vlanPort($vlanPortConfig);
+            $response = self::$model === 'C300' ? C300::vlanPort($vlanPortConfig) : C600::vlanPort($vlanPortConfig);
 
             $commandResultBatch->associateCommand($response);
 
