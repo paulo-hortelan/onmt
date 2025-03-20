@@ -14,6 +14,8 @@ class Telnet
 {
     private bool $debug = false;
 
+    private bool $cleanAnsiSequences = true;
+
     private static mixed $instance = null;
 
     protected string $host;
@@ -573,8 +575,11 @@ class Telnet
      */
     protected function getBuffer()
     {
+        // Clean ANSI escape sequences if enabled
+        $buffer = $this->cleanAnsiSequences ? $this->cleanAnsiSequences($this->buffer) : $this->buffer;
+
         // Remove all carriage returns from line breaks
-        $buf = str_replace(["\n\r", "\r\n", "\n", "\r"], "\n", $this->buffer);
+        $buf = str_replace(["\n\r", "\r\n", "\n", "\r"], "\n", $buffer);
 
         // Cut last line from buffer (almost always prompt)
         if ($this->stripPrompt) {
@@ -584,6 +589,97 @@ class Telnet
         }
 
         return trim($buf);
+    }
+
+    /**
+     * Cleans ANSI escape sequences from the buffer
+     *
+     * @param  string  $buffer  The buffer to clean
+     * @return string The cleaned buffer
+     */
+    protected function cleanAnsiSequences(string $buffer): string
+    {
+        // Quick return for empty buffer
+        if (empty($buffer)) {
+            return $buffer;
+        }
+
+        // Check if we need to clean anything
+        $hasEscapeSequence = strpos($buffer, "\x1B") !== false;
+        $hasSpinnerSequence = strpos($buffer, '-\|/') !== false;
+
+        if (! $hasEscapeSequence && ! $hasSpinnerSequence) {
+            return $buffer;
+        }
+
+        // Try multiple cleaning methods, starting with the most efficient
+
+        // 1. Simple string replacement for common sequences
+        $cleaned = str_replace(["\x1B[1D", '-\|/'], '', $buffer);
+
+        // 2. Use regex if there are still escape sequences
+        if (strpos($cleaned, "\x1B") !== false) {
+            $pattern = '/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/';
+            $regexCleaned = preg_replace($pattern, '', $cleaned);
+
+            // If regex worked, use that result
+            if ($regexCleaned !== null && $regexCleaned !== $cleaned) {
+                return $regexCleaned;
+            }
+
+            // 3. Fallback to character-by-character filtering if regex fails
+            $filtered = '';
+            $inEscSeq = false;
+
+            for ($i = 0; $i < strlen($cleaned); $i++) {
+                $char = $cleaned[$i];
+
+                if ($char === "\x1B") {
+                    $inEscSeq = true;
+
+                    continue;
+                }
+
+                if ($inEscSeq) {
+                    // Look for the end of the escape sequence
+                    if (preg_match('/[a-zA-Z]/', $char)) {
+                        $inEscSeq = false;
+                    }
+
+                    continue;
+                }
+
+                $filtered .= $char;
+            }
+
+            return $filtered;
+        }
+
+        return $cleaned;
+    }
+
+    /**
+     * Enable cleaning of ANSI escape sequences from buffer
+     *
+     * @return $this
+     */
+    public function enableAnsiCleaning()
+    {
+        $this->cleanAnsiSequences = true;
+
+        return $this;
+    }
+
+    /**
+     * Disable cleaning of ANSI escape sequences from buffer
+     *
+     * @return $this
+     */
+    public function disableAnsiCleaning()
+    {
+        $this->cleanAnsiSequences = false;
+
+        return $this;
     }
 
     /**
