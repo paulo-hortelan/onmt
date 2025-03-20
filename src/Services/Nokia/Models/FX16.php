@@ -5,10 +5,10 @@ namespace PauloHortelan\Onmt\Services\Nokia\Models;
 use Exception;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
-use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\HguTr069SparamConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\QosUsQueueConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
@@ -862,6 +862,7 @@ class FX16 extends NokiaService
     {
         $accessIdentifier = $config->buildIdentifier($interface);
         $buildCommand = $config->buildCommand();
+
         $command = "SET-QOS-USQUEUE::$accessIdentifier::::$buildCommand;";
 
         try {
@@ -896,6 +897,7 @@ class FX16 extends NokiaService
     {
         $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
         $buildCommand = $config->buildCommand();
+
         $command = "SET-VLANPORT::$accessIdentifier:::$buildCommand;";
 
         try {
@@ -929,7 +931,8 @@ class FX16 extends NokiaService
     public static function vlanEgPort(string $mode, string $interface, VlanEgPortConfig $config): ?CommandResult
     {
         $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-        $buildCommand = $config->buildCommand();
+        $buildCommand = $config->buildCommand($mode);
+
         $command = "$mode-VLANEGPORT::$accessIdentifier:::$buildCommand;";
 
         try {
@@ -960,10 +963,10 @@ class FX16 extends NokiaService
     /**
      * Provisions a new HGU TR069 short key-value pair - TL1
      */
-    public static function hguTr069Sparam(string $mode, string $interface, EntHguTr069SparamConfig $config): ?CommandResult
+    public static function hguTr069Sparam(string $mode, string $interface, HguTr069SparamConfig $config): ?CommandResult
     {
         $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
-        $buildCommand = $config->buildCommand();
+        $buildCommand = $config->buildCommand($mode);
 
         $command = "$mode-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
 

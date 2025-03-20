@@ -6,10 +6,10 @@ use Exception;
 use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
-use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntHguTr069SparamConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntCardConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntOntConfig;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\HguTr069SparamConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\QosUsQueueConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
@@ -68,7 +68,7 @@ class NokiaService
         return $this;
     }
 
-    public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null): object
+    public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'FX16'): object
     {
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
@@ -77,6 +77,7 @@ class NokiaService
         }
 
         self::$ipOlt = $ipOlt;
+        self::$model = $model;
         self::$operator = config('onmt.default_operator');
 
         self::$tl1Conn = TL1::getInstance($ipServer, $port, $this->connTimeout, $this->streamTimeout);
@@ -1086,7 +1087,7 @@ class NokiaService
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        $config = new EntHguTr069SparamConfig(
+        $config = new HguTr069SparamConfig(
             paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.X_CT-COM_WANGponLinkConfig.VLANIDMark',
             paramValue: $vlan,
             sParamId: $sParamId
@@ -1136,12 +1137,12 @@ class NokiaService
         }
 
         $configs = [
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Username',
                 paramValue: $username,
                 sParamId: $sParamIdUsername
             ),
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.Password',
                 paramValue: $password,
                 sParamId: $sParamIdPassword
@@ -1196,12 +1197,12 @@ class NokiaService
         }
 
         $configs = [
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.SSID',
                 paramValue: $ssid,
                 sParamId: $sParamIdSsid
             ),
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.1.PreSharedKey.1.PreSharedKey',
                 paramValue: $preSharedKey,
                 sParamId: $sParamIdPreSharedKey
@@ -1256,12 +1257,12 @@ class NokiaService
         }
 
         $configs = [
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.SSID',
                 paramValue: $ssid,
                 sParamId: $sParamIdSsid
             ),
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.WLANConfiguration.5.PreSharedKey.1.PreSharedKey',
                 paramValue: $preSharedKey,
                 sParamId: $sParamIdPreSharedKey
@@ -1313,7 +1314,7 @@ class NokiaService
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        $config = new EntHguTr069SparamConfig(
+        $config = new HguTr069SparamConfig(
             paramName: 'InternetGatewayDevice.X_Authentication.WebAccount.Password',
             paramValue: $password,
             sParamId: $sParamId
@@ -1360,7 +1361,7 @@ class NokiaService
             throw new Exception('Model '.self::$model.' is not supported.');
         }
 
-        $config = new EntHguTr069SparamConfig(
+        $config = new HguTr069SparamConfig(
             paramName: 'InternetGatewayDevice.X_Authentication.Account.Password',
             paramValue: $password,
             sParamId: $sParamId
@@ -1410,17 +1411,17 @@ class NokiaService
         }
 
         $configs = [
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.LANDevice.1.LANHostConfigManagemENT.DNSServers',
                 paramValue: $dns,
                 sParamId: $sParamIdLan
             ),
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.DNSServers',
                 paramValue: $dns,
                 sParamId: $sParamIdWan
             ),
-            new EntHguTr069SparamConfig(
+            new HguTr069SparamConfig(
                 paramName: 'InternetGatewayDevice.WANDevice.1.WANConnectionDevice.1.WANPPPConnection.1.X_ALU_COM_TR69DNSServers',
                 paramValue: $dns,
                 sParamId: $sParamIdWan2

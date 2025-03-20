@@ -247,19 +247,19 @@ describe('Nokia Authorize ONTs - Router Nokia', function () {
             });
         });
     });
-})->skip();
+});
 
 describe('Nokia Configure PPPOE and VLAN on ONTs - Router Nokia', function () {
     it('can configure vlan', function () {
         $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
 
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
+        $this->nokiaTL1->interfaces(['1/1/1/1/15']);
 
-        $configuredOnts = $this->nokiaTL1->configureTr069Vlan(110, 1);
+        $result = $this->nokiaTL1->configureTr069Vlan(110, 1);
 
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+        expect($result)->toBeInstanceOf(Collection::class);
 
-        $configuredOnts->each(function ($batch) {
+        $result->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
@@ -287,7 +287,7 @@ describe('Nokia Configure PPPOE and VLAN on ONTs - Router Nokia', function () {
             });
         });
     });
-})->skip();
+});
 
 describe('Nokia Configure WIFI on ONTs - Router Nokia', function () {
     it('can configure 2.4Ghz', function () {
@@ -327,7 +327,7 @@ describe('Nokia Configure WIFI on ONTs - Router Nokia', function () {
             });
         });
     });
-})->skip();
+});
 
 describe('Nokia Configure Account on ONTs - Router Nokia', function () {
     it('can configure webaccount password', function () {
@@ -367,7 +367,7 @@ describe('Nokia Configure Account on ONTs - Router Nokia', function () {
             });
         });
     });
-})->skip();
+});
 
 describe('Nokia Configure DNS on ONTs - Router Nokia', function () {
     it('can configure all dns\'s password', function () {
@@ -388,7 +388,7 @@ describe('Nokia Configure DNS on ONTs - Router Nokia', function () {
             });
         });
     });
-})->skip();
+});
 
 describe('Nokia Remove ONTs', function () {
     it('can remove onts', function () {
@@ -409,4 +409,4 @@ describe('Nokia Remove ONTs', function () {
             });
         });
     });
-})->skip();
+});

@@ -2,7 +2,7 @@
 
 namespace PauloHortelan\Onmt\DTOs\Nokia\FX16;
 
-class EntHguTr069SparamConfig
+class HguTr069SparamConfig
 {
     public mixed $paramName;
 
@@ -20,11 +20,14 @@ class EntHguTr069SparamConfig
         $this->sParamId = $sParamId;
     }
 
-    public function buildCommand(): string
+    public function buildCommand(string $mode): string
     {
         $command = '';
 
-        $command .= "PARAMNAME={$this->paramName},";
+        if ($mode === 'ENT') {
+            $command .= "PARAMNAME={$this->paramName},";
+        }
+
         $command .= "PARAMVALUE={$this->paramValue},";
         $command = rtrim($command, ',');
 

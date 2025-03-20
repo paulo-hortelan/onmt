@@ -23,8 +23,8 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  *
  * == CONNECTION MANAGEMENT ==
  *
- * @method static self connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null) Establishes Telnet connection to Nokia OLT with specified credentials. The $ipServer parameter defaults to $ipOlt if not provided.
- * @method static self connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null) Establishes TL1 connection to Nokia OLT with specified credentials. TL1 is required for certain advanced provisioning commands.
+ * @method static self connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'FX16') Establishes Telnet connection to Nokia OLT with specified credentials. The $ipServer parameter defaults to $ipOlt if not provided. The $model parameter defaults to 'FX16'.
+ * @method static self connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'FX16') Establishes TL1 connection to Nokia OLT with specified credentials. TL1 is required for certain advanced provisioning commands. The $model parameter defaults to 'FX16'.
  * @method static void disconnect() Terminates the current Telnet or TL1 connection to the OLT.
  * @method static CommandResult|null inhibitAlarms() Disables alarm reporting on the OLT to prevent command execution interruptions.
  * @method static void enableDebug() Enables verbose debug output for the Telnet or TL1 session for troubleshooting purposes.
@@ -68,16 +68,16 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * == QOS & VLAN CONFIGURATION (TL1 REQUIRED) ==
  * @method static Collection|null configureUpstreamQueue(QosUsQueueConfig $config) Configures upstream bandwidth profiles and scheduling for ONT traffic. Parameter 'interfaces' must already be provided.
  * @method static Collection|null boundBridgePortToVlan(VlanPortConfig $config) Associates a bridge port with a specific VLAN for traffic forwarding. Parameter 'interfaces' must already be provided.
- * @method static Collection|null addEgressPortToVlan(VlanEgPortConfig $config) Adds an egress port to a VLAN configuration for outbound traffic. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null addEgressPortToVlan(VlanEgPortConfig $config, string $mode = 'ENT') Adds an egress port to a VLAN configuration for outbound traffic. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
  *
  * == TR-069 CONFIGURATION (TL1 REQUIRED) ==
- * @method static Collection|null configureTr069Vlan(int $vlan = 110, int $sParamId = 1) Configures the VLAN ID used for TR-069 management traffic. Parameter 'interfaces' must already be provided.
- * @method static Collection|null configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3) Sets PPPoE credentials for TR-069 connectivity. Parameter 'interfaces' must already be provided.
- * @method static Collection|null configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5) Configures WiFi 2.4GHz network settings on the ONT via TR-069. Parameter 'interfaces' must already be provided.
- * @method static Collection|null configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7) Configures WiFi 5GHz network settings on the ONT via TR-069. Parameter 'interfaces' must already be provided.
- * @method static Collection|null configureTr069WebAccountPassword(string $password, int $sParamId = 8) Sets the web interface administrator password on the ONT via TR-069. Parameter 'interfaces' must already be provided.
- * @method static Collection|null configureTr069AccountPassword(string $password, int $sParamId = 9) Sets the general account password on the ONT via TR-069. Parameter 'interfaces' must already be provided.
- * @method static Collection|null configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14) Configures DNS server addresses on the ONT via TR-069. Format: '0.0.0.0\,1.1.1.1'. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null configureTr069Vlan(int $vlan = 110, int $sParamId = 1, string $mode = 'ENT') Configures the VLAN ID used for TR-069 management traffic. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
+ * @method static Collection|null configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3, string $mode = 'ENT') Sets PPPoE credentials for TR-069 connectivity. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
+ * @method static Collection|null configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5, string $mode = 'ENT') Configures WiFi 2.4GHz network settings on the ONT via TR-069. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
+ * @method static Collection|null configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7, string $mode = 'ENT') Configures WiFi 5GHz network settings on the ONT via TR-069. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
+ * @method static Collection|null configureTr069WebAccountPassword(string $password, int $sParamId = 8, string $mode = 'ENT') Sets the web interface administrator password on the ONT via TR-069. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
+ * @method static Collection|null configureTr069AccountPassword(string $password, int $sParamId = 9, string $mode = 'ENT') Sets the general account password on the ONT via TR-069. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
+ * @method static Collection|null configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14, string $mode = 'ENT') Configures DNS server addresses on the ONT via TR-069. Format: '0.0.0.0\,1.1.1.1'. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT' or 'ED').
  *
  * @see \PauloHortelan\Onmt\Services\Nokia\NokiaService
  */
