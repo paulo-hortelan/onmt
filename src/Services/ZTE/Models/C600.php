@@ -787,7 +787,7 @@ class C600 extends C300
         try {
             $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, $command)) {
+            if (! str_contains($response, 'service-port')) {
                 throw new \Exception($response);
             }
 
