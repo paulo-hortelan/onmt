@@ -8,6 +8,7 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
+use PauloHortelan\Onmt\Services\Datacom\Models\DM4612;
 
 class DatacomService
 {
@@ -176,13 +177,6 @@ class DatacomService
     //     }
     // }
 
-    private function createModelClass(): string
-    {
-        $namespace = 'PauloHortelan\Onmt\Services\Datacom\Models';
-
-        return $namespace.'\\'.self::$model;
-    }
-
     public function setOperator(string $operator): object
     {
         self::$operator = $operator;
@@ -233,8 +227,6 @@ class DatacomService
     {
         $this->validateTelnet();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -242,7 +234,7 @@ class DatacomService
             'operator' => self::$operator,
         ]);
 
-        $response = $modelClass::showInterfaceGponDiscoveredOnus();
+        $response = DM4612::showInterfaceGponDiscoveredOnus();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
@@ -264,8 +256,6 @@ class DatacomService
         $this->validateTelnet();
         $this->validateSerials();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
@@ -275,7 +265,7 @@ class DatacomService
                 'operator' => self::$operator,
             ]);
 
-            $response = $modelClass::showInterfaceGponOnuInclude($serial);
+            $response = DM4612::showInterfaceGponOnuInclude($serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -298,8 +288,6 @@ class DatacomService
         $this->validateTelnet();
         $this->validateInterfaces();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
@@ -309,7 +297,7 @@ class DatacomService
                 'operator' => self::$operator,
             ]);
 
-            $response = $modelClass::showInterfaceGponOnu($interface);
+            $response = DM4612::showInterfaceGponOnu($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -330,8 +318,6 @@ class DatacomService
     {
         $this->validateTelnet();
 
-        $modelClass = $this->createModelClass();
-
         $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -340,7 +326,7 @@ class DatacomService
             'operator' => self::$operator,
         ]);
 
-        $response = $modelClass::showInterfaceGpon($ponInterface);
+        $response = DM4612::showInterfaceGpon($ponInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
