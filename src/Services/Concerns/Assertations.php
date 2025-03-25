@@ -56,13 +56,4 @@ trait Assertations
 
         return implode(',', $formatted);
     }
-
-    public static function formatCommandEntOnt(array $tid, string $aidOnt, array $ctag, array $ontNblk)
-    {
-        $tidCommand = self::formatArrayToString($tid);
-        $ctagCommand = self::formatArrayToString($ctag);
-        $ontNblkCommand = self::formatArrayToString($ontNblk);
-
-        return "ENT-ONT:$tidCommand:$aidOnt:$ctagCommand:::$ontNblkCommand";
-    }
 }
