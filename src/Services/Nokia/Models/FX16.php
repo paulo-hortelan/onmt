@@ -360,8 +360,18 @@ class FX16 extends NokiaService
         try {
             $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, 'ont-idx')) {
+            if (! str_contains($response, 'index table')) {
                 throw new \Exception($response);
+            }
+
+            if (! str_contains($response, 'ont-idx')) {
+                return CommandResult::create([
+                    'success' => true,
+                    'command' => $command,
+                    'response' => $response,
+                    'error' => null,
+                    'result' => [],
+                ]);
             }
 
             if (preg_match('/ont-idx.*:(.*\s)/m', $response, $match)) {
@@ -607,32 +617,50 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            $splittedResponse = preg_split("/\r\n|\n|\r/", $response);
+            $lines = preg_split("/\r\n|\n|\r/", $response);
+            $headerLine = null;
+            $dataLines = [];
 
-            foreach ($splittedResponse as $key => $column) {
-                if (preg_match('/gpon-index/', $column)) {
-                    $numOnts = count($splittedResponse) - $key - 5;
-
-                    if ($numOnts === 0) {
-                        return CommandResult::create([
-                            'success' => true,
-                            'command' => $command,
-                            'response' => $response,
-                            'error' => null,
-                            'result' => [],
-                        ]);
-                    }
-
-                    for ($i = 1; $i <= $numOnts; $i++) {
-                        $splitted = preg_split('/\s+/', $splittedResponse[$key + $i + 1]);
-
-                        $unregData[] = [
-                            'alarm-idx' => (int) $splitted[1] ?? null,
-                            'interface' => $splitted[2] ?? null,
-                            'serial' => $splitted[3] ?? null,
-                        ];
-                    }
+            foreach ($lines as $line) {
+                $trimmedLine = trim($line);
+                if (strpos($trimmedLine, 'alarm-idx|gpon-index') === 0) {
+                    $headerLine = $trimmedLine;
+                } elseif (! empty($trimmedLine) && preg_match('/^\-?\\\\?\s*\d+\s+\d+\/\d+\/\d+\/\d+\s+[A-Z0-9]+\s+/', $trimmedLine)) {
+                    $dataLines[] = $trimmedLine;
                 }
+            }
+
+            if (! $headerLine || empty($dataLines)) {
+                return CommandResult::create([
+                    'success' => true,
+                    'command' => $command,
+                    'response' => $response,
+                    'error' => null,
+                    'result' => [],
+                ]);
+            }
+
+            $columnPositions = [];
+            $headerParts = explode('|', $headerLine);
+            $currentPos = 0;
+
+            foreach ($headerParts as $part) {
+                $columnPositions[] = $currentPos;
+                $currentPos += strlen($part) + 1;
+            }
+
+            foreach ($dataLines as $line) {
+                $line = preg_replace('/^-\\\\?\s*/', '', $line);
+
+                $alarmIdx = (int) trim(substr($line, 0, 10));
+                $gponIndex = trim(substr($line, 10, 18));
+                $serial = trim(substr($line, 28, 13));
+
+                $unregData[] = [
+                    'alarm-idx' => $alarmIdx,
+                    'interface' => $gponIndex,
+                    'serial' => $serial,
+                ];
             }
 
             return CommandResult::create([
