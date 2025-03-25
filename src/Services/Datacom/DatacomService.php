@@ -6,13 +6,14 @@ use Exception;
 use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
+use PauloHortelan\Onmt\Services\Concerns\DatacomTrait;
 use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
 use PauloHortelan\Onmt\Services\Connections\Telnet;
 use PauloHortelan\Onmt\Services\Datacom\Models\DM4612;
 
 class DatacomService
 {
-    use Assertations, ValidationsTrait;
+    use Assertations, DatacomTrait, ValidationsTrait;
 
     protected static ?Telnet $telnetConn = null;
 
@@ -170,12 +171,12 @@ class DatacomService
         }
     }
 
-    // private function validateTerminalMode(string $terminalMode): void
-    // {
-    //     if (! in_array($terminalMode, ['configure', 'interface-olt', 'interface-onu', 'pon-onu-mng'])) {
-    //         throw new Exception('Terminal mode '.$terminalMode.' is not supported.');
-    //     }
-    // }
+    private function validateTerminalMode(string $terminalMode): void
+    {
+        if (! in_array($terminalMode, ['config', 'interface-gpon', 'onu'])) {
+            throw new Exception('Terminal mode '.$terminalMode.' is not supported.');
+        }
+    }
 
     public function setOperator(string $operator): object
     {
@@ -216,6 +217,156 @@ class DatacomService
         $this->globalCommandBatch = null;
 
         return $globalCommandBatch;
+    }
+
+    /**
+     * Change terminal mode to default
+     */
+    public function setDefaultTerminalModel(): ?CommandResultBatch
+    {
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
+
+        $response = DM4612::end();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = '';
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Change terminal mode to 'config'
+     */
+    public function setConfigTerminalModel(): ?CommandResultBatch
+    {
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
+
+        if (self::$terminalMode === '') {
+            $response = DM4612::config();
+        } else {
+            $response = DM4612::top();
+        }
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = 'config';
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Change terminal mode to 'interface-gpon'
+     */
+    public function setInterfaceGponTerminalModel(string $ponInterface): ?CommandResultBatch
+    {
+        if (self::$terminalMode !== 'config') {
+            $response = $this->setConfigTerminalModel();
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = DM4612::interfaceGpon($ponInterface);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = "interface-gpon-$ponInterface";
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Change or create terminal mode to 'onu'
+     */
+    public function setOnuTerminalModel(string $interface): ?CommandResultBatch
+    {
+        $ponInterface = $this->getPonInterfaceFromInterface($interface);
+        $index = $this->getOntIndexFromInterface($interface);
+
+        if (self::$terminalMode !== "interface-gpon-$ponInterface") {
+            $response = $this->setInterfaceGponTerminalModel($ponInterface);
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = DM4612::onu($index);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = "onu-$index";
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Change or create terminal mode to 'onu'
+     */
+    public function setEthernetTerminalModel(string $interface, int $port): ?CommandResultBatch
+    {
+        $ponInterface = $this->getPonInterfaceFromInterface($interface);
+        $index = $this->getOntIndexFromInterface($interface);
+
+        if (self::$terminalMode !== "onu-$index") {
+            $response = $this->setOnuTerminalModel($interface);
+            $commandResultBatch = $this->globalCommandBatch ?? $response;
+        } else {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = DM4612::ethernet($port);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            return $commandResultBatch;
+        }
+
+        self::$terminalMode = "ethernet-$port";
+
+        return $commandResultBatch;
     }
 
     /**
@@ -297,7 +448,10 @@ class DatacomService
                 'operator' => self::$operator,
             ]);
 
-            $response = DM4612::showInterfaceGponOnu($interface);
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::showInterfaceGponOnu($ponInterface, $ontIndex);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
@@ -306,6 +460,113 @@ class DatacomService
         }
 
         return $finalResponse;
+    }
+
+    /**
+     * Gets ONTs service port - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsServicePort(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (! empty(self::$terminalMode)) {
+                $response = $this->setDefaultTerminalModel();
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::showRunningConfigServicePortSelectGponContextMatch($ponInterface, $ontIndex);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONTs service port by PON Interface - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return CommandResultBatch CommandResultBatch
+     */
+    public function ontsServicePortByPonInterface(string $ponInterface): ?CommandResultBatch
+    {
+        $this->validateTelnet();
+
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'pon_interface' => $ponInterface,
+            'operator' => self::$operator,
+        ]);
+
+        $response = DM4612::showRunningConfigServicePortSelectGpon($ponInterface);
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Gets the next free Service Port index - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return int The next available Service Port
+     */
+    public function getNextServicePort(string $ponInterface): ?int
+    {
+        $this->validateTelnet();
+
+        $commandResultBatch = $this->ontsServicePortByPonInterface($ponInterface)->first();
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            throw new Exception('Provided PON Interface is not valid.');
+        }
+
+        $onts = $commandResultBatch->commands[0]['result'];
+
+        $indexes = array_map(function ($item) {
+            return $item['servicePortId'];
+        }, $onts);
+
+        sort($indexes);
+
+        $nextPosition = 1;
+        foreach ($indexes as $index) {
+            if ($index !== $nextPosition) {
+                break;
+            }
+
+            $nextPosition++;
+        }
+
+        return $nextPosition;
     }
 
     /**
@@ -332,6 +593,787 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets the next free ONT index - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return int The next ONT index
+     */
+    public function getNextOntIndex(string $ponInterface): ?int
+    {
+        $this->validateTelnet();
+
+        $commandResultBatch = $this->ontsByPonInterface($ponInterface)->first();
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            throw new Exception('Provided PON Interface is not valid.');
+        }
+
+        $onts = $commandResultBatch->commands[0]['result'];
+
+        $indexes = array_map(function ($item) {
+            return $item['onuId'];
+        }, $onts);
+
+        sort($indexes);
+
+        $nextPosition = 1;
+        foreach ($indexes as $index) {
+            if ($index !== $nextPosition) {
+                break;
+            }
+
+            $nextPosition++;
+        }
+
+        return $nextPosition;
+    }
+
+    /**
+     * Commit configurations - Telnet
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function commitConfigurations(): ?Collection
+    {
+        $this->validateTelnet();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== 'config') {
+                $response = $this->setConfigTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::commit();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs name - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $name  ONT name
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setName(string $name): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $response = $this->setOnuTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::name($name);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs serial number - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $serial  ONT serial number
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setSerialNumber(string $serial): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $response = $this->setOnuTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::serialNumber($serial);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs SNMP profile - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $profile  ONT SNMP Profile
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setSnmpProfile(string $profile): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $response = $this->setOnuTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::snmpProfile($profile);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs SNMP Real Time - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $profile  ONT SNMP Profile
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setSnmpRealTime(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $response = $this->setOnuTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::snmpRealTime();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs line profile - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $profile  ONT Line Profile (PPPoE-Bridge, PPPoE-Router)
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setLineProfile(string $profile): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $response = $this->setOnuTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::lineProfile($profile);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs VEIP - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $port  VEIP port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setVeip(int $port = 1): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $response = $this->setOnuTerminalModel($interface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::veip($port);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Service Port - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $port  Service port
+     * @param  int  $vlan  VLAN
+     * @param  int  $description  Description
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setServicePort(int $port, int $vlan, string $description): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== 'config') {
+                $response = $this->setConfigTerminalModel();
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::servicePort($port, $ponInterface, $ontIndex, $vlan, $description);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Ethernet Negotiation - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $ethernetPort  Ethernet Port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setNegotiation(int $ethernetPort): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== "ethernet-$ethernetPort") {
+                $response = $this->setEthernetTerminalModel($interface, $ethernetPort);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::negotiation();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Ethernet No Shutdown - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $ethernetPort  Ethernet Port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setNoShutdown(int $ethernetPort): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== "ethernet-$ethernetPort") {
+                $response = $this->setEthernetTerminalModel($interface, $ethernetPort);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noShutdown();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Ethernet Native Vlan - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $ethernetPort  Ethernet Port
+     * @param  int  $vlan  VLAN
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setNativeVlan(int $ethernetPort, int $vlan): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== "ethernet-$ethernetPort") {
+                $response = $this->setEthernetTerminalModel($interface, $ethernetPort);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::nativeVlanVlanId($vlan);
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Remove ONTs - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function removeOnts(): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Remove ONTs',
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "interface-gpon-$ponInterface") {
+                $response = $this->setInterfaceGponTerminalModel($ponInterface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noOnu($ontIndex);
+            $response->associateBatch($commandResultBatch);
+
+            if (self::$terminalMode !== 'config') {
+                $response = $this->setConfigTerminalModel($ponInterface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::commit();
+            $response->associateBatch($commandResultBatch);
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Remove Service Ports - Telnet
+     *
+     * @param  array  $ports  Service Ports Indexes
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function removeServicePorts(array $ports): ?Collection
+    {
+        $this->validateTelnet();
+
+        if (empty($ports)) {
+            throw new Exception('Service Ports must be provided.');
+        }
+
+        $finalResponse = collect();
+
+        foreach ($ports as $port) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Remove Service Ports',
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== 'config') {
+                $response = $this->setConfigTerminalModel();
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noServicePort($port);
+            $response->associateBatch($commandResultBatch);
+
+            $response = DM4612::commit();
+            $response->associateBatch($commandResultBatch);
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Remove ONTs and Service Ports - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  array  $ports  Service Ports Indexes in the same order as the 'interfaces'
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function removeOntsServicePorts(array $ports): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        if (empty($ports) || count($ports) !== count(self::$interfaces)) {
+            throw new Exception('Invalid Ports');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $key => $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Remove ONTs and Service Ports',
+                'operator' => self::$operator,
+            ]);
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "interface-gpon-$ponInterface") {
+                $response = $this->setInterfaceGponTerminalModel($ponInterface);
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noOnu($ontIndex);
+            $response->associateBatch($commandResultBatch);
+
+            if (self::$terminalMode !== 'config') {
+                $response = $this->setConfigTerminalModel();
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->allCommandsSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noServicePort($ports[$key]);
+            $response->associateBatch($commandResultBatch);
+
+            $response = DM4612::commit();
+            $response->associateBatch($commandResultBatch);
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
 
         return $finalResponse;
     }

@@ -18,6 +18,8 @@ describe('Datacom - Unconfigured Onts - Success', function () {
 
         $unconfiguredOnts = $datacom->unconfiguredOnts();
 
+        dump($unconfiguredOnts->toArray());
+
         expect($unconfiguredOnts)->toBeInstanceOf(Collection::class);
 
         $unconfiguredOnts->each(function ($batch) {

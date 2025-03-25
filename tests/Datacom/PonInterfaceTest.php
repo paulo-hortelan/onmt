@@ -56,3 +56,19 @@ describe('Datacom - Onts by Pon Interface - Success', function () {
         });
     });
 });
+
+describe('Datacom - Get Next Ont Index - Success', function () {
+    it('can get the next available ont index for a pon interface', function () {
+        $datacom = Datacom::connectTelnet($this->ipServer, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $ponInterface = $this->ponInterfaceALCL;
+
+        $nextIndex = $datacom->getNextOntIndex($ponInterface);
+
+        expect($nextIndex)->toBeInt()
+            ->toBeGreaterThanOrEqual(1);
+
+        $secondCallIndex = $datacom->getNextOntIndex($ponInterface);
+        expect($secondCallIndex)->toBe($nextIndex);
+    });
+})->only();
