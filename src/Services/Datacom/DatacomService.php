@@ -651,9 +651,9 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalModel($interface);
+                $batchResponse = $this->setConfigTerminalModel($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                $commandResultBatch->associateCommands($batchResponse->commands);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
                     $finalResponse->push($commandResultBatch);
