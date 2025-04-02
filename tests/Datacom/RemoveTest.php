@@ -83,17 +83,13 @@ describe('Datacom Remove', function () {
 
         $this->datacom->interfaces([$interface]);
 
-        $result = $this->datacom->ontsServicePort();
+        $result = $this->datacom->ontsServicePortByInterfaces();
 
         $commandResultBatch = $result->first();
 
         expect($commandResultBatch->allCommandsSuccessful())->toBeTrue();
 
         $command = $commandResultBatch->commands->last();
-
-        if (empty($command->result)) {
-            throw new Exception('No service port found');
-        }
 
         $port = $command->result[0]['servicePortId'];
 
@@ -106,8 +102,6 @@ describe('Datacom Remove', function () {
         expect($result->first()->allCommandsSuccessful())->toBeTrue();
 
         $commandBatchResult = $this->datacom->stopRecordingCommands();
-
-        dump($commandBatchResult->toArray());
 
         expect($commandBatchResult->first()->allCommandsSuccessful())->toBeTrue();
     })->only();

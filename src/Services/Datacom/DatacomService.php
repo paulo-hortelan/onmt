@@ -465,8 +465,6 @@ class DatacomService
     /**
      * Gets ONTs service port - Telnet
      *
-     * Parameter 'interfaces' must already be provided
-     *
      * @return Collection A collection of CommandResultBatch
      */
     public function ontsServicePort(): ?Collection
@@ -524,6 +522,41 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         return $commandResultBatch;
+    }
+
+    /**
+     * Gets ONTs service port by PON Interface and ONT Index - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsServicePortByInterfaces(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::showRunningConfigServicePortSelectGponContextMatch($ponInterface, $ontIndex);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**

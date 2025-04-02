@@ -379,18 +379,8 @@ class DM4612 extends DatacomService
         try {
             $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, "gpon $ponInterface onu $ontIndex") && ! str_contains($response, 'No entries found')) {
+            if (! str_contains($response, "gpon $ponInterface onu $ontIndex")) {
                 throw new \Exception($response);
-            }
-
-            if (str_contains($response, 'No entries found')) {
-                return CommandResult::create([
-                    'success' => true,
-                    'command' => $command,
-                    'response' => $response,
-                    'error' => null,
-                    'result' => [],
-                ]);
             }
 
             $servicePortInfo = [];
