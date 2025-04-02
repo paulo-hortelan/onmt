@@ -1258,7 +1258,7 @@ class DatacomService
 
                 $commandResultBatch->associateCommands($response->commands);
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1304,7 +1304,7 @@ class DatacomService
 
                 $commandResultBatch->associateCommands($response->commands);
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1359,7 +1359,7 @@ class DatacomService
 
                 $commandResultBatch->associateCommands($response->commands);
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1374,7 +1374,7 @@ class DatacomService
 
                 $commandResultBatch->associateCommands($response->commands);
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
                     $finalResponse->push($commandResultBatch);
 
                     continue;
