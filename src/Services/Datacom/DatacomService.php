@@ -222,7 +222,7 @@ class DatacomService
     /**
      * Change terminal mode to default
      */
-    public function setDefaultTerminalModel(): ?CommandResultBatch
+    public function setDefaultTerminalMode(): ?CommandResultBatch
     {
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
@@ -234,7 +234,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        if (! $commandResultBatch->allCommandsSuccessful()) {
+        if (! $commandResultBatch->wasLastCommandSuccessful()) {
             return $commandResultBatch;
         }
 
@@ -246,7 +246,7 @@ class DatacomService
     /**
      * Change terminal mode to 'config'
      */
-    public function setConfigTerminalModel(): ?CommandResultBatch
+    public function setConfigTerminalMode(): ?CommandResultBatch
     {
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
@@ -262,7 +262,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        if (! $commandResultBatch->allCommandsSuccessful()) {
+        if (! $commandResultBatch->wasLastCommandSuccessful()) {
             return $commandResultBatch;
         }
 
@@ -274,10 +274,10 @@ class DatacomService
     /**
      * Change terminal mode to 'interface-gpon'
      */
-    public function setInterfaceGponTerminalModel(string $ponInterface): ?CommandResultBatch
+    public function setInterfaceGponTerminalMode(string $ponInterface): ?CommandResultBatch
     {
         if (self::$terminalMode !== 'config') {
-            $response = $this->setConfigTerminalModel();
+            $response = $this->setConfigTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $response;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -292,7 +292,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        if (! $commandResultBatch->allCommandsSuccessful()) {
+        if (! $commandResultBatch->wasLastCommandSuccessful()) {
             return $commandResultBatch;
         }
 
@@ -304,13 +304,13 @@ class DatacomService
     /**
      * Change or create terminal mode to 'onu'
      */
-    public function setOnuTerminalModel(string $interface): ?CommandResultBatch
+    public function setOnuTerminalMode(string $interface): ?CommandResultBatch
     {
         $ponInterface = $this->getPonInterfaceFromInterface($interface);
         $index = $this->getOntIndexFromInterface($interface);
 
         if (self::$terminalMode !== "interface-gpon-$ponInterface") {
-            $response = $this->setInterfaceGponTerminalModel($ponInterface);
+            $response = $this->setInterfaceGponTerminalMode($ponInterface);
             $commandResultBatch = $this->globalCommandBatch ?? $response;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -326,7 +326,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        if (! $commandResultBatch->allCommandsSuccessful()) {
+        if (! $commandResultBatch->wasLastCommandSuccessful()) {
             return $commandResultBatch;
         }
 
@@ -338,13 +338,13 @@ class DatacomService
     /**
      * Change or create terminal mode to 'onu'
      */
-    public function setEthernetTerminalModel(string $interface, int $port): ?CommandResultBatch
+    public function setEthernetTerminalMode(string $interface, int $port): ?CommandResultBatch
     {
         $ponInterface = $this->getPonInterfaceFromInterface($interface);
         $index = $this->getOntIndexFromInterface($interface);
 
         if (self::$terminalMode !== "onu-$index") {
-            $response = $this->setOnuTerminalModel($interface);
+            $response = $this->setOnuTerminalMode($interface);
             $commandResultBatch = $this->globalCommandBatch ?? $response;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -360,7 +360,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        if (! $commandResultBatch->allCommandsSuccessful()) {
+        if (! $commandResultBatch->wasLastCommandSuccessful()) {
             return $commandResultBatch;
         }
 
@@ -477,7 +477,7 @@ class DatacomService
         ]);
 
         if (! empty(self::$terminalMode)) {
-            $response = $this->setDefaultTerminalModel();
+            $response = $this->setDefaultTerminalMode();
 
             $commandResultBatch->associateCommands($response->commands);
 
@@ -668,7 +668,7 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== 'config') {
-                $batchResponse = $this->setConfigTerminalModel($interface);
+                $batchResponse = $this->setConfigTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -683,7 +683,7 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
+            if (! $commandResultBatch->wasLastCommandSuccessful()) {
                 $finalResponse->push($commandResultBatch);
 
                 continue;
@@ -720,7 +720,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalModel($interface);
+                $response = $this->setOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -772,7 +772,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalModel($interface);
+                $response = $this->setOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -824,7 +824,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalModel($interface);
+                $response = $this->setOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -876,7 +876,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalModel($interface);
+                $response = $this->setOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -928,7 +928,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalModel($interface);
+                $response = $this->setOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -980,7 +980,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalModel($interface);
+                $response = $this->setOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1032,7 +1032,7 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalModel();
+                $response = $this->setConfigTerminalMode();
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1085,7 +1085,7 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== "ethernet-$ethernetPort") {
-                $response = $this->setEthernetTerminalModel($interface, $ethernetPort);
+                $response = $this->setEthernetTerminalMode($interface, $ethernetPort);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1135,7 +1135,7 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== "ethernet-$ethernetPort") {
-                $response = $this->setEthernetTerminalModel($interface, $ethernetPort);
+                $response = $this->setEthernetTerminalMode($interface, $ethernetPort);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1186,7 +1186,7 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== "ethernet-$ethernetPort") {
-                $response = $this->setEthernetTerminalModel($interface, $ethernetPort);
+                $response = $this->setEthernetTerminalMode($interface, $ethernetPort);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1239,7 +1239,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "interface-gpon-$ponInterface") {
-                $response = $this->setInterfaceGponTerminalModel($ponInterface);
+                $response = $this->setInterfaceGponTerminalMode($ponInterface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1254,7 +1254,7 @@ class DatacomService
             $response->associateBatch($commandResultBatch);
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalModel($ponInterface);
+                $response = $this->setConfigTerminalMode($ponInterface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1300,7 +1300,7 @@ class DatacomService
             ]);
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalModel();
+                $response = $this->setConfigTerminalMode();
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1355,7 +1355,7 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "interface-gpon-$ponInterface") {
-                $response = $this->setInterfaceGponTerminalModel($ponInterface);
+                $response = $this->setInterfaceGponTerminalMode($ponInterface);
 
                 $commandResultBatch->associateCommands($response->commands);
 
@@ -1370,7 +1370,7 @@ class DatacomService
             $response->associateBatch($commandResultBatch);
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalModel();
+                $response = $this->setConfigTerminalMode();
 
                 $commandResultBatch->associateCommands($response->commands);
 

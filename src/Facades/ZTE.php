@@ -42,11 +42,11 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static CommandResultBatch stopRecordingCommands() Stops command recording and returns the complete command batch results.
  *
  * == TERMINAL MODE MANAGEMENT ==
- * @method static CommandResultBatch|null setConfigureTerminalModel() Switches terminal to 'configure terminal' mode (equivalent to "conf t" command).
- * @method static CommandResultBatch|null setInterfaceOltTerminalModel(string $ponInterface) Enters GPON OLT interface configuration mode for specified PON interface (e.g., '1/1/1').
- * @method static CommandResultBatch|null setInterfaceOnuTerminalModel(string $interface) Enters GPON ONU interface configuration mode for specified ONU interface (e.g., '1/1/1:1').
- * @method static CommandResultBatch|null setInterfaceVportTerminalModel(string $interface, int $vport) Enters VPORT terminal mode for specified interface and virtual port (C600 model only).
- * @method static CommandResultBatch|null setPonOnuMngTerminalModel(string $interface) Enters PON ONU management terminal mode for deeper ONU configuration (e.g., '1/1/1:1').
+ * @method static CommandResultBatch|null setConfigureTerminalMode() Switches terminal to 'configure terminal' mode (equivalent to "conf t" command).
+ * @method static CommandResultBatch|null setInterfaceOltTerminalMode(string $ponInterface) Enters GPON OLT interface configuration mode for specified PON interface (e.g., '1/1/1').
+ * @method static CommandResultBatch|null setInterfaceOnuTerminalMode(string $interface) Enters GPON ONU interface configuration mode for specified ONU interface (e.g., '1/1/1:1').
+ * @method static CommandResultBatch|null setInterfaceVportTerminalMode(string $interface, int $vport) Enters VPORT terminal mode for specified interface and virtual port (C600 model only).
+ * @method static CommandResultBatch|null setPonOnuMngTerminalMode(string $interface) Enters PON ONU management terminal mode for deeper ONU configuration (e.g., '1/1/1:1').
  *
  * == ONT INFORMATION RETRIEVAL ==
  * @method static Collection|null ontsOpticalPower() Retrieves optical power levels (TX/RX) for all ONTs specified by interfaces().

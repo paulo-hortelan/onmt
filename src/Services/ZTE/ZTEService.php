@@ -249,7 +249,7 @@ class ZTEService
     /**
      * Change terminal mode to 'configure terminal'
      */
-    public function setConfigureTerminalModel(): ?CommandResultBatch
+    public function setConfigureTerminalMode(): ?CommandResultBatch
     {
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
@@ -282,10 +282,10 @@ class ZTEService
     /**
      * Enters gpon olt interface terminal mode
      */
-    public function setInterfaceOltTerminalModel(string $ponInterface)
+    public function setInterfaceOltTerminalMode(string $ponInterface)
     {
         if (self::$terminalMode !== 'configure') {
-            $batchResponse = $this->setConfigureTerminalModel();
+            $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -312,10 +312,10 @@ class ZTEService
     /**
      * Enters gpon onu interface terminal mode
      */
-    public function setInterfaceOnuTerminalModel(string $interface): ?CommandResultBatch
+    public function setInterfaceOnuTerminalMode(string $interface): ?CommandResultBatch
     {
         if (self::$terminalMode !== 'configure') {
-            $batchResponse = $this->setConfigureTerminalModel();
+            $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -342,12 +342,12 @@ class ZTEService
     /**
      * Enters gpon onu interface terminal mode
      */
-    public function setInterfaceVportTerminalModel(string $interface, int $vport): ?CommandResultBatch
+    public function setInterfaceVportTerminalMode(string $interface, int $vport): ?CommandResultBatch
     {
         $this->validateModels(['C600']);
 
         if (self::$terminalMode !== 'configure') {
-            $batchResponse = $this->setConfigureTerminalModel();
+            $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -378,10 +378,10 @@ class ZTEService
     /**
      * Enters pon onu mng terminal mode
      */
-    public function setPonOnuMngTerminalModel(string $interface): ?CommandResultBatch
+    public function setPonOnuMngTerminalMode(string $interface): ?CommandResultBatch
     {
         if (self::$terminalMode !== 'configure') {
-            $batchResponse = $this->setConfigureTerminalModel();
+            $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
@@ -651,7 +651,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -751,7 +751,7 @@ class ZTEService
             $ontIndex = $parts[1];
 
             if (self::$terminalMode !== "interface-olt-$ponInterface") {
-                $batchResponse = $this->setInterfaceOltTerminalModel($ponInterface);
+                $batchResponse = $this->setInterfaceOltTerminalMode($ponInterface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -804,7 +804,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "interface-olt-$ponInterface") {
-                $batchResponse = $this->setInterfaceOltTerminalModel($ponInterface);
+                $batchResponse = $this->setInterfaceOltTerminalMode($ponInterface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -856,7 +856,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "interface-onu-$interface") {
-                $batchResponse = $this->setInterfaceOnuTerminalModel($interface);
+                $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -906,7 +906,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "interface-onu-$interface") {
-                $batchResponse = $this->setInterfaceOnuTerminalModel($interface);
+                $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -957,7 +957,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "interface-onu-$interface") {
-                $batchResponse = $this->setInterfaceOnuTerminalModel($interface);
+                $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1010,7 +1010,7 @@ class ZTEService
             ]);
 
             if ($terminalMode === 'interface-onu' && self::$terminalMode !== "interface-onu-$interface") {
-                $batchResponse = $this->setInterfaceOnuTerminalModel($interface);
+                $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1022,7 +1022,7 @@ class ZTEService
             }
 
             if ($terminalMode === 'pon-onu-mng' && self::$terminalMode !== "pon-onu-mng-$interface") {
-                $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1073,7 +1073,7 @@ class ZTEService
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "interface-onu-$interface") {
-                    $batchResponse = $this->setInterfaceOnuTerminalModel($interface);
+                    $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1091,7 +1091,7 @@ class ZTEService
                 $ontIndex = $parts[1];
 
                 if (self::$terminalMode !== "interface vport-$ponInterface.$ontIndex:$vport") {
-                    $batchResponse = $this->setInterfaceVportTerminalModel($interface, $vport);
+                    $batchResponse = $this->setInterfaceVportTerminalMode($interface, $vport);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1144,7 +1144,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1194,7 +1194,7 @@ class ZTEService
             ]);
 
             if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                 $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1245,7 +1245,7 @@ class ZTEService
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                    $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1298,7 +1298,7 @@ class ZTEService
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                    $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1351,7 +1351,7 @@ class ZTEService
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                    $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1404,7 +1404,7 @@ class ZTEService
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                    $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 
@@ -1457,7 +1457,7 @@ class ZTEService
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
-                    $batchResponse = $this->setPonOnuMngTerminalModel($interface);
+                    $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
                     $commandResultBatch->associateCommands($batchResponse->commands);
 

@@ -28,7 +28,7 @@ describe('Datacom Terminal Mode', function () {
     });
 
     it('can enter config terminal mode', function () {
-        $result = $this->datacom->setConfigTerminalModel();
+        $result = $this->datacom->setConfigTerminalMode();
 
         expect($result->allCommandsSuccessful())->toBeTrue();
 
@@ -41,7 +41,7 @@ describe('Datacom Terminal Mode', function () {
     it('can enter interface gpon terminal mode', function () {
         $ponInterface = $this->ponInterfaceALCL;
 
-        $result = $this->datacom->setInterfaceGponTerminalModel($ponInterface);
+        $result = $this->datacom->setInterfaceGponTerminalMode($ponInterface);
 
         expect($result->allCommandsSuccessful())->toBeTrue();
 
@@ -61,7 +61,7 @@ describe('Datacom Terminal Mode', function () {
 
         $ponInterface = $this->ponInterfaceALCL;
 
-        $result = $this->datacom->setInterfaceGponTerminalModel($ponInterface);
+        $result = $this->datacom->setInterfaceGponTerminalMode($ponInterface);
 
         expect($result->allCommandsSuccessful())->toBeTrue();
 
@@ -76,7 +76,7 @@ describe('Datacom Terminal Mode', function () {
     it('can enter onu terminal mode', function () {
         $fullInterface = $this->interfaceALCL;
 
-        $result = $this->datacom->setOnuTerminalModel($fullInterface);
+        $result = $this->datacom->setOnuTerminalMode($fullInterface);
 
         expect($result->allCommandsSuccessful())->toBeTrue();
 
@@ -97,7 +97,7 @@ describe('Datacom Terminal Mode', function () {
         $fullInterface = $this->interfaceALCL;
         $ontIndex = (new \PauloHortelan\Onmt\Services\Datacom\DatacomService())->getOntIndexFromInterface($fullInterface);
 
-        $result = $this->datacom->setOnuTerminalModel($fullInterface);
+        $result = $this->datacom->setOnuTerminalMode($fullInterface);
 
         expect($result->allCommandsSuccessful())->toBeTrue();
 
@@ -118,7 +118,7 @@ describe('Datacom Terminal Mode', function () {
         $ponInterface = $datacomService->getPonInterfaceFromInterface($fullInterface);
         $ontIndex = $datacomService->getOntIndexFromInterface($fullInterface);
 
-        $this->datacom->setInterfaceGponTerminalModel($ponInterface);
+        $this->datacom->setInterfaceGponTerminalMode($ponInterface);
 
         $reflectionClass = new ReflectionClass($this->datacom);
         $property = $reflectionClass->getProperty('terminalMode');
@@ -127,7 +127,7 @@ describe('Datacom Terminal Mode', function () {
         $terminalMode = $property->getValue($this->datacom);
         expect($terminalMode)->toBe("interface-gpon-$ponInterface");
 
-        $result = $this->datacom->setOnuTerminalModel($fullInterface);
+        $result = $this->datacom->setOnuTerminalMode($fullInterface);
 
         expect($result->allCommandsSuccessful())->toBeTrue();
 

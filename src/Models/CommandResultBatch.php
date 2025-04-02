@@ -47,7 +47,7 @@ class CommandResultBatch extends Model
      */
     public function wasLastCommandSuccessful(): bool
     {
-        $lastCommand = $this->commands()->last();
+        $lastCommand = $this->commands()->orderBy('id', 'desc')->first();
 
         return $lastCommand ? $lastCommand->success : false;
     }
