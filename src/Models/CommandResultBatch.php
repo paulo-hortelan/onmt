@@ -43,6 +43,16 @@ class CommandResultBatch extends Model
     }
 
     /**
+     * Check if the last command in the batch was successful.
+     */
+    public function wasLastCommandSuccessful(): bool
+    {
+        $lastCommand = $this->commands()->last();
+
+        return $lastCommand ? $lastCommand->success : false;
+    }
+
+    /**
      * Associate commands with this batch.
      */
     public function associateCommand(CommandResult $commandResult)
