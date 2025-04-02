@@ -472,39 +472,32 @@ class DatacomService
     public function ontsServicePort(): ?Collection
     {
         $this->validateTelnet();
-        $this->validateInterfaces();
 
         $finalResponse = collect();
 
-        foreach (self::$interfaces as $interface) {
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
-                'ip' => self::$ipOlt,
-                'interface' => $interface,
-                'operator' => self::$operator,
-            ]);
+        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            'ip' => self::$ipOlt,
+            'operator' => self::$operator,
+        ]);
 
-            if (! empty(self::$terminalMode)) {
-                $response = $this->setDefaultTerminalModel();
+        if (! empty(self::$terminalMode)) {
+            $response = $this->setDefaultTerminalModel();
 
-                $commandResultBatch->associateCommands($response->commands);
+            $commandResultBatch->associateCommands($response->commands);
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
-                    $finalResponse->push($commandResultBatch);
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                $finalResponse->push($commandResultBatch);
 
-                    continue;
-                }
+                return $finalResponse;
             }
-
-            $ponInterface = $this->getPonInterfaceFromInterface($interface);
-            $ontIndex = $this->getOntIndexFromInterface($interface);
-
-            $response = DM4612::showRunningConfigServicePortSelectGponContextMatch($ponInterface, $ontIndex);
-
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
-
-            $finalResponse->push($commandResultBatch);
         }
+
+        $response = DM4612::showRunningConfigServicePort();
+
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        $finalResponse->push($commandResultBatch);
 
         return $finalResponse;
     }
@@ -536,14 +529,13 @@ class DatacomService
     /**
      * Gets the next free Service Port index - Telnet
      *
-     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
      * @return int The next available Service Port
      */
-    public function getNextServicePort(string $ponInterface): ?int
+    public function getNextServicePort(): ?int
     {
         $this->validateTelnet();
 
-        $commandResultBatch = $this->ontsServicePortByPonInterface($ponInterface)->first();
+        $commandResultBatch = $this->ontsServicePort()->first();
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
             throw new Exception('Provided PON Interface is not valid.');

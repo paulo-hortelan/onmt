@@ -30,8 +30,9 @@ describe('Datacom Running Config', function () {
     });
 
     it('can get ont service port', function () {
-        $this->datacom->interfaces([$this->interface]);
+        $this->datacom->interfaces(['1/1/4/1']);
 
+        $this->datacom->setOnu();
         $result = $this->datacom->ontsServicePort();
 
         dump($result->toArray());
@@ -65,7 +66,7 @@ describe('Datacom Running Config', function () {
     it('can get next ont service port', function () {
         $ponInterface = $this->ponInterface;
 
-        $nextServicePort = $this->datacom->getNextServicePort($ponInterface);
+        $nextServicePort = $this->datacom->getNextServicePort();
 
         dump($nextServicePort);
 

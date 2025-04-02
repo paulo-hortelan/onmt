@@ -238,6 +238,70 @@ class DM4612 extends DatacomService
     }
 
     /**
+     * Shows service port configurations
+     */
+    public static function showRunningConfigServicePort(): ?CommandResult
+    {
+        $command = 'show running-config service-port | nomore';
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (str_contains($response, 'No entries found')) {
+                return CommandResult::create([
+                    'success' => true,
+                    'command' => $command,
+                    'response' => $response,
+                    'error' => null,
+                    'result' => [],
+                ]);
+            }
+
+            $servicePortInfo = [];
+            $currentServicePort = null;
+
+            $lines = explode("\n", $response);
+
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line) || $line === '!') {
+                    continue;
+                }
+
+                if (preg_match('/^service-port\s+(\d+)/', $line, $matches)) {
+                    $currentServicePort = (int) $matches[1];
+                } elseif ($currentServicePort && preg_match('/gpon\s+(\S+)\s+onu\s+(\d+)\s+gem\s+(\d+)(?:\s+match\s+vlan\s+vlan-id\s+(\d+))?(?:\s+action\s+vlan\s+replace\s+vlan-id\s+(\d+))?(?:\s+description\s+(.+))?/', $line, $matches)) {
+                    $servicePortInfo[] = [
+                        'servicePortId' => $currentServicePort,
+                        'ponInterface' => $matches[1],
+                        'onuIndex' => (int) $matches[2],
+                        'gem' => (int) $matches[3],
+                        'matchVlan' => isset($matches[4]) ? (int) $matches[4] : null,
+                        'replaceVlan' => isset($matches[5]) ? (int) $matches[5] : null,
+                        'description' => isset($matches[6]) ? trim($matches[6]) : null,
+                    ];
+                }
+            }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $servicePortInfo,
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? '',
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
      * Shows service port configurations for a specific GPON interface
      */
     public static function showRunningConfigServicePortSelectGpon(string $ponInterface): ?CommandResult
