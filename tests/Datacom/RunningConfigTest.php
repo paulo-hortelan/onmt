@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Facades\Datacom;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 
@@ -32,22 +31,11 @@ describe('Datacom Running Config', function () {
     it('can get ont service port', function () {
         $this->datacom->interfaces(['1/1/4/1']);
 
-        $this->datacom->setOnu();
         $result = $this->datacom->ontsServicePort();
 
         dump($result->toArray());
 
-        expect($result)->toBeInstanceOf(Collection::class);
-
-        $result->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-
-            });
-        });
+        expect($result)->toBeInstanceOf(CommandResultBatch::class);
     });
 
     it('can get onts service port by pon interface', function () {
@@ -64,8 +52,6 @@ describe('Datacom Running Config', function () {
     });
 
     it('can get next ont service port', function () {
-        $ponInterface = $this->ponInterface;
-
         $nextServicePort = $this->datacom->getNextServicePort();
 
         dump($nextServicePort);

@@ -465,13 +465,11 @@ class DatacomService
     /**
      * Gets ONTs service port - Telnet
      *
-     * @return Collection A collection of CommandResultBatch
+     * @return CommandResultBatch CommandResultBatch
      */
-    public function ontsServicePort(): ?Collection
+    public function ontsServicePort(): ?CommandResultBatch
     {
         $this->validateTelnet();
-
-        $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
@@ -484,9 +482,7 @@ class DatacomService
             $commandResultBatch->associateCommands($response->commands);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                return $finalResponse;
+                return $commandResultBatch;
             }
         }
 
@@ -495,9 +491,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        $finalResponse->push($commandResultBatch);
-
-        return $finalResponse;
+        return $commandResultBatch;
     }
 
     /**
@@ -568,13 +562,13 @@ class DatacomService
     {
         $this->validateTelnet();
 
-        $commandResultBatch = $this->ontsServicePort()->first();
+        $commandResultBatch = $this->ontsServicePort();
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
             throw new Exception('Provided PON Interface is not valid.');
         }
 
-        $onts = $commandResultBatch->commands[0]['result'];
+        $onts = $commandResultBatch->commands->last()['result'];
 
         $indexes = array_map(function ($item) {
             return $item['servicePortId'];
@@ -598,13 +592,11 @@ class DatacomService
      * Gets ONTs by PON interface - Telnet
      *
      * @param  string  $ponInterface  PON interface. Example: '1/1/1'
-     * @return Collection A collection of CommandResultBatch
+     * @return CommandResultBatch CommandResultBatch
      */
-    public function ontsByPonInterface(string $ponInterface): ?Collection
+    public function ontsByPonInterface(string $ponInterface): ?CommandResultBatch
     {
         $this->validateTelnet();
-
-        $finalResponse = collect();
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
@@ -617,9 +609,7 @@ class DatacomService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
-        $finalResponse->push($commandResultBatch);
-
-        return $finalResponse;
+        return $commandResultBatch;
     }
 
     /**
@@ -632,7 +622,7 @@ class DatacomService
     {
         $this->validateTelnet();
 
-        $commandResultBatch = $this->ontsByPonInterface($ponInterface)->first();
+        $commandResultBatch = $this->ontsByPonInterface($ponInterface);
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
             throw new Exception('Provided PON Interface is not valid.');
@@ -660,6 +650,8 @@ class DatacomService
 
     /**
      * Commit configurations - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
      *
      * @return Collection A collection of CommandResultBatch
      */
