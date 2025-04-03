@@ -613,24 +613,14 @@ class FX16 extends NokiaService
         try {
             $response = self::$telnetConn->exec($command);
 
-            if (! str_contains($response, 'gpon-index')) {
+            if (! str_contains($response, 'unprovision-onu table')) {
                 throw new \Exception($response);
             }
 
-            $lines = preg_split("/\r\n|\n|\r/", $response);
-            $headerLine = null;
-            $dataLines = [];
-
-            foreach ($lines as $line) {
-                $trimmedLine = trim($line);
-                if (strpos($trimmedLine, 'alarm-idx|gpon-index') === 0) {
-                    $headerLine = $trimmedLine;
-                } elseif (! empty($trimmedLine) && preg_match('/^\-?\\\\?\s*\d+\s+\d+\/\d+\/\d+\/\d+\s+[A-Z0-9]+\s+/', $trimmedLine)) {
-                    $dataLines[] = $trimmedLine;
-                }
-            }
-
-            if (! $headerLine || empty($dataLines)) {
+            $tableSection = '';
+            if (preg_match('/unprovision-onu table.*?unprovision-onu count/s', $response, $matches)) {
+                $tableSection = $matches[0];
+            } else {
                 return CommandResult::create([
                     'success' => true,
                     'command' => $command,
@@ -640,27 +630,59 @@ class FX16 extends NokiaService
                 ]);
             }
 
-            $columnPositions = [];
-            $headerParts = explode('|', $headerLine);
-            $currentPos = 0;
-
-            foreach ($headerParts as $part) {
-                $columnPositions[] = $currentPos;
-                $currentPos += strlen($part) + 1;
+            if (! preg_match('/alarm-idx\|.*?\|sernum/i', $tableSection, $headerMatch)) {
+                return CommandResult::create([
+                    'success' => true,
+                    'command' => $command,
+                    'response' => $response,
+                    'error' => null,
+                    'result' => [],
+                ]);
             }
 
-            foreach ($dataLines as $line) {
-                $line = preg_replace('/^-\\\\?\s*/', '', $line);
+            $lines = preg_split('/\r\n|\n|\r/', $tableSection);
+            $dataCapturing = false;
+            $headerLineFound = false;
 
-                $alarmIdx = (int) trim(substr($line, 0, 10));
-                $gponIndex = trim(substr($line, 10, 18));
-                $serial = trim(substr($line, 28, 13));
+            foreach ($lines as $line) {
+                $trimmedLine = trim($line);
 
-                $unregData[] = [
-                    'alarm-idx' => $alarmIdx,
-                    'interface' => $gponIndex,
-                    'serial' => $serial,
-                ];
+                if (empty($trimmedLine)) {
+                    continue;
+                }
+
+                if (preg_match('/alarm-idx\|.*?\|sernum/i', $trimmedLine)) {
+                    $headerLineFound = true;
+                    $dataCapturing = true;
+
+                    continue;
+                }
+
+                if (preg_match('/^-+$/', $trimmedLine) ||
+                    preg_match('/^-+\+-+$/', $trimmedLine) ||
+                    preg_match('/unprovision-onu count/i', $trimmedLine)) {
+                    continue;
+                }
+
+                if ($dataCapturing && $headerLineFound) {
+                    $cleanLine = preg_replace('/^[-\\\\]*\s*/', '', $trimmedLine);
+
+                    $parts = preg_split('/\s+/', $cleanLine, 4);
+
+                    if (count($parts) >= 3) {
+                        $alarmIdx = (int) $parts[0];
+                        $interface = trim($parts[1]);
+                        $serial = trim($parts[2]);
+
+                        if (! empty($serial) && ! empty($interface) && is_numeric($alarmIdx)) {
+                            $unregData[] = [
+                                'alarm-idx' => $alarmIdx,
+                                'interface' => $interface,
+                                'serial' => $serial,
+                            ];
+                        }
+                    }
+                }
             }
 
             return CommandResult::create([
