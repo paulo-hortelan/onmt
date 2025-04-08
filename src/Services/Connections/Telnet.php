@@ -607,27 +607,44 @@ class Telnet
         // Check if we need to clean anything
         $hasEscapeSequence = strpos($buffer, "\x1B") !== false;
         $hasSpinnerSequence = strpos($buffer, '-\|/') !== false;
+        $hasCursorMovement = strpos($buffer, "\x1B[1D") !== false ||
+                             strpos($buffer, "\x1B[A") !== false ||
+                             strpos($buffer, "\x1B[C") !== false;
 
-        if (! $hasEscapeSequence && ! $hasSpinnerSequence) {
+        if (! $hasEscapeSequence && ! $hasSpinnerSequence && ! $hasCursorMovement) {
             return $buffer;
         }
 
-        // Try multiple cleaning methods, starting with the most efficient
+        // 1. First pass: Simple string replacement for common sequences
+        $commonSequences = [
+            "\x1B[1D", "\x1B[K", "\x1B[0m", "\x1B[2K", "-\|/", "\x1B[?25l", "\x1B[?25h",
+            "\x1B[H", "\x1B[J", "\x1B[1;1H", "\x1B[1A", "\x1B[1B",
+        ];
+        $cleaned = str_replace($commonSequences, '', $buffer);
 
-        // 1. Simple string replacement for common sequences
-        $cleaned = str_replace(["\x1B[1D", '-\|/'], '', $buffer);
-
-        // 2. Use regex if there are still escape sequences
+        // 2. Second pass: Regular expression for more complex ANSI sequences
         if (strpos($cleaned, "\x1B") !== false) {
+            // Match both CSI sequences and non-CSI escape sequences
             $pattern = '/\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/';
             $regexCleaned = preg_replace($pattern, '', $cleaned);
 
-            // If regex worked, use that result
-            if ($regexCleaned !== null && $regexCleaned !== $cleaned) {
-                return $regexCleaned;
+            // Apply a second pattern for any missed complex sequences
+            if ($regexCleaned !== null && strpos($regexCleaned, "\x1B") !== false) {
+                $complexPattern = '/\x1B\[[\d;]*[A-Za-z]/';
+                $regexCleaned = preg_replace($complexPattern, '', $regexCleaned);
             }
 
-            // 3. Fallback to character-by-character filtering if regex fails
+            // If regex worked, use that result
+            if ($regexCleaned !== null && $regexCleaned !== $cleaned) {
+                $cleaned = $regexCleaned;
+            }
+        }
+
+        // 3. Handle spinner animations and cursor movement artifacts
+        $cleaned = preg_replace('/[-\\\\|\/]{2,}/', '', $cleaned);
+
+        // 4. Last resort: Character-by-character cleaning if escape sequences still exist
+        if (strpos($cleaned, "\x1B") !== false) {
             $filtered = '';
             $inEscSeq = false;
 
@@ -642,6 +659,7 @@ class Telnet
 
                 if ($inEscSeq) {
                     // Look for the end of the escape sequence
+                    // CSI sequences typically end with a letter
                     if (preg_match('/[a-zA-Z]/', $char)) {
                         $inEscSeq = false;
                     }

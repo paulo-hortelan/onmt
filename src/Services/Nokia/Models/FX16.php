@@ -630,7 +630,11 @@ class FX16 extends NokiaService
                 ]);
             }
 
-            if (! preg_match('/alarm-idx\|.*?\|sernum/i', $tableSection, $headerMatch)) {
+            // Extract the header line to understand column positions
+            $headerLine = '';
+            if (preg_match('/alarm-idx\|.*?\|sernum/i', $tableSection, $headerMatch)) {
+                $headerLine = $headerMatch[0];
+            } else {
                 return CommandResult::create([
                     'success' => true,
                     'command' => $command,
@@ -640,9 +644,14 @@ class FX16 extends NokiaService
                 ]);
             }
 
+            // Get column positions from header line
+            $alarmIdxPos = strpos($headerLine, 'alarm-idx');
+            $gponIndexPos = strpos($headerLine, 'gpon-index');
+            $sernumPos = strpos($headerLine, 'sernum');
+
+            // Process data lines
             $lines = preg_split('/\r\n|\n|\r/', $tableSection);
-            $dataCapturing = false;
-            $headerLineFound = false;
+            $dataStarted = false;
 
             foreach ($lines as $line) {
                 $trimmedLine = trim($line);
@@ -651,30 +660,76 @@ class FX16 extends NokiaService
                     continue;
                 }
 
-                if (preg_match('/alarm-idx\|.*?\|sernum/i', $trimmedLine)) {
-                    $headerLineFound = true;
-                    $dataCapturing = true;
+                // Skip header lines
+                if (preg_match('/alarm-idx|unprovision-onu count/i', $trimmedLine)) {
+                    $dataStarted = true;
 
                     continue;
                 }
 
-                if (preg_match('/^-+$/', $trimmedLine) ||
-                    preg_match('/^-+\+-+$/', $trimmedLine) ||
-                    preg_match('/unprovision-onu count/i', $trimmedLine)) {
+                // Skip separator lines
+                if (preg_match('/^[-+]+$/', $trimmedLine) || preg_match('/^=+$/', $trimmedLine)) {
                     continue;
                 }
 
-                if ($dataCapturing && $headerLineFound) {
-                    $cleanLine = preg_replace('/^[-\\\\]*\s*/', '', $trimmedLine);
+                // Process data line
+                if ($dataStarted) {
+                    // Clean special characters like '-\|' at the beginning
+                    $cleanLine = preg_replace('/^[-\\\\|\s]+/', '', $trimmedLine);
 
-                    $parts = preg_split('/\s+/', $cleanLine, 4);
+                    // Try multiple parsing strategies
 
-                    if (count($parts) >= 3) {
-                        $alarmIdx = (int) $parts[0];
-                        $interface = trim($parts[1]);
-                        $serial = trim($parts[2]);
+                    // 1. First approach: Use column positions if we have them
+                    if ($alarmIdxPos !== false && $gponIndexPos !== false && $sernumPos !== false) {
+                        // Try to use the same column positions as in the header
+                        $alarmIdx = trim(substr($cleanLine, 0, $gponIndexPos - $alarmIdxPos));
+                        $interface = trim(substr($cleanLine, $gponIndexPos - $alarmIdxPos, $sernumPos - $gponIndexPos));
+                        $serial = trim(substr($cleanLine, $sernumPos - $alarmIdxPos));
 
-                        if (! empty($serial) && ! empty($interface) && is_numeric($alarmIdx)) {
+                        // Remove any trailing columns from serial
+                        if (strpos($serial, ' ') !== false) {
+                            $serial = trim(substr($serial, 0, strpos($serial, ' ')));
+                        }
+                    }
+
+                    // 2. Second approach: Parse by delimiter '|' if present
+                    if (empty($alarmIdx) || empty($interface) || empty($serial)) {
+                        if (strpos($cleanLine, '|') !== false) {
+                            $parts = explode('|', $cleanLine);
+                            if (count($parts) >= 3) {
+                                $alarmIdx = trim($parts[0]);
+                                $interface = trim($parts[1]);
+                                $serial = trim($parts[2]);
+                            }
+                        }
+                    }
+
+                    // 3. Third approach: Parse by spaces with specific validation
+                    if (empty($alarmIdx) || empty($interface) || empty($serial)) {
+                        $parts = preg_split('/\s+/', $cleanLine, -1, PREG_SPLIT_NO_EMPTY);
+                        if (count($parts) >= 3) {
+                            // Validate if the first part looks like an alarm-idx (numeric)
+                            if (is_numeric($parts[0])) {
+                                $alarmIdx = $parts[0];
+                                $interface = $parts[1];
+                                $serial = $parts[2];
+
+                                // Special validation for serial: should start with letters
+                                if (! preg_match('/^[A-Za-z]/', $serial)) {
+                                    // If serial doesn't look right, rearrange
+                                    $serial = $parts[2];
+                                }
+                            }
+                        }
+                    }
+
+                    // Add to results if we have valid data
+                    if (! empty($alarmIdx) && ! empty($interface) && ! empty($serial)) {
+                        // Additional validation
+                        $alarmIdx = (int) $alarmIdx;  // Convert to integer
+
+                        // Only add if all values are properly set
+                        if ($alarmIdx > 0 && strlen($interface) > 0 && strlen($serial) > 0) {
                             $unregData[] = [
                                 'alarm-idx' => $alarmIdx,
                                 'interface' => $interface,
