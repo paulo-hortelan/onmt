@@ -435,6 +435,43 @@ class NokiaService
     }
 
     /**
+     * Gets ONTs alarm - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function alarmOnts(): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'description' => 'Get ONTs alarm',
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = FX16::showAlarmQueryOntPloam($interface);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
      * Gets ONTs detail by serials - Telnet
      *
      * Parameter 'serials' must already be provided

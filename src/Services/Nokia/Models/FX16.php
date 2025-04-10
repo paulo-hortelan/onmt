@@ -553,6 +553,78 @@ class FX16 extends NokiaService
     }
 
     /**
+     * Returns the ONT alarm - Telnet
+     */
+    public static function showAlarmQueryOntPloam(string $interface): ?CommandResult
+    {
+        $command = "show alarm query ont-ploam all severity all servaff all ont $interface";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            $alarmData = [];
+
+            if (strpos($response, 'ont-ploam table') !== false) {
+                if (strpos($response, '--------------------------------------------------------------------------------') !== false) {
+                    $blocks = explode('--------------------------------------------------------------------------------', $response);
+
+                    foreach ($blocks as $block) {
+                        if (empty(trim($block)) || strpos($block, 'ont-ploam') === false) {
+                            continue;
+                        }
+
+                        $alarm = [
+                            'aidinfo' => null,
+                            'type' => null,
+                            'name' => null,
+                            'severity' => null,
+                            'servaff' => null,
+                            'time' => null,
+                            'descript' => null,
+                        ];
+
+                        $fields = [
+                            'aidinfo' => '/aidinfo\s*:\s*"?([^"\n]+)"?/i',
+                            'type' => '/type\s*:\s*([^\n]+)/i',
+                            'name' => '/name\s*:\s*([^\n]+)/i',
+                            'severity' => '/severity\s*:\s*([^\n]+)/i',
+                            'servaff' => '/servaff\s*:\s*([^\n]+)/i',
+                            'time' => '/time\s*:\s*([^\n]+)/i',
+                            'descript' => '/descript\s*:\s*"?([^"\n]+)"?/i',
+                        ];
+
+                        foreach ($fields as $key => $pattern) {
+                            if (preg_match($pattern, $block, $matches)) {
+                                $alarm[$key] = trim($matches[1]);
+                            }
+                        }
+
+                        if ($alarm['name'] !== null) {
+                            $alarmData[] = $alarm;
+                        }
+                    }
+                }
+            }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $alarmData,
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
      * Returns the ONT port details - Telnet
      */
     public static function showInterfacePortOnt(string $interface): ?CommandResult
@@ -630,7 +702,6 @@ class FX16 extends NokiaService
                 ]);
             }
 
-            // Extract the header line to understand column positions
             $headerLine = '';
             if (preg_match('/alarm-idx\|.*?\|sernum/i', $tableSection, $headerMatch)) {
                 $headerLine = $headerMatch[0];
@@ -644,12 +715,10 @@ class FX16 extends NokiaService
                 ]);
             }
 
-            // Get column positions from header line
             $alarmIdxPos = strpos($headerLine, 'alarm-idx');
             $gponIndexPos = strpos($headerLine, 'gpon-index');
             $sernumPos = strpos($headerLine, 'sernum');
 
-            // Process data lines
             $lines = preg_split('/\r\n|\n|\r/', $tableSection);
             $dataStarted = false;
 
@@ -660,33 +729,25 @@ class FX16 extends NokiaService
                     continue;
                 }
 
-                // Skip header lines
                 if (preg_match('/alarm-idx|unprovision-onu count/i', $trimmedLine)) {
                     $dataStarted = true;
 
                     continue;
                 }
 
-                // Skip separator lines
                 if (preg_match('/^[-+]+$/', $trimmedLine) || preg_match('/^=+$/', $trimmedLine)) {
                     continue;
                 }
 
-                // Process data line
                 if ($dataStarted) {
-                    // Clean special characters like '-\|' at the beginning
                     $cleanLine = preg_replace('/^[-\\\\|\s]+/', '', $trimmedLine);
-
-                    // Try multiple parsing strategies
 
                     // 1. First approach: Use column positions if we have them
                     if ($alarmIdxPos !== false && $gponIndexPos !== false && $sernumPos !== false) {
-                        // Try to use the same column positions as in the header
                         $alarmIdx = trim(substr($cleanLine, 0, $gponIndexPos - $alarmIdxPos));
                         $interface = trim(substr($cleanLine, $gponIndexPos - $alarmIdxPos, $sernumPos - $gponIndexPos));
                         $serial = trim(substr($cleanLine, $sernumPos - $alarmIdxPos));
 
-                        // Remove any trailing columns from serial
                         if (strpos($serial, ' ') !== false) {
                             $serial = trim(substr($serial, 0, strpos($serial, ' ')));
                         }
@@ -708,15 +769,12 @@ class FX16 extends NokiaService
                     if (empty($alarmIdx) || empty($interface) || empty($serial)) {
                         $parts = preg_split('/\s+/', $cleanLine, -1, PREG_SPLIT_NO_EMPTY);
                         if (count($parts) >= 3) {
-                            // Validate if the first part looks like an alarm-idx (numeric)
                             if (is_numeric($parts[0])) {
                                 $alarmIdx = $parts[0];
                                 $interface = $parts[1];
                                 $serial = $parts[2];
 
-                                // Special validation for serial: should start with letters
                                 if (! preg_match('/^[A-Za-z]/', $serial)) {
-                                    // If serial doesn't look right, rearrange
                                     $serial = $parts[2];
                                 }
                             }
@@ -725,10 +783,8 @@ class FX16 extends NokiaService
 
                     // Add to results if we have valid data
                     if (! empty($alarmIdx) && ! empty($interface) && ! empty($serial)) {
-                        // Additional validation
-                        $alarmIdx = (int) $alarmIdx;  // Convert to integer
+                        $alarmIdx = (int) $alarmIdx;
 
-                        // Only add if all values are properly set
                         if ($alarmIdx > 0 && strlen($interface) > 0 && strlen($serial) > 0) {
                             $unregData[] = [
                                 'alarm-idx' => $alarmIdx,

@@ -44,6 +44,7 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  *
  * == ONT INFORMATION RETRIEVAL ==
  * @method static Collection|null detailOnts() Retrieves detailed information about ONTs including optical parameters (TX/RX power levels). Parameter 'interfaces' must already be provided.
+ * @method static Collection|null alarmOnts() Retrieves detailed information about ONTs alarms. Parameter 'interfaces' must already be provided.
  * @method static Collection|null detailOntsBySerials() Retrieves detailed information about ONTs by serial numbers. Includes optical parameters and operational status. Parameter 'serials' must already be provided.
  * @method static Collection|null interfaceOnts() Gets ONT interface information (slot/port/ONT ID) by serial numbers. Parameter 'serials' must already be provided.
  * @method static Collection|null interfaceOntsDetail() Gets detailed configuration information about ONT interfaces including their service profiles. Parameter 'interfaces' must already be provided.
