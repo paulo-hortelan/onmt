@@ -33,7 +33,7 @@ describe('Nokia Alarm - Success', function () {
 
             collect($batch->commands)->each(function ($commandResult) {
                 expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['rx-signal-level'])->toBeFloat();
+                expect($commandResult->result['servaff'])->toBeString();
             });
         });
     })->only();
