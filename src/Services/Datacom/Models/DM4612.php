@@ -174,6 +174,69 @@ class DM4612 extends DatacomService
     }
 
     /**
+     * Shows all ONUs alarm information
+     */
+    public static function showAlarmInclude(string $interface): ?CommandResult
+    {
+        $command = "show alarm | include \"$interface \" | nomore";
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (! str_contains($response, $interface) && ! empty($response)) {
+                throw new \Exception($response);
+            }
+
+            if (empty($response)) {
+                return CommandResult::create([
+                    'success' => true,
+                    'command' => $command,
+                    'response' => $response,
+                    'error' => null,
+                    'result' => [],
+                ]);
+            }
+
+            $alarmInfo = [];
+
+            $lines = explode("\n", $response);
+
+            foreach ($lines as $line) {
+                if (empty(trim($line)) || str_contains($line, $command)) {
+                    continue;
+                }
+
+                if (preg_match('/^\s*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s+UTC[+-]\d+\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+?)\s*$/', $line, $matches)) {
+                    $alarmInfo[] = [
+                        'TriggeredOn' => $matches[1],
+                        'Severity' => $matches[2],
+                        'Source' => $matches[3],
+                        'Status' => $matches[4],
+                        'Name' => $matches[5],
+                        'Description' => trim($matches[6]),
+                    ];
+                }
+            }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $alarmInfo,
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
      * Shows all ONUs configured on a specific GPON interface
      */
     public static function showInterfaceGpon(string $ponInterface): ?CommandResult

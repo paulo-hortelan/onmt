@@ -463,6 +463,38 @@ class DatacomService
     }
 
     /**
+     * Gets ONTs alarm - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsAlarm(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = DM4612::showAlarmInclude($interface);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
      * Gets ONTs service port - Telnet
      *
      * @return CommandResultBatch CommandResultBatch
