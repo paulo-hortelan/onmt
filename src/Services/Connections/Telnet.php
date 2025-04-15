@@ -216,47 +216,48 @@ class Telnet
         $userPrompt = '';
         $passPrompt = '';
 
-        switch ($hostType) {
-            case 'linux': // General Linux/UNIX
-                $userPrompt = 'login:';
-                $passPrompt = 'Password:';
-                break;
-
-            case 'ZTE-C300':
-            case 'ZTE-C600':
-                $userPrompt = 'Username:';
-                $passPrompt = 'Password:';
-                break;
-
-            case 'Nokia-FX16':
-                $userPrompt = 'login: ';
-                $passPrompt = 'password: ';
-                break;
-
-            case 'ios': // Cisco IOS, IOS-XE, IOS-XR
-                $userPrompt = 'Username:';
-                $passPrompt = 'Password:';
-                break;
-
-            case 'digistar':
-                $passPrompt = 'Password: ';
-                break;
-
-            case 'phyhome':
-                $userPrompt = 'Username(1-32 chars):';
-                $passPrompt = 'Password(1-16 chars):';
-                break;
-
-            case 'Datacom-DM4612':
-                $userPrompt = 'login:';
-                $passPrompt = 'Password:';
-                break;
-        }
-
-        $promptRegex = $this->getPromptRegexForHostType($hostType);
-        $this->promptRegex = $promptRegex;
-
         try {
+
+            switch ($hostType) {
+                case 'linux': // General Linux/UNIX
+                    $userPrompt = 'login:';
+                    $passPrompt = 'Password:';
+                    break;
+
+                case 'ZTE-C300':
+                case 'ZTE-C600':
+                    $userPrompt = 'Username:';
+                    $passPrompt = 'Password:';
+                    break;
+
+                case 'Nokia-FX16':
+                    $userPrompt = 'login: ';
+                    $passPrompt = 'password: ';
+                    break;
+
+                case 'ios': // Cisco IOS, IOS-XE, IOS-XR
+                    $userPrompt = 'Username:';
+                    $passPrompt = 'Password:';
+                    break;
+
+                case 'digistar':
+                    $passPrompt = 'Password: ';
+                    break;
+
+                case 'phyhome':
+                    $userPrompt = 'Username(1-32 chars):';
+                    $passPrompt = 'Password(1-16 chars):';
+                    break;
+
+                case 'Datacom-DM4612':
+                    $userPrompt = 'login:';
+                    $passPrompt = 'Password:';
+                    break;
+            }
+
+            $promptRegex = $this->getPromptRegexForHostType($hostType);
+            $this->promptRegex = $promptRegex;
+
             $this->writeCommand($userPrompt, $username);
 
             $this->writeCommand($passPrompt, $password);
@@ -264,7 +265,14 @@ class Telnet
             $this->setRegexPrompt($promptRegex);
             $this->waitPrompt();
         } catch (\Exception $e) {
-            throw new \Exception('Login failed. '.$e->getMessage());
+            if ($this->socket) {
+                @fclose($this->socket);
+                $this->socket = null;
+            }
+
+            self::$instance = null;
+
+            throw new \Exception('Login failed: '.$e->getMessage());
         }
     }
 

@@ -92,6 +92,13 @@ class TL1 extends Telnet
                     break;
             }
         } catch (\Exception $e) {
+            if ($this->socket) {
+                @fclose($this->socket);
+                $this->socket = null;
+            }
+
+            self::$instance = null;
+
             throw new \Exception('Login failed: '.$e->getMessage());
         }
     }
