@@ -1116,4 +1116,76 @@ class DM4612 extends DatacomService
             ]);
         }
     }
+
+    /**
+     * Resets an ONU
+     */
+    public static function interfaceGponOnuResetOnu(string $ponInterface, string $ontIndex): ?CommandResult
+    {
+        $response = null;
+        $command = "interface gpon $ponInterface onu-reset onu $ontIndex";
+
+        try {
+            self::$telnetConn->changePromptRegex('[no,yes]');
+
+            $response = self::$telnetConn->exec($command);
+
+            if (str_contains($response, 'syntax error')) {
+                throw new \Exception($response);
+            }
+
+            self::$telnetConn->resetPromptRegex();
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            self::$telnetConn->resetPromptRegex();
+
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
+
+    /**
+     * Yes
+     */
+    public static function yes(): ?CommandResult
+    {
+        $response = null;
+        $command = 'yes';
+
+        try {
+            $response = self::$telnetConn->exec($command);
+
+            if (str_contains($response, 'syntax error')) {
+                throw new \Exception($response);
+            }
+
+            return CommandResult::create([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+            ]);
+        } catch (\Exception $e) {
+            return CommandResult::create([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+            ]);
+        }
+    }
 }

@@ -1190,7 +1190,7 @@ class C300 extends ZTEService
 
             self::$telnetConn->resetPromptRegex();
 
-            return CommandResult::make([
+            return CommandResult::create([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1200,7 +1200,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             self::$telnetConn->resetPromptRegex();
 
-            return CommandResult::make([
+            return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,

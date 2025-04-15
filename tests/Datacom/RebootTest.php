@@ -13,12 +13,14 @@ beforeEach(function () {
     $this->passwordTelnet = env('DATACOM_DM4612_OLT_PASSWORD_TELNET');
 });
 
-describe('Datacom - Onts Alarm', function () {
-    it('can get onts alarm successfully', function () {
+describe('Datacom - Onts Reboot', function () {
+    it('can reboot onus successfully', function () {
         $datacom = Datacom::connectTelnet($this->ipServer, $this->usernameTelnet, $this->passwordTelnet, 23);
-        $datacom->interfaces(['1/1/1/8']);
+        $datacom->interfaces(['1/1/3/1']);
 
-        $result = $datacom->ontsAlarm();
+        $result = $datacom->ontsReboot();
+
+        dump($result->toArray());
 
         expect($result)
             ->toBeInstanceOf(Collection::class)
@@ -31,13 +33,7 @@ describe('Datacom - Onts Alarm', function () {
                 ->and($batch->commands)->not->toBeEmpty();
 
             collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue()
-                    ->and($commandResult->result[0])->toHaveKeys([
-                        'TriggeredOn',
-                        'Severity',
-                        'Source',
-                        'Status',
-                    ]);
+                expect($commandResult->success)->toBeTrue();
             });
         });
     });

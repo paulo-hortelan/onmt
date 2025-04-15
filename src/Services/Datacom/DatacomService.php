@@ -495,6 +495,64 @@ class DatacomService
     }
 
     /**
+     * Gets ONTs alarm - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsReboot(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            if (self::$terminalMode !== 'config') {
+                $response = $this->setConfigTerminalMode();
+
+                $commandResultBatch->associateCommands($response->commands);
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::interfaceGponOnuResetOnu($ponInterface, $ontIndex);
+
+            $response->associateBatch($commandResultBatch);
+
+            if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            $response = DM4612::yes();
+
+            $response->associateBatch($commandResultBatch);
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
      * Gets ONTs service port - Telnet
      *
      * @return CommandResultBatch CommandResultBatch
