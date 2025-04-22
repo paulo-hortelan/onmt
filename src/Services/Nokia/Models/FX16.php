@@ -824,6 +824,10 @@ class FX16 extends NokiaService
         try {
             $response = self::$tl1Conn->exec($command, false);
 
+            if (! str_contains($response, 'M  0 COMPLD')) {
+                throw new \Exception($response);
+            }
+
             return CommandResult::make([
                 'success' => true,
                 'command' => $command,
