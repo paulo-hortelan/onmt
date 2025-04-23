@@ -1126,7 +1126,7 @@ class FX16 extends NokiaService
      */
     public static function hguTr069Sparam(string $mode, string $interface, HguTr069SparamConfig $config): ?CommandResult
     {
-        $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
+        $accessIdentifier = $config->buildIdentifier($interface);
         $buildCommand = $config->buildCommand($mode);
 
         $command = "$mode-HGUTR069-SPARAM::{$accessIdentifier}{$buildCommand};";

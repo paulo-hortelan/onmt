@@ -1111,7 +1111,7 @@ class NokiaService
      *
      * @param  int  $vlan  VLAN value
      * @param  int  $sParamId  Parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED or DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069Vlan(int $vlan = 110, int $sParamId = 1, string $mode = 'ENT'): ?Collection
@@ -1160,7 +1160,7 @@ class NokiaService
      * @param  string  $password  PPPOE password
      * @param  int  $sParamIdUsername  PPPOE username parameter index
      * @param  int  $sParamIdPassword  PPPOE password parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED or DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069Pppoe(string $username, string $password, int $sParamIdUsername = 2, int $sParamIdPassword = 3, string $mode = 'ENT'): ?Collection
@@ -1220,7 +1220,7 @@ class NokiaService
      * @param  string  $preSharedKey  Wifi password
      * @param  int  $sParamIdSsid  SSID parameter index
      * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED or DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069Wifi2_4Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 4, int $sParamIdPreSharedKey = 5, string $mode = 'ENT'): ?Collection
@@ -1280,7 +1280,7 @@ class NokiaService
      * @param  string  $preSharedKey  Wifi password
      * @param  int  $sParamIdSsid  SSID parameter index
      * @param  int  $sParamIdPreSharedKey  Wifi password parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED or DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069Wifi5Ghz(string $ssid, string $preSharedKey, int $sParamIdSsid = 6, int $sParamIdPreSharedKey = 7, string $mode = 'ENT'): ?Collection
@@ -1338,7 +1338,7 @@ class NokiaService
      *
      * @param  string  $password  Password value
      * @param  int  $sParamId  Parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED or DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069WebAccountPassword(string $password, int $sParamId = 8, string $mode = 'ENT'): ?Collection
@@ -1385,7 +1385,7 @@ class NokiaService
      *
      * @param  string  $password  Password value
      * @param  int  $sParamId  Parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED or DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069AccountPassword(string $password, int $sParamId = 9, string $mode = 'ENT'): ?Collection
