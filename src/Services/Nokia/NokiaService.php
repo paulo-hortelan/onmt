@@ -1071,7 +1071,7 @@ class NokiaService
      * Parameter 'interfaces' must already be provided
      *
      * @param  VlanEgPortConfig  $config  VLAN egress port configuration parameters
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED)
      * @return Collection A collection of CommandResultBatch
      */
     public function addEgressPortToVlan(VlanEgPortConfig $config, string $mode = 'ENT'): ?Collection
@@ -1434,7 +1434,7 @@ class NokiaService
      * @param  int  $sParamIdLan  LAN parameter index
      * @param  int  $sParamIdWan  WAN parameter index
      * @param  int  $sParamIdWan2  WAN part 2 parameter index
-     * @param  string  $mode  TR069 mode (ENT or ED)
+     * @param  string  $mode  TR069 mode (ENT, ED OR DLT)
      * @return Collection A collection of CommandResultBatch
      */
     public function configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14, string $mode = 'ENT'): ?Collection

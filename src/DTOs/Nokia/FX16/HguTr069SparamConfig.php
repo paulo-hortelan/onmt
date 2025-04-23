@@ -24,6 +24,12 @@ class HguTr069SparamConfig
     {
         $command = '';
 
+        if ($mode === 'DLT') {
+            return $command;
+        }
+
+        $command .= '::::';
+
         if ($mode === 'ENT') {
             $command .= "PARAMNAME={$this->paramName},";
         }

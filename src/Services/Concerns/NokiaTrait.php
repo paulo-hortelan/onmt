@@ -11,8 +11,8 @@ trait NokiaTrait
      */
     public function validateMode(string $mode): void
     {
-        if (! in_array($mode, ['ENT', 'ED'])) {
-            throw new \Exception('Invalid mode. Mode must be either ENT or ED.');
+        if (! in_array($mode, ['ENT', 'ED', 'DLT'])) {
+            throw new \Exception('Invalid mode. Mode must be either ENT, ED or DLT.');
         }
     }
 }

@@ -1129,7 +1129,7 @@ class FX16 extends NokiaService
         $accessIdentifier = $config->buildIdentifier($interface, 14, 1);
         $buildCommand = $config->buildCommand($mode);
 
-        $command = "$mode-HGUTR069-SPARAM::$accessIdentifier::::$buildCommand;";
+        $command = "$mode-HGUTR069-SPARAM::{$accessIdentifier}{$buildCommand};";
 
         try {
             $response = self::$tl1Conn->exec($command, false);
