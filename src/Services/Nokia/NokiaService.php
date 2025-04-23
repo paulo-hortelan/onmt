@@ -1489,4 +1489,50 @@ class NokiaService
 
         return $finalResponse;
     }
+
+    /**
+     * Delete TR069 parameter - TL1
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $sParamId  WAN parameter index
+     * @param  string  $mode  TR069 mode (DLT)
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function deleteTr069(int $sParamId, string $mode = 'DLT'): ?Collection
+    {
+        $this->validateTL1();
+        $this->validateInterfaces();
+        $this->validateMode($mode);
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $config = new HguTr069SparamConfig(
+            paramName: '',
+            paramValue: '',
+            sParamId: $sParamId
+        );
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+                'ip' => self::$ipOlt,
+                'description' => 'Delete TR069 Parameter',
+                'interface' => $interface,
+                'operator' => self::$operator,
+            ]);
+
+            $response = FX16::hguTr069Sparam($mode, $interface, $config);
+
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
 }
