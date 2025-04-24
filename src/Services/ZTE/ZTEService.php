@@ -865,6 +865,44 @@ class ZTEService
     }
 
     /**
+     * Gets the next free ONT index - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return int The next ONT index
+     */
+    public function getNextOntIndex(string $ponInterface): ?int
+    {
+        $this->validateTelnet();
+
+        $commandResultBatch = $this->ontsByPonInterface($ponInterface)->first();
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            throw new Exception('Provided PON Interface is not valid.');
+        }
+
+        $onts = $commandResultBatch->commands[0]['result'];
+
+        $indexes = array_map(function ($item) {
+            $parts = explode(':', $item['onu-index']);
+
+            return (int) end($parts);
+        }, $onts);
+
+        sort($indexes);
+
+        $nextPosition = 1;
+        foreach ($indexes as $index) {
+            if ($index !== $nextPosition) {
+                break;
+            }
+
+            $nextPosition++;
+        }
+
+        return $nextPosition;
+    }
+
+    /**
      * Remove ONTs - Telnet
      *
      * Parameter 'interfaces' must already be provided
