@@ -2,6 +2,7 @@
 
 namespace PauloHortelan\Onmt\Services\ZTE\Models;
 
+use Illuminate\Support\Carbon;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\GemportConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServiceConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\ServicePortConfig;
@@ -16,9 +17,13 @@ class C600 extends C300
     public static function showGponOnuUncfg(): ?CommandResult
     {
         $command = 'show pon onu uncfg';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'OltIndex')) {
                 throw new \Exception($response);
@@ -44,12 +49,16 @@ class C600 extends C300
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -59,6 +68,8 @@ class C600 extends C300
             'response' => $response,
             'error' => null,
             'result' => $onuInfo,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -68,14 +79,19 @@ class C600 extends C300
     public static function showGponOnuState(string $ponInterface): ?CommandResult
     {
         $command = "show gpon onu state gpon_olt-$ponInterface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'No related information to show.')) {
                 return CommandResult::create([
                     'success' => true,
                     'command' => $command,
+                    'response' => $response,
                     'error' => null,
                     'result' => [
                         [
@@ -86,6 +102,8 @@ class C600 extends C300
                             'channel' => null,
                         ],
                     ],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -115,12 +133,16 @@ class C600 extends C300
             }
 
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -130,6 +152,8 @@ class C600 extends C300
             'response' => $response,
             'error' => null,
             'result' => $ontsList,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -139,9 +163,13 @@ class C600 extends C300
     public static function interfaceGponOlt(string $ponInterface): ?CommandResult
     {
         $command = "interface gpon_olt-$ponInterface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -153,14 +181,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -171,9 +205,13 @@ class C600 extends C300
     public static function interfaceGponOnu(string $interface): ?CommandResult
     {
         $command = "interface gpon_onu-$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -185,14 +223,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -207,9 +251,13 @@ class C600 extends C300
         $ontIndex = $parts[1];
 
         $command = "interface vport-$ponInterface.$ontIndex:$vport";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -221,14 +269,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -239,9 +293,13 @@ class C600 extends C300
     public static function ponOnuMng(string $interface): ?CommandResult
     {
         $command = "pon-onu-mng gpon_onu-$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -253,14 +311,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -271,9 +335,13 @@ class C600 extends C300
     public static function showPonPowerAttenuation(string $interface): ?CommandResult
     {
         $command = "show pon power attenuation gpon_onu-$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'OLT')) {
                 throw new \Exception($response);
@@ -314,12 +382,16 @@ class C600 extends C300
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -329,6 +401,8 @@ class C600 extends C300
             'response' => $response,
             'error' => null,
             'result' => $ontOpticalPower,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -338,9 +412,13 @@ class C600 extends C300
     public static function showGponOnuDetailInfo(string $interface): ?CommandResult
     {
         $command = "show gpon onu detail-info gpon_onu-$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'ONU interface')) {
                 throw new \Exception($response);
@@ -384,14 +462,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => $ontDetailInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -402,9 +486,13 @@ class C600 extends C300
     public static function onuTypeSn(int $ontIndex, string $profile, string $serial): ?CommandResult
     {
         $command = "onu $ontIndex type $profile sn $serial";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($command !== $response) {
                 throw new \Exception($response);
@@ -416,14 +504,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -434,9 +528,13 @@ class C600 extends C300
     public static function noOnu(int $ontIndex): ?CommandResult
     {
         $command = "no onu $ontIndex";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($command !== $response) {
                 throw new \Exception($response);
@@ -448,14 +546,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -466,9 +570,13 @@ class C600 extends C300
     public static function showGponOnuBySn(string $serial): ?CommandResult
     {
         $command = "show gpon onu by sn $serial";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'SearchResult')) {
                 throw new \Exception($response);
@@ -484,14 +592,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => $ontInterface ?? null,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -502,9 +616,13 @@ class C600 extends C300
     public static function showRunningConfigInterfaceGponOnu($interface): ?CommandResult
     {
         $command = "show running-config-interface gpon_onu-$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'interface gpon_onu-')) {
                 throw new \Exception($response);
@@ -567,12 +685,16 @@ class C600 extends C300
             }
 
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -582,6 +704,8 @@ class C600 extends C300
             'response' => $response,
             'error' => null,
             'result' => $result,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -591,9 +715,13 @@ class C600 extends C300
     public static function name(string $name): ?CommandResult
     {
         $command = "name $name";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -605,14 +733,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -623,9 +757,13 @@ class C600 extends C300
     public static function description(string $description): ?CommandResult
     {
         $command = "description $description";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -637,14 +775,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -655,9 +799,13 @@ class C600 extends C300
     public static function tcont(int $tcontId, string $profileName): ?CommandResult
     {
         $command = "tcont $tcontId profile $profileName";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -669,14 +817,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -687,9 +841,13 @@ class C600 extends C300
     public static function gemport(GemportConfig $gemportConfig): ?CommandResult
     {
         $command = $gemportConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -701,14 +859,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -719,9 +883,13 @@ class C600 extends C300
     public static function service(ServiceConfig $serviceConfig): ?CommandResult
     {
         $command = $serviceConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -733,14 +901,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -751,9 +925,13 @@ class C600 extends C300
     public static function vlanPort(VlanPortConfig $vlanPortConfig): ?CommandResult
     {
         $command = $vlanPortConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if ($response !== $command) {
                 throw new \Exception($response);
@@ -765,14 +943,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -783,9 +967,13 @@ class C600 extends C300
     public static function servicePort(ServicePortConfig $servicePortConfig): ?CommandResult
     {
         $command = $servicePortConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'service-port')) {
                 throw new \Exception($response);
@@ -797,14 +985,20 @@ class C600 extends C300
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }

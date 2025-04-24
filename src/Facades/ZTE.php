@@ -50,7 +50,7 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  *
  * == ONT INFORMATION RETRIEVAL ==
  * @method static Collection|null ontsOpticalPower() Retrieves optical power levels (TX/RX) for all ONTs specified by interfaces().
- * @method static Collection|null alarmOnts() Gets ONTs alarm specified by interfaces().
+ * @method static Collection|null alarmsOnts() Gets ONTs alarm specified by interfaces().
  * @method static Collection|null interfaceOnts() Gets interface assignments for ONTs specified by serials().
  * @method static Collection|null detailOntsInfo() Retrieves comprehensive ONT information for interfaces specified by interfaces() (C300 model only).
  * @method static Collection|null unconfiguredOnts() Lists all unconfigured/unprovisioned ONTs detected by the OLT.

@@ -2,6 +2,7 @@
 
 namespace PauloHortelan\Onmt\Services\Datacom\Models;
 
+use Illuminate\Support\Carbon;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Services\Concerns\DatacomTrait;
 use PauloHortelan\Onmt\Services\Datacom\DatacomService;
@@ -16,9 +17,13 @@ class DM4612 extends DatacomService
     public static function showInterfaceGponDiscoveredOnus(): ?CommandResult
     {
         $command = 'show interface gpon discovered-onus';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Serial Number') && ! str_contains($response, 'No entries found')) {
                 throw new \Exception($response);
@@ -31,6 +36,8 @@ class DM4612 extends DatacomService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -59,14 +66,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $onuInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -77,9 +90,13 @@ class DM4612 extends DatacomService
     public static function showInterfaceGponOnu(string $ponInterface, string $ontIndex): ?CommandResult
     {
         $command = "show interface gpon $ponInterface onu $ontIndex";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Serial Number')) {
                 throw new \Exception($response);
@@ -109,14 +126,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $onuInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -127,9 +150,13 @@ class DM4612 extends DatacomService
     public static function showInterfaceGponOnuInclude(string $serial): ?CommandResult
     {
         $command = "show interface gpon onu | include $serial";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (trim($response) === $command) {
                 throw new \Exception($response);
@@ -161,14 +188,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $onuInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -179,9 +212,13 @@ class DM4612 extends DatacomService
     public static function showAlarmInclude(string $interface): ?CommandResult
     {
         $command = "show alarm | include \"$interface \" | nomore";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $interface) && ! empty($response)) {
                 throw new \Exception($response);
@@ -194,6 +231,8 @@ class DM4612 extends DatacomService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -224,14 +263,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $alarmInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -242,9 +287,13 @@ class DM4612 extends DatacomService
     public static function showInterfaceGpon(string $ponInterface): ?CommandResult
     {
         $command = "show interface gpon $ponInterface onu | nomore";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Serial Number') && ! str_contains($response, 'No entries found')) {
                 throw new \Exception($response);
@@ -257,6 +306,8 @@ class DM4612 extends DatacomService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -288,14 +339,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $onuInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -306,9 +363,13 @@ class DM4612 extends DatacomService
     public static function showRunningConfigServicePort(): ?CommandResult
     {
         $command = 'show running-config service-port | nomore';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'No entries found')) {
                 return CommandResult::create([
@@ -317,6 +378,8 @@ class DM4612 extends DatacomService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -352,14 +415,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $servicePortInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -370,9 +439,13 @@ class DM4612 extends DatacomService
     public static function showRunningConfigServicePortSelectGpon(string $ponInterface): ?CommandResult
     {
         $command = "show running-config service-port | select gpon $ponInterface | nomore";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, "gpon $ponInterface") && ! str_contains($response, 'No entries found')) {
                 throw new \Exception($response);
@@ -385,6 +458,8 @@ class DM4612 extends DatacomService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -420,14 +495,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $servicePortInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -438,9 +519,13 @@ class DM4612 extends DatacomService
     public static function showRunningConfigServicePortSelectGponContextMatch(string $ponInterface, string $ontIndex): ?CommandResult
     {
         $command = "show running-config service-port | select gpon $ponInterface | context-match \"onu $ontIndex\"";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, "gpon $ponInterface onu $ontIndex")) {
                 throw new \Exception($response);
@@ -478,14 +563,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => $servicePortInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -497,9 +588,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "name $name";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command) || str_contains($response, 'invalid value')) {
                 throw new \Exception($response);
@@ -511,14 +605,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -530,9 +630,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "serial-number $serial";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command) || str_contains($response, 'invalid value')) {
                 throw new \Exception($response);
@@ -544,14 +647,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -563,9 +672,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "snmp profile $profile";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command) || str_contains($response, 'invalid value')) {
                 throw new \Exception($response);
@@ -577,14 +689,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -596,9 +714,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'snmp real-time';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command)) {
                 throw new \Exception($response);
@@ -610,14 +731,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -629,9 +756,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "line-profile $profile";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command)) {
                 throw new \Exception($response);
@@ -643,14 +773,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -662,9 +798,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'top';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command)) {
                 throw new \Exception($response);
@@ -676,14 +815,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -695,9 +840,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'end';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command)) {
                 throw new \Exception($response);
@@ -709,14 +857,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -728,9 +882,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'config';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Entering configuration mode terminal')) {
                 throw new \Exception($response);
@@ -742,14 +899,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -761,9 +924,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "interface gpon $ponInterface";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command)) {
                 throw new \Exception($response);
@@ -775,14 +941,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -794,9 +966,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "onu $index";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command)) {
                 throw new \Exception($response);
@@ -808,14 +983,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -827,9 +1008,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'commit';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'Aborted') || str_contains($response, 'Invalid')) {
                 throw new \Exception($response);
@@ -841,14 +1025,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -860,9 +1050,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "veip $port";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command) || str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -874,14 +1067,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -893,9 +1092,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "service-port $port gpon $ponInterface onu $ontIndex gem 1 match vlan vlan-id $vlan action vlan replace vlan-id $vlan description $description";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, $command) || str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -907,14 +1109,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -926,9 +1134,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "ethernet $port";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -940,14 +1151,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -959,9 +1176,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'negotiation';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -973,14 +1193,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -992,9 +1218,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'no shutdown';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -1006,14 +1235,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1025,9 +1260,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "native vlan vlan-id $vlan";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -1039,14 +1277,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1058,9 +1302,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "no onu $index";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -1072,14 +1319,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1091,9 +1344,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "no service-port $port";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -1105,14 +1361,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1124,11 +1386,14 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = "interface gpon $ponInterface onu-reset onu $ontIndex";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             self::$telnetConn->changePromptRegex('[no,yes]');
 
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -1142,8 +1407,11 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
             self::$telnetConn->resetPromptRegex();
 
             return CommandResult::create([
@@ -1152,6 +1420,8 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1163,9 +1433,12 @@ class DM4612 extends DatacomService
     {
         $response = null;
         $command = 'yes';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
@@ -1177,14 +1450,20 @@ class DM4612 extends DatacomService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }

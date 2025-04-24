@@ -3,6 +3,7 @@
 namespace PauloHortelan\Onmt\Services\ZTE;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowModeConfig;
@@ -220,7 +221,6 @@ class ZTEService
         ?string $serial = null,
         ?string $operator = null
     ): void {
-        // $this->validateSingleInterfaceSerial();
 
         $this->globalCommandBatch =
             CommandResultBatch::create([
@@ -240,6 +240,8 @@ class ZTEService
         }
 
         $globalCommandBatch = $this->globalCommandBatch;
+        $globalCommandBatch->finished_at = Carbon::now();
+        $globalCommandBatch->save();
 
         $this->globalCommandBatch = null;
 
@@ -262,6 +264,11 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
@@ -271,10 +278,20 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = 'configure';
+
+        if ($this->globalCommandBatch === null) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -284,15 +301,22 @@ class ZTEService
      */
     public function setInterfaceOltTerminalMode(string $ponInterface)
     {
+        $batchCreatedHere = false;
         if (self::$terminalMode !== 'configure') {
             $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = self::$model === 'C300' ? C300::interfaceGponOlt($ponInterface) : C600::interfaceGponOlt($ponInterface);
@@ -301,10 +325,20 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = "interface-olt-$ponInterface";
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -314,15 +348,22 @@ class ZTEService
      */
     public function setInterfaceOnuTerminalMode(string $interface): ?CommandResultBatch
     {
+        $batchCreatedHere = false;
         if (self::$terminalMode !== 'configure') {
             $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = self::$model === 'C300' ? C300::interfaceGponOnu($interface) : C600::interfaceGponOnu($interface);
@@ -331,10 +372,20 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = "interface-onu-$interface";
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -345,16 +396,23 @@ class ZTEService
     public function setInterfaceVportTerminalMode(string $interface, int $vport): ?CommandResultBatch
     {
         $this->validateModels(['C600']);
+        $batchCreatedHere = false;
 
         if (self::$terminalMode !== 'configure') {
             $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = C600::interfaceVport($interface, $vport);
@@ -363,6 +421,11 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
@@ -372,6 +435,11 @@ class ZTEService
 
         self::$terminalMode = "interface vport-$ponInterface.$ontIndex:$vport";
 
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
+
         return $commandResultBatch;
     }
 
@@ -380,15 +448,22 @@ class ZTEService
      */
     public function setPonOnuMngTerminalMode(string $interface): ?CommandResultBatch
     {
+        $batchCreatedHere = false;
         if (self::$terminalMode !== 'configure') {
             $batchResponse = $this->setConfigureTerminalMode();
             $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = self::$model === 'C300' ? C300::ponOnuMng($interface) : C600::ponOnuMng($interface);
@@ -397,10 +472,20 @@ class ZTEService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->allCommandsSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = "pon-onu-mng-$interface";
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -432,6 +517,11 @@ class ZTEService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -467,6 +557,11 @@ class ZTEService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -500,6 +595,11 @@ class ZTEService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -535,6 +635,11 @@ class ZTEService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -563,6 +668,11 @@ class ZTEService
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($this->globalCommandBatch === null) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         $finalResponse->push($commandResultBatch);
 
@@ -595,6 +705,11 @@ class ZTEService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -625,6 +740,11 @@ class ZTEService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -657,6 +777,11 @@ class ZTEService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
+        if ($this->globalCommandBatch === null) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
+
         $finalResponse->push($commandResultBatch);
 
         return $finalResponse;
@@ -677,19 +802,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'description' => 'Reboot ONTs',
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "pon-onu-mng-$interface") {
                 $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -701,6 +838,10 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
@@ -710,54 +851,17 @@ class ZTEService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
+            $commandResultBatch->load('commands');
 
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
         }
 
         return $finalResponse;
-    }
-
-    /**
-     * Gets the next free ONT index - Telnet
-     *
-     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
-     * @return int The next ONT index
-     */
-    public function getNextOntIndex(string $ponInterface): ?int
-    {
-        $this->validateTelnet();
-
-        $commandResultBatch = $this->ontsByPonInterface($ponInterface)->first();
-
-        if (! $commandResultBatch->allCommandsSuccessful()) {
-            throw new Exception('Provided PON Interface is not valid.');
-        }
-
-        $onts = $commandResultBatch->commands[0]['result'];
-
-        $indexes = array_map(function ($item) {
-            $parts = explode(':', $item['onu-index']);
-
-            return (int) end($parts);
-        }, $onts);
-
-        sort($indexes);
-
-        $nextPosition = 1;
-        foreach ($indexes as $index) {
-            if ($index !== $nextPosition) {
-                break;
-            }
-
-            $nextPosition++;
-        }
-
-        return $nextPosition;
     }
 
     /**
@@ -774,11 +878,15 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $parts = explode(':', $interface);
             $ponInterface = $parts[0];
@@ -787,9 +895,17 @@ class ZTEService
             if (self::$terminalMode !== "interface-olt-$ponInterface") {
                 $batchResponse = $this->setInterfaceOltTerminalMode($ponInterface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -801,11 +917,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -830,19 +954,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "interface-olt-$ponInterface") {
                 $batchResponse = $this->setInterfaceOltTerminalMode($ponInterface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -856,11 +992,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -883,18 +1027,30 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "interface-onu-$interface") {
                 $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -906,11 +1062,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -933,18 +1097,30 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "interface-onu-$interface") {
                 $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -956,11 +1132,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -984,18 +1168,30 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "interface-onu-$interface") {
                 $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1007,11 +1203,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1031,24 +1235,35 @@ class ZTEService
     {
         $this->validateTelnet();
         $this->validateInterfaces();
-
         $this->validateTerminalMode($terminalMode);
 
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if ($terminalMode === 'interface-onu' && self::$terminalMode !== "interface-onu-$interface") {
                 $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1058,9 +1273,17 @@ class ZTEService
             if ($terminalMode === 'pon-onu-mng' && self::$terminalMode !== "pon-onu-mng-$interface") {
                 $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1071,11 +1294,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1099,19 +1330,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "interface-onu-$interface") {
                     $batchResponse = $this->setInterfaceOnuTerminalMode($interface);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1127,9 +1370,17 @@ class ZTEService
                 if (self::$terminalMode !== "interface vport-$ponInterface.$ontIndex:$vport") {
                     $batchResponse = $this->setInterfaceVportTerminalMode($interface, $vport);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1144,11 +1395,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1160,7 +1419,7 @@ class ZTEService
      *
      * Parameter 'interfaces' must already be provided
      *
-     * @param  ServiceConfig  $servicePortConfig  Service settings
+     * @param  ServiceConfig  $serviceConfig  Service settings
      * @return Collection A collection of CommandResultBatch
      */
     public function configureService(ServiceConfig $serviceConfig): ?Collection
@@ -1171,18 +1430,30 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "pon-onu-mng-$interface") {
                 $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1194,11 +1465,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1221,18 +1500,30 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "pon-onu-mng-$interface") {
                 $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1244,11 +1535,19 @@ class ZTEService
             $commandResultBatch->associateCommand($response);
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1271,19 +1570,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
                     $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1295,13 +1606,20 @@ class ZTEService
                 $commandResultBatch->associateCommand($response);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
-
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1324,19 +1642,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
                     $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1348,13 +1678,20 @@ class ZTEService
                 $commandResultBatch->associateCommand($response);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
-
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1377,19 +1714,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
                     $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1401,13 +1750,20 @@ class ZTEService
                 $commandResultBatch->associateCommand($response);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
-
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1430,19 +1786,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
                     $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1454,13 +1822,20 @@ class ZTEService
                 $commandResultBatch->associateCommand($response);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
-
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1483,19 +1858,31 @@ class ZTEService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$model === 'C300') {
                 if (self::$terminalMode !== "pon-onu-mng-$interface") {
                     $batchResponse = $this->setPonOnuMngTerminalMode($interface);
 
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+                    if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                        $commandResultBatch = $batchResponse;
+                    } else {
+                        $commandResultBatch->associateCommands($batchResponse->commands);
+                    }
 
                     if (! $commandResultBatch->allCommandsSuccessful()) {
+                        if ($batchCreatedHere) {
+                            $commandResultBatch->finished_at = Carbon::now();
+                            $commandResultBatch->save();
+                        }
                         $finalResponse->push($commandResultBatch);
 
                         continue;
@@ -1507,13 +1894,20 @@ class ZTEService
                 $commandResultBatch->associateCommand($response);
 
                 if (! $commandResultBatch->allCommandsSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
                 }
-
             }
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 

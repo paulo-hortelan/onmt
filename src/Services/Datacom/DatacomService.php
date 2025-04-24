@@ -3,6 +3,7 @@
 namespace PauloHortelan\Onmt\Services\Datacom;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
@@ -213,6 +214,8 @@ class DatacomService
         }
 
         $globalCommandBatch = $this->globalCommandBatch;
+        $globalCommandBatch->finished_at = Carbon::now();
+        $globalCommandBatch->save();
 
         $this->globalCommandBatch = null;
 
@@ -224,10 +227,14 @@ class DatacomService
      */
     public function setDefaultTerminalMode(): ?CommandResultBatch
     {
+        $batchCreatedHere = false;
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = DM4612::end();
 
@@ -235,10 +242,20 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = '';
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -248,10 +265,14 @@ class DatacomService
      */
     public function setConfigTerminalMode(): ?CommandResultBatch
     {
+        $batchCreatedHere = false;
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         if (self::$terminalMode === '') {
             $response = DM4612::config();
@@ -263,10 +284,20 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = 'config';
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -276,15 +307,22 @@ class DatacomService
      */
     public function setInterfaceGponTerminalMode(string $ponInterface): ?CommandResultBatch
     {
+        $batchCreatedHere = false;
         if (self::$terminalMode !== 'config') {
-            $response = $this->setConfigTerminalMode();
-            $commandResultBatch = $this->globalCommandBatch ?? $response;
+            $batchResponse = $this->setConfigTerminalMode();
+            $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = DM4612::interfaceGpon($ponInterface);
@@ -293,10 +331,20 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = "interface-gpon-$ponInterface";
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -308,10 +356,14 @@ class DatacomService
     {
         $ponInterface = $this->getPonInterfaceFromInterface($interface);
         $index = $this->getOntIndexFromInterface($interface);
+        $batchCreatedHere = false;
 
         if (self::$terminalMode !== "interface-gpon-$ponInterface") {
-            $response = $this->setInterfaceGponTerminalMode($ponInterface);
-            $commandResultBatch = $this->globalCommandBatch ?? $response;
+            $batchResponse = $this->setInterfaceGponTerminalMode($ponInterface);
+            $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -319,6 +371,9 @@ class DatacomService
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = DM4612::onu($index);
@@ -327,10 +382,20 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = "onu-$index";
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -342,10 +407,14 @@ class DatacomService
     {
         $ponInterface = $this->getPonInterfaceFromInterface($interface);
         $index = $this->getOntIndexFromInterface($interface);
+        $batchCreatedHere = false;
 
         if (self::$terminalMode !== "onu-$index") {
-            $response = $this->setOnuTerminalMode($interface);
-            $commandResultBatch = $this->globalCommandBatch ?? $response;
+            $batchResponse = $this->setOnuTerminalMode($interface);
+            $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         } else {
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -353,6 +422,9 @@ class DatacomService
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
         }
 
         $response = DM4612::ethernet($port);
@@ -361,10 +433,20 @@ class DatacomService
         $commandResultBatch->load('commands');
 
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             return $commandResultBatch;
         }
 
         self::$terminalMode = "ethernet-$port";
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -379,17 +461,24 @@ class DatacomService
         $this->validateTelnet();
 
         $finalResponse = collect();
-
+        $batchCreatedHere = false;
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = DM4612::showInterfaceGponDiscoveredOnus();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
         $finalResponse->push($commandResultBatch);
 
         return $finalResponse;
@@ -410,17 +499,25 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$serials as $serial) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = DM4612::showInterfaceGponOnuInclude($serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -442,11 +539,15 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
@@ -456,6 +557,10 @@ class DatacomService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -477,17 +582,25 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = DM4612::showAlarmInclude($interface);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -509,18 +622,30 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalMode();
+                $batchResponse = $this->setConfigTerminalMode();
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -531,21 +656,27 @@ class DatacomService
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             $response = DM4612::interfaceGponOnuResetOnu($ponInterface, $ontIndex);
-
             $response->associateBatch($commandResultBatch);
 
             if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
                 $finalResponse->push($commandResultBatch);
 
                 continue;
             }
 
             $response = DM4612::yes();
-
             $response->associateBatch($commandResultBatch);
 
             $commandResultBatch->load('commands');
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -560,26 +691,42 @@ class DatacomService
     public function ontsServicePort(): ?CommandResultBatch
     {
         $this->validateTelnet();
-
+        $batchCreatedHere = false;
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         if (! empty(self::$terminalMode)) {
-            $response = $this->setDefaultTerminalMode();
+            $batchResponse = $this->setDefaultTerminalMode();
 
-            $commandResultBatch->associateCommands($response->commands);
+            if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                $commandResultBatch = $batchResponse;
+            } else {
+                $commandResultBatch->associateCommands($batchResponse->commands);
+            }
 
             if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->save();
+                }
+
                 return $commandResultBatch;
             }
         }
 
         $response = DM4612::showRunningConfigServicePort();
-
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -593,17 +740,24 @@ class DatacomService
     public function ontsServicePortByPonInterface(string $ponInterface): ?CommandResultBatch
     {
         $this->validateTelnet();
-
+        $batchCreatedHere = false;
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'pon_interface' => $ponInterface,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = DM4612::showRunningConfigServicePortSelectGpon($ponInterface);
-
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -623,20 +777,27 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             $response = DM4612::showRunningConfigServicePortSelectGponContextMatch($ponInterface, $ontIndex);
-
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
             $finalResponse->push($commandResultBatch);
         }
 
@@ -687,17 +848,24 @@ class DatacomService
     public function ontsByPonInterface(string $ponInterface): ?CommandResultBatch
     {
         $this->validateTelnet();
-
+        $batchCreatedHere = false;
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'pon_interface' => $ponInterface,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = DM4612::showInterfaceGpon($ponInterface);
-
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         return $commandResultBatch;
     }
@@ -752,17 +920,29 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== 'config') {
-                $batchResponse = $this->setConfigTerminalMode($interface);
+                $batchResponse = $this->setConfigTerminalMode();
 
-                $commandResultBatch->associateCommands($batchResponse->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -773,10 +953,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->wasLastCommandSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -801,20 +980,32 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalMode($interface);
+                $batchResponse = $this->setOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -825,10 +1016,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -853,20 +1043,32 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalMode($interface);
+                $batchResponse = $this->setOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -877,10 +1079,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -905,20 +1106,32 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalMode($interface);
+                $batchResponse = $this->setOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -929,10 +1142,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -946,7 +1158,6 @@ class DatacomService
      *
      * Parameter 'interfaces' must already be provided
      *
-     * @param  string  $profile  ONT SNMP Profile
      * @return Collection A collection of CommandResultBatch
      */
     public function setSnmpRealTime(): ?Collection
@@ -957,20 +1168,32 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalMode($interface);
+                $batchResponse = $this->setOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -981,10 +1204,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1009,20 +1231,32 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalMode($interface);
+                $batchResponse = $this->setOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1033,10 +1267,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1061,20 +1294,32 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "onu-$ontIndex") {
-                $response = $this->setOnuTerminalMode($interface);
+                $batchResponse = $this->setOnuTerminalMode($interface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1085,10 +1330,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1115,18 +1359,30 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalMode();
+                $batchResponse = $this->setConfigTerminalMode();
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1140,10 +1396,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1168,18 +1423,30 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "ethernet-$ethernetPort") {
-                $response = $this->setEthernetTerminalMode($interface, $ethernetPort);
+                $batchResponse = $this->setEthernetTerminalMode($interface, $ethernetPort);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1190,10 +1457,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1218,18 +1484,30 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "ethernet-$ethernetPort") {
-                $response = $this->setEthernetTerminalMode($interface, $ethernetPort);
+                $batchResponse = $this->setEthernetTerminalMode($interface, $ethernetPort);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1240,10 +1518,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1269,18 +1546,30 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== "ethernet-$ethernetPort") {
-                $response = $this->setEthernetTerminalMode($interface, $ethernetPort);
+                $batchResponse = $this->setEthernetTerminalMode($interface, $ethernetPort);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
-                if (! $commandResultBatch->allCommandsSuccessful()) {
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1291,10 +1580,9 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
-            if (! $commandResultBatch->allCommandsSuccessful()) {
-                $finalResponse->push($commandResultBatch);
-
-                continue;
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $finalResponse->push($commandResultBatch);
@@ -1318,22 +1606,34 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'description' => 'Remove ONTs',
                 'interface' => $interface,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "interface-gpon-$ponInterface") {
-                $response = $this->setInterfaceGponTerminalMode($ponInterface);
+                $batchResponse = $this->setInterfaceGponTerminalMode($ponInterface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1341,24 +1641,13 @@ class DatacomService
             }
 
             $response = DM4612::noOnu($ontIndex);
+
             $response->associateBatch($commandResultBatch);
 
-            if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalMode($ponInterface);
-
-                $commandResultBatch->associateCommands($response->commands);
-
-                if (! $commandResultBatch->wasLastCommandSuccessful()) {
-                    $finalResponse->push($commandResultBatch);
-
-                    continue;
-                }
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
-
-            $response = DM4612::commit();
-            $response->associateBatch($commandResultBatch);
-
-            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1383,18 +1672,30 @@ class DatacomService
         $finalResponse = collect();
 
         foreach ($ports as $port) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'description' => 'Remove Service Ports',
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalMode();
+                $batchResponse = $this->setConfigTerminalMode();
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1402,12 +1703,13 @@ class DatacomService
             }
 
             $response = DM4612::noServicePort($port);
+
             $response->associateBatch($commandResultBatch);
 
-            $response = DM4612::commit();
-            $response->associateBatch($commandResultBatch);
-
-            $commandResultBatch->load('commands');
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1435,21 +1737,33 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $key => $interface) {
+            $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
                 'description' => 'Remove ONTs and Service Ports',
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
             if (self::$terminalMode !== "interface-gpon-$ponInterface") {
-                $response = $this->setInterfaceGponTerminalMode($ponInterface);
+                $batchResponse = $this->setInterfaceGponTerminalMode($ponInterface);
 
-                $commandResultBatch->associateCommands($response->commands);
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
 
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        $commandResultBatch->save();
+                    }
                     $finalResponse->push($commandResultBatch);
 
                     continue;
@@ -1457,27 +1771,22 @@ class DatacomService
             }
 
             $response = DM4612::noOnu($ontIndex);
+
             $response->associateBatch($commandResultBatch);
 
-            if (self::$terminalMode !== 'config') {
-                $response = $this->setConfigTerminalMode();
-
-                $commandResultBatch->associateCommands($response->commands);
-
-                if (! $commandResultBatch->wasLastCommandSuccessful()) {
-                    $finalResponse->push($commandResultBatch);
-
-                    continue;
-                }
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
             }
 
             $response = DM4612::noServicePort($ports[$key]);
+
             $response->associateBatch($commandResultBatch);
 
-            $response = DM4612::commit();
-            $response->associateBatch($commandResultBatch);
-
-            $commandResultBatch->load('commands');
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }

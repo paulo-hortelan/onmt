@@ -2,6 +2,7 @@
 
 namespace PauloHortelan\Onmt\Services\ZTE\Models;
 
+use Illuminate\Support\Carbon;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\FlowModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\GemportConfig;
@@ -23,9 +24,12 @@ class C300 extends ZTEService
     public static function executeCommandTelnet(string $command): ?CommandResult
     {
         $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::create([
                 'success' => true,
@@ -33,14 +37,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -52,9 +62,12 @@ class C300 extends ZTEService
     {
         $response = null;
         $command = 'terminal length 0';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::make([
                 'success' => true,
@@ -62,14 +75,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -81,9 +100,12 @@ class C300 extends ZTEService
     {
         $response = null;
         $command = 'configure terminal';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Enter configuration commands')) {
                 throw new \Exception($response);
@@ -95,14 +117,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -114,9 +142,12 @@ class C300 extends ZTEService
     {
         $response = null;
         $command = 'exit';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::make([
                 'success' => true,
@@ -124,14 +155,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -143,9 +180,12 @@ class C300 extends ZTEService
     {
         $response = null;
         $command = 'end';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::make([
                 'success' => true,
@@ -153,14 +193,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -172,9 +218,12 @@ class C300 extends ZTEService
     {
         $response = null;
         $command = 'yes';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::make([
                 'success' => true,
@@ -182,14 +231,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -201,9 +256,12 @@ class C300 extends ZTEService
     {
         $response = null;
         $command = 'show this';
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::make([
                 'success' => true,
@@ -211,14 +269,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [$response],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -229,9 +293,13 @@ class C300 extends ZTEService
     public static function interfaceGponOlt(string $ponInterface): ?CommandResult
     {
         $command = "interface gpon-olt_$ponInterface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -243,14 +311,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -261,9 +335,13 @@ class C300 extends ZTEService
     public static function interfaceGponOnu(string $interface): ?CommandResult
     {
         $command = "interface gpon-onu_$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -275,14 +353,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -293,9 +377,13 @@ class C300 extends ZTEService
     public static function ponOnuMng(string $interface): ?CommandResult
     {
         $command = "pon-onu-mng gpon-onu_$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -307,14 +395,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -325,9 +419,13 @@ class C300 extends ZTEService
     public static function showPonPowerAttenuation(string $interface): ?CommandResult
     {
         $command = "show pon power attenuation gpon-onu_$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'OLT')) {
                 throw new \Exception($response);
@@ -368,12 +466,16 @@ class C300 extends ZTEService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -383,6 +485,8 @@ class C300 extends ZTEService
             'response' => $response,
             'error' => null,
             'result' => $ontOpticalPower,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -392,9 +496,13 @@ class C300 extends ZTEService
     public static function showGponOnuBySn(string $serial): ?CommandResult
     {
         $command = "show gpon onu by sn $serial";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Search result')) {
                 throw new \Exception($response);
@@ -410,14 +518,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => $ontInterface ?? null,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -428,9 +542,13 @@ class C300 extends ZTEService
     public static function showGponOnuDetailInfo(string $interface): ?CommandResult
     {
         $command = "show gpon onu detail-info gpon-onu_$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'ONU interface')) {
                 throw new \Exception($response);
@@ -474,14 +592,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => $ontDetailInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -492,9 +616,13 @@ class C300 extends ZTEService
     public static function showGponOnuState(string $ponInterface): ?CommandResult
     {
         $command = "show gpon onu state gpon-olt_$ponInterface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'No related information to show.')) {
                 return CommandResult::create([
@@ -511,6 +639,8 @@ class C300 extends ZTEService
                             'channel' => null,
                         ],
                     ],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -545,15 +675,21 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => $ontsList,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
 
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -564,9 +700,13 @@ class C300 extends ZTEService
     public static function showGponOnuUncfg(): ?CommandResult
     {
         $command = 'show gpon onu uncfg';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'OnuIndex')) {
                 throw new \Exception($response);
@@ -598,14 +738,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => $onuInfo,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -616,9 +762,13 @@ class C300 extends ZTEService
     public static function showRunningConfigInterfaceGponOnu($interface): ?CommandResult
     {
         $command = "show running-config interface gpon-onu_$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'interface gpon-onu_')) {
                 throw new \Exception($response);
@@ -655,14 +805,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => $result,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -673,9 +829,13 @@ class C300 extends ZTEService
     public static function showOnuRunningConfigGponOnu($interface): ?CommandResult
     {
         $command = "show onu running config gpon-onu_$interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'pon-onu-mng gpon-onu_')) {
                 throw new \Exception($response);
@@ -712,14 +872,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => $result,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -730,9 +896,13 @@ class C300 extends ZTEService
     public static function onuTypeSn(int $ontIndex, string $profile, string $serial): ?CommandResult
     {
         $command = "onu $ontIndex type $profile sn $serial";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Successful')) {
                 throw new \Exception($response);
@@ -744,14 +914,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -762,9 +938,13 @@ class C300 extends ZTEService
     public static function noOnu(int $ontIndex): ?CommandResult
     {
         $command = "no onu $ontIndex";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'Successful')) {
                 throw new \Exception($response);
@@ -776,14 +956,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -794,9 +980,13 @@ class C300 extends ZTEService
     public static function name(string $name): ?CommandResult
     {
         $command = "name $name";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -808,14 +998,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -826,9 +1022,13 @@ class C300 extends ZTEService
     public static function description(string $description): ?CommandResult
     {
         $command = "description $description";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -840,14 +1040,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -858,9 +1064,13 @@ class C300 extends ZTEService
     public static function tcont(int $tcontId, string $profileName): ?CommandResult
     {
         $command = "tcont $tcontId profile $profileName";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -872,14 +1082,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -890,9 +1106,13 @@ class C300 extends ZTEService
     public static function gemport(GemportConfig $gemportConfig): ?CommandResult
     {
         $command = $gemportConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -904,14 +1124,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -922,9 +1148,13 @@ class C300 extends ZTEService
     public static function servicePort(ServicePortConfig $servicePortConfig): ?CommandResult
     {
         $command = $servicePortConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -936,14 +1166,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -954,9 +1190,13 @@ class C300 extends ZTEService
     public static function service(ServiceConfig $serviceConfig): ?CommandResult
     {
         $command = $serviceConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -968,14 +1208,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -986,9 +1232,13 @@ class C300 extends ZTEService
     public static function switchportBind(SwitchportBindConfig $switchportBindConfig): ?CommandResult
     {
         $command = $switchportBindConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1000,14 +1250,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1018,9 +1274,13 @@ class C300 extends ZTEService
     public static function vlanPort(VlanPortConfig $vlanPortConfig): ?CommandResult
     {
         $command = $vlanPortConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1032,14 +1292,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1050,9 +1316,13 @@ class C300 extends ZTEService
     public static function flowMode(FlowModeConfig $flowModeConfig): ?CommandResult
     {
         $command = $flowModeConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1064,14 +1334,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1082,9 +1358,13 @@ class C300 extends ZTEService
     public static function flow(FlowConfig $flowConfig): ?CommandResult
     {
         $command = $flowConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1096,14 +1376,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1114,9 +1400,13 @@ class C300 extends ZTEService
     public static function vlanFilterMode(VlanFilterModeConfig $vlanFilterModeConfig): ?CommandResult
     {
         $command = $vlanFilterModeConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1128,14 +1418,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1146,9 +1442,13 @@ class C300 extends ZTEService
     public static function vlanFilter(VlanFilterConfig $vlanFilterConfig): ?CommandResult
     {
         $command = $vlanFilterConfig->buildCommand();
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1160,14 +1460,20 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1178,11 +1484,15 @@ class C300 extends ZTEService
     public static function reboot(): ?CommandResult
     {
         $command = 'reboot';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             self::$telnetConn->changePromptRegex(':');
 
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! empty($response)) {
                 throw new \Exception($response);
@@ -1196,8 +1506,11 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
             self::$telnetConn->resetPromptRegex();
 
             return CommandResult::create([
@@ -1206,6 +1519,8 @@ class C300 extends ZTEService
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }

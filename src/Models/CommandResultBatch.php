@@ -19,6 +19,13 @@ class CommandResultBatch extends Model
         'interface',
         'serial',
         'operator',
+        'created_at',
+        'finished_at',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'finished_at' => 'datetime',
     ];
 
     public function commands(): HasMany
@@ -72,5 +79,18 @@ class CommandResultBatch extends Model
         }
 
         $this->load('commands');
+    }
+
+    /**
+     * Calculate the execution time in seconds.
+     * Returns null if finished_at is not set.
+     */
+    public function executionTimeInSeconds(): ?int
+    {
+        if ($this->finished_at && $this->created_at) {
+            return $this->finished_at->diffInSeconds($this->created_at);
+        }
+
+        return null;
     }
 }

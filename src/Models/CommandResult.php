@@ -18,11 +18,15 @@ class CommandResult extends Model
         'error',
         'result',
         'batch_id',
+        'created_at',
+        'finished_at',
     ];
 
     protected $casts = [
         'success' => 'boolean',
         'result' => 'array',
+        'created_at' => 'datetime',
+        'finished_at' => 'datetime',
     ];
 
     public function batch(): BelongsTo

@@ -21,7 +21,7 @@ describe('Nokia Alarm - Success', function () {
 
         $nokia->interfaces(['1/1/1/12/4']);
 
-        $result = $nokia->alarmOnts();
+        $result = $nokia->alarmsOnts();
 
         dump($result->toArray());
 

@@ -3,6 +3,7 @@
 namespace PauloHortelan\Onmt\Services\Nokia;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
@@ -271,6 +272,8 @@ class NokiaService
         }
 
         $globalCommandBatch = $this->globalCommandBatch;
+        $globalCommandBatch->finished_at = Carbon::now();
+        $globalCommandBatch->save();
 
         $this->globalCommandBatch = null;
 
@@ -304,6 +307,11 @@ class NokiaService
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($this->globalCommandBatch === null) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         $finalResponse->push($commandResultBatch);
 
@@ -340,6 +348,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -391,6 +404,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -428,6 +446,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -435,13 +458,13 @@ class NokiaService
     }
 
     /**
-     * Gets ONTs alarm - Telnet
+     * Gets ONTs alarms - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function alarmOnts(): ?Collection
+    public function alarmsOnts(): ?Collection
     {
         $this->validateInterfaces();
         $this->validateTelnet();
@@ -464,6 +487,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -515,6 +543,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -551,6 +584,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -589,6 +627,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -625,6 +668,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -663,6 +711,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -695,6 +748,9 @@ class NokiaService
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
 
+        $commandResultBatch->finished_at = Carbon::now();
+        $commandResultBatch->save();
+
         $finalResponse->push($commandResultBatch);
 
         return $finalResponse;
@@ -726,6 +782,11 @@ class NokiaService
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($this->globalCommandBatch === null) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         $finalResponse->push($commandResultBatch);
 
@@ -802,6 +863,11 @@ class NokiaService
 
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -838,6 +904,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -876,6 +947,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -913,6 +989,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -948,6 +1029,11 @@ class NokiaService
             $response = FX16::entLogPort($interface, $config);
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -986,6 +1072,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1021,6 +1112,11 @@ class NokiaService
             $response = FX16::setQosUsQueue($interface, $config);
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1058,6 +1154,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1097,6 +1198,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1144,6 +1250,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1205,6 +1316,11 @@ class NokiaService
                 return $response;
             });
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1264,6 +1380,11 @@ class NokiaService
 
                 return $response;
             });
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1325,6 +1446,11 @@ class NokiaService
                 return $response;
             });
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1372,6 +1498,11 @@ class NokiaService
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1418,6 +1549,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1484,6 +1620,11 @@ class NokiaService
                 return $response;
             });
 
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
+
             $finalResponse->push($commandResultBatch);
         }
 
@@ -1529,6 +1670,11 @@ class NokiaService
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($this->globalCommandBatch === null) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }

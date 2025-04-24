@@ -3,6 +3,7 @@
 namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
@@ -23,9 +24,13 @@ class FX16 extends NokiaService
     public static function environmentInhibitAlarms(): ?CommandResult
     {
         $command = 'environment inhibit-alarms';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::make([
                 'success' => true,
@@ -33,14 +38,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -50,8 +61,13 @@ class FX16 extends NokiaService
      */
     public static function executeCommandTelnet(string $command): ?CommandResult
     {
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::create([
                 'success' => true,
@@ -59,14 +75,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -76,8 +98,13 @@ class FX16 extends NokiaService
      */
     public static function executeCommandTL1(string $command): ?CommandResult
     {
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             return CommandResult::create([
                 'success' => true,
@@ -85,14 +112,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -103,9 +136,13 @@ class FX16 extends NokiaService
     public static function adminEquipmentOntInterfaceRebootWithActiveImage(string $interface): ?CommandResult
     {
         $command = "admin equipment ont interface $interface reboot with-active-image";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
                 throw new \Exception($response);
@@ -117,14 +154,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -135,9 +178,13 @@ class FX16 extends NokiaService
     public static function showEquipmentOntStatusPon(string $ponInterface): ?CommandResult
     {
         $command = "show equipment ont status pon $ponInterface detail";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'pon table')) {
                 throw new \Exception($response);
@@ -208,14 +255,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $ontsData,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -233,9 +286,13 @@ class FX16 extends NokiaService
         }
 
         $command = "configure equipment ont interface $interface admin-state $adminState";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
                 throw new \Exception($response);
@@ -247,14 +304,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -265,9 +328,13 @@ class FX16 extends NokiaService
     public static function configureEquipmentOntNoInterface(string $interface): ?CommandResult
     {
         $command = "configure equipment ont no interface $interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
                 throw new \Exception($response);
@@ -279,14 +346,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -297,9 +370,13 @@ class FX16 extends NokiaService
     public static function showEquipmentOntOptics(string $interface): ?CommandResult
     {
         $command = "show equipment ont optics $interface detail";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'tx-signal-level')) {
                 throw new \Exception($response);
@@ -336,14 +413,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $ontDetails,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -356,9 +439,13 @@ class FX16 extends NokiaService
     {
         $formattedSerial = substr_replace($serial, ':', 4, 0);
         $command = "show equipment ont index sn:$formattedSerial detail";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'index table')) {
                 throw new \Exception($response);
@@ -371,6 +458,8 @@ class FX16 extends NokiaService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -388,14 +477,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $ontInterface,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -406,9 +501,13 @@ class FX16 extends NokiaService
     public static function showEquipmentOntInterface(string $interface): ?CommandResult
     {
         $command = "show equipment ont interface $interface detail";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'ont-idx')) {
                 throw new \Exception($response);
@@ -468,14 +567,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $interfaceDetails,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -486,9 +591,13 @@ class FX16 extends NokiaService
     public static function showEquipmentOntSwDownload(string $interface): ?CommandResult
     {
         $command = "show equipment ont sw-download $interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'ont-idx')) {
                 throw new \Exception($response);
@@ -540,14 +649,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $swDownloadDetails,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -558,9 +673,13 @@ class FX16 extends NokiaService
     public static function showAlarmQueryOntPloam(string $interface): ?CommandResult
     {
         $command = "show alarm query ont-ploam all severity all servaff all ont $interface";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             $alarmData = [];
 
@@ -612,14 +731,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $alarmData,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -630,9 +755,13 @@ class FX16 extends NokiaService
     public static function showInterfacePortOnt(string $interface): ?CommandResult
     {
         $command = "show interface port ont:$interface detail";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'opr-status')) {
                 throw new \Exception($response);
@@ -662,14 +791,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $portDetail,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -681,9 +816,13 @@ class FX16 extends NokiaService
     {
         $unregData = [];
         $command = 'show pon unprovision-onu';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'unprovision-onu table')) {
                 throw new \Exception($response);
@@ -699,6 +838,8 @@ class FX16 extends NokiaService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -712,6 +853,8 @@ class FX16 extends NokiaService
                     'response' => $response,
                     'error' => null,
                     'result' => [],
+                    'created_at' => $createdAt,
+                    'finished_at' => $finishedAt,
                 ]);
             }
 
@@ -802,14 +945,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => $unregData,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -820,9 +969,13 @@ class FX16 extends NokiaService
     public static function inhMsgAll(): ?CommandResult
     {
         $command = 'INH-MSG-ALL::ALL:::;';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -834,14 +987,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::make([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -855,9 +1014,13 @@ class FX16 extends NokiaService
 
         $entOntCommand = $config->buildCommand();
         $command = "ENT-ONT::ONT-$formattedInterface::::$entOntCommand;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -869,14 +1032,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -890,9 +1059,13 @@ class FX16 extends NokiaService
 
         $edOntCommand = $config->buildCommand();
         $command = "ED-ONT::ONT-$formattedInterface::::$edOntCommand:IS;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -904,14 +1077,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -924,9 +1103,13 @@ class FX16 extends NokiaService
         $entOntCardConfigCommand = $config->buildCommand();
         $accessIdentifier = $config->buildIdentifier($interface);
         $command = "ENT-ONTCARD::$accessIdentifier:::$entOntCardConfigCommand::IS;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -938,14 +1121,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -957,9 +1146,13 @@ class FX16 extends NokiaService
     {
         $accessIdentifier = $config->buildIdentifier($interface);
         $command = "ENT-LOGPORT::$accessIdentifier:::;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -971,14 +1164,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -990,9 +1189,13 @@ class FX16 extends NokiaService
     {
         $accessIdentifier = $config->buildIdentifier($interface);
         $command = "ED-ONTVEIP::$accessIdentifier:::::IS;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -1004,14 +1207,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1025,9 +1234,13 @@ class FX16 extends NokiaService
         $buildCommand = $config->buildCommand();
 
         $command = "SET-QOS-USQUEUE::$accessIdentifier::::$buildCommand;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -1039,14 +1252,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1060,9 +1279,13 @@ class FX16 extends NokiaService
         $buildCommand = $config->buildCommand();
 
         $command = "SET-VLANPORT::$accessIdentifier:::$buildCommand;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -1074,14 +1297,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1095,9 +1324,13 @@ class FX16 extends NokiaService
         $buildCommand = $config->buildCommand($mode);
 
         $command = "$mode-VLANEGPORT::$accessIdentifier:::$buildCommand;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -1109,14 +1342,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }
@@ -1130,9 +1369,13 @@ class FX16 extends NokiaService
         $buildCommand = $config->buildCommand($mode);
 
         $command = "$mode-HGUTR069-SPARAM::{$accessIdentifier}{$buildCommand};";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command, false);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
                 throw new \Exception($response);
@@ -1144,14 +1387,20 @@ class FX16 extends NokiaService
                 'response' => $response,
                 'error' => null,
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
     }

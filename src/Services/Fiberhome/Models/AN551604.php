@@ -2,6 +2,7 @@
 
 namespace PauloHortelan\Onmt\Services\Fiberhome\Models;
 
+use Illuminate\Support\Carbon;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
@@ -18,9 +19,13 @@ class AN551604 extends FiberhomeService
         $ipOlt = self::$ipOlt;
         $ontsOpticalPower = [];
         $command = "LST-OMDDM::OLTID=$ipOlt,PONID=$interface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -49,12 +54,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -64,6 +73,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $ontsOpticalPower,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -74,10 +85,14 @@ class AN551604 extends FiberhomeService
     {
         $ipOlt = self::$ipOlt;
         $opticalState = [];
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $command = "LST-ONUSTATE::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -103,12 +118,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -118,6 +137,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $opticalState,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -129,9 +150,13 @@ class AN551604 extends FiberhomeService
         $ipOlt = self::$ipOlt;
         $ontsPortInfo = [];
         $command = "LST-PORTVLAN::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -151,12 +176,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -166,6 +195,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $ontsPortInfo,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -176,10 +207,14 @@ class AN551604 extends FiberhomeService
     {
         $ipOlt = self::$ipOlt;
         $ontsLanInfo = [];
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $command = "LST-ONULANINFO::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -209,12 +244,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -224,6 +263,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $ontsLanInfo,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -234,10 +275,14 @@ class AN551604 extends FiberhomeService
     {
         $ipOlt = self::$ipOlt;
         $oltUplinksLanPerf = [];
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $command = "LST-LANPERF::OLTID=$ipOlt,PORTID=$portInterface,PORTID=NA-NA-NA-NA:CTAG::;";
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -268,12 +313,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -283,6 +332,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $oltUplinksLanPerf,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -294,9 +345,13 @@ class AN551604 extends FiberhomeService
         $unRegData = [];
         $ipOlt = self::$ipOlt;
         $command = "LST-UNREGONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -337,12 +392,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -352,6 +411,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $unRegData,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -363,9 +424,13 @@ class AN551604 extends FiberhomeService
         $regOnts = [];
         $ipOlt = self::$ipOlt;
         $command = "LST-ONU::OLTID=$ipOlt:CTAG::;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
@@ -381,8 +446,11 @@ class AN551604 extends FiberhomeService
                         return CommandResult::create([
                             'success' => true,
                             'command' => $command,
+                            'response' => $response,
                             'error' => null,
                             'result' => [],
+                            'created_at' => $createdAt,
+                            'finished_at' => $finishedAt,
                         ]);
                     }
 
@@ -406,12 +474,16 @@ class AN551604 extends FiberhomeService
                 }
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -421,6 +493,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => $regOnts,
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -431,20 +505,28 @@ class AN551604 extends FiberhomeService
     {
         $ipOlt = self::$ipOlt;
         $command = "ADD-ONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::AUTHTYPE=MAC,ONUID=$serial,ONUTYPE=$ontType,NAME=$pppoeUsername;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -454,6 +536,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => [],
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -464,20 +548,28 @@ class AN551604 extends FiberhomeService
     {
         $ipOlt = self::$ipOlt;
         $command = "DEL-ONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::ONUIDTYPE=MAC,ONUID=$serial;";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -487,6 +579,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => [],
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -496,23 +590,31 @@ class AN551604 extends FiberhomeService
     public static function cfgLanPortVlan(string $ponInterface, string $serial, string $portInterface, LanConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
+        $response = null;
+        $command = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $lanServiceCommand = $config->buildCommand();
-
             $command = "CFG-LANPORTVLAN::OLTID={$ipOlt},PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$lanServiceCommand;";
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -522,6 +624,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => [],
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -531,24 +635,31 @@ class AN551604 extends FiberhomeService
     public static function cfgVeipService(string $ponInterface, string $serial, string $portInterface, VeipConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
+        $response = null;
+        $command = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $veipServiceCommand = $config->buildCommand();
-
             $command = "CFG-VEIPSERVICE::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial,ONUPORT=$portInterface:CTAG::$veipServiceCommand;";
-
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -558,6 +669,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => [],
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -567,23 +680,31 @@ class AN551604 extends FiberhomeService
     public static function setWanService(string $ponInterface, string $serial, WanConfig $config): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
+        $response = null;
+        $command = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $wanServiceCommand = $config->buildCommand();
-
             $command = "SET-WANSERVICE::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::$wanServiceCommand;";
-
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
+                'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -593,6 +714,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => [],
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 
@@ -602,22 +725,30 @@ class AN551604 extends FiberhomeService
     public static function resetOnu(string $ponInterface, string $serial): ?CommandResult
     {
         $ipOlt = self::$ipOlt;
+        $response = null;
+        $command = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
 
         try {
             $command = "RESET-ONU::OLTID=$ipOlt,PONID=$ponInterface,ONUIDTYPE=MAC,ONUID=$serial:CTAG::;";
-
             $response = self::$tl1Conn->exec($command);
+            $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  CTAG COMPLD')) {
                 throw new \Exception($response);
             }
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
             return CommandResult::create([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
                 'error' => $e->getMessage(),
                 'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
             ]);
         }
 
@@ -627,6 +758,8 @@ class AN551604 extends FiberhomeService
             'response' => $response,
             'error' => null,
             'result' => [],
+            'created_at' => $createdAt,
+            'finished_at' => $finishedAt,
         ]);
     }
 }

@@ -31,7 +31,7 @@ describe('ZTE C300 - Alarms', function () {
 
         $zte->interfaces(['1/2/1:39']);
 
-        $result = $zte->alarmOnts();
+        $result = $zte->alarmsOnts();
 
         dump($result->toArray());
 
@@ -55,7 +55,7 @@ describe('ZTE C600 - Alarms', function () {
 
         $zte->interfaces(['1/2/1:39']);
 
-        $result = $zte->alarmOnts();
+        $result = $zte->alarmsOnts();
 
         expect($result)->toBeInstanceOf(Collection::class);
 

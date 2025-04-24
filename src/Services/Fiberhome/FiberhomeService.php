@@ -3,6 +3,7 @@
 namespace PauloHortelan\Onmt\Services\Fiberhome;
 
 use Exception;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
@@ -200,6 +201,8 @@ class FiberhomeService
         }
 
         $globalCommandBatch = $this->globalCommandBatch;
+        $globalCommandBatch->finished_at = Carbon::now();
+        $globalCommandBatch->save();
 
         $this->globalCommandBatch = null;
 
@@ -231,6 +234,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -239,11 +243,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::lstOMDDM($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -269,6 +281,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -277,11 +290,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::lstOnuState($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -307,6 +328,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -315,11 +337,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::lstPortVlan($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -343,6 +373,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -351,11 +382,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::lstOnuLanInfo($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -374,16 +413,25 @@ class FiberhomeService
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
+        $batchCreatedHere = false;
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = AN551604::lstLanPerf($portInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         $finalResponse->push($commandResultBatch);
 
@@ -402,17 +450,26 @@ class FiberhomeService
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
+        $batchCreatedHere = false;
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'pon_interface' => $ponInterface,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = AN551604::lstUnregOnu($ponInterface);
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         $finalResponse->push($commandResultBatch);
 
@@ -430,16 +487,25 @@ class FiberhomeService
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
 
         $finalResponse = collect();
+        $batchCreatedHere = false;
 
         $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+        }
 
         $response = AN551604::lstOnu();
 
         $response->associateBatch($commandResultBatch);
         $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->save();
+        }
 
         $finalResponse->push($commandResultBatch);
 
@@ -464,6 +530,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -472,11 +539,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::resetOnu($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -504,6 +579,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -512,11 +588,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -544,6 +628,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -552,11 +637,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -584,6 +677,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -592,11 +686,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::cfgVeipService($ponInterface, $serial, $portInterface, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -623,6 +725,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -631,11 +734,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::setWanService($ponInterface, $serial, $config);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
@@ -661,6 +772,7 @@ class FiberhomeService
 
         for ($i = 0; $i < count(self::$serials); $i++) {
             $serial = self::$serials[$i];
+            $batchCreatedHere = false;
 
             $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
                 'ip' => self::$ipOlt,
@@ -669,11 +781,19 @@ class FiberhomeService
                 'serial' => $serial,
                 'operator' => self::$operator,
             ]);
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+            }
 
             $response = AN551604::delOnu($ponInterface, $serial);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->save();
+            }
 
             $finalResponse->push($commandResultBatch);
         }
