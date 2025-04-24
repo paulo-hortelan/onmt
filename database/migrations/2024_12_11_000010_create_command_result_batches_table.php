@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCommandResultBatchesTable extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {
@@ -24,4 +24,4 @@ class CreateCommandResultBatchesTable extends Migration
     {
         Schema::dropIfExists('command_result_batches');
     }
-}
+};

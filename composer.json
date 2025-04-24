@@ -92,7 +92,8 @@
             "aliases": {
                 "Fiberhome": "PauloHortelan\\Onmt\\Facades\\Fiberhome",
                 "Nokia": "PauloHortelan\\Onmt\\Facades\\Nokia",
-                "ZTE": "PauloHortelan\\Onmt\\Facades\\ZTE"
+                "ZTE": "PauloHortelan\\Onmt\\Facades\\ZTE",
+                "Datacom": "PauloHortelan\\Onmt\\Facades\\Datacom"
             }
         }
     },
