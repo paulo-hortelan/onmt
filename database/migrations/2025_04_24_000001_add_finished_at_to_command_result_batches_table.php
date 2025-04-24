@@ -8,9 +8,11 @@ return new class() extends Migration
 {
     public function up(): void
     {
-        Schema::table('command_result_batches', function (Blueprint $table) {
-            $table->timestamp('finished_at')->nullable()->after('created_at');
-        });
+        if (Schema::hasTable('command_result_batches') && ! Schema::hasColumn('command_result_batches', 'finished_at')) {
+            Schema::table('command_result_batches', function (Blueprint $table) {
+                $table->timestamp('finished_at')->nullable()->after('created_at');
+            });
+        }
     }
 
     public function down(): void

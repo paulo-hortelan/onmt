@@ -21,12 +21,7 @@ class OnmtServiceProvider extends PackageServiceProvider
         $package
             ->name('onmt')
             ->hasConfigFile()
-            ->hasMigrations([
-                'create_command_result_batches_table',
-                'create_command_results_table',
-                'add_finished_at_to_command_result_batches_table',
-                'add_finished_at_to_command_results_table',
-            ]);
+            ->hasMigrations();
 
         $this->app->bind(FiberhomeService::class, function () {
             return new FiberhomeService();
@@ -48,11 +43,5 @@ class OnmtServiceProvider extends PackageServiceProvider
     public function boot(): void
     {
         parent::boot();
-
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../database/migrations' => database_path('migrations'),
-            ], 'onmt-migrations');
-        }
     }
 }
