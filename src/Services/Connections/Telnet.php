@@ -16,7 +16,7 @@ class Telnet
 
     private bool $cleanAnsiSequences = true;
 
-    private static mixed $instance = null;
+    private static array $instances = [];
 
     protected string $host;
 
@@ -100,7 +100,6 @@ class Telnet
         $this->setSpecialCharacters();
         $this->setStreamTimeout($streamTimeout);
 
-        // open global buffer stream
         $this->globalBuffer = new \SplFileObject('php://temp', 'r+b');
 
         $this->connect();
@@ -141,15 +140,17 @@ class Telnet
         int $timeout,
         float $streamTimeout,
     ): self {
-        if (self::$instance === null) {
-            self::$instance = new self($host, $port, $timeout, $streamTimeout);
+        $instanceKey = static::class.":{$host}:{$port}";
+
+        if (! isset(self::$instances[$instanceKey])) {
+            self::$instances[$instanceKey] = new static($host, $port, $timeout, $streamTimeout);
         }
 
-        if (! self::$instance->isConnectionAlive()) {
-            self::$instance->connect();
+        if (! self::$instances[$instanceKey]->isConnectionAlive()) {
+            self::$instances[$instanceKey]->connect();
         }
 
-        return self::$instance;
+        return self::$instances[$instanceKey];
     }
 
     public function connect(int $retries = 3): void
@@ -270,7 +271,8 @@ class Telnet
                 $this->socket = null;
             }
 
-            self::$instance = null;
+            $instanceKey = static::class.":{$this->host}:{$this->port}";
+            unset(self::$instances[$instanceKey]);
 
             throw new \Exception('Login failed: '.$e->getMessage());
         }
@@ -444,7 +446,11 @@ class Telnet
      */
     public function destroy(): void
     {
-        self::$instance = null;
+        $instanceKey = static::class.":{$this->host}:{$this->port}";
+        if (isset(self::$instances[$instanceKey])) {
+            unset(self::$instances[$instanceKey]);
+        }
+
         $this->disconnect();
         $this->buffer = '';
     }

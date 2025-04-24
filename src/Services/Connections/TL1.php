@@ -12,25 +12,6 @@ namespace PauloHortelan\Onmt\Services\Connections;
  */
 class TL1 extends Telnet
 {
-    private static mixed $instance = null;
-
-    public static function getInstance(
-        string $host,
-        int $port,
-        int $timeout,
-        float $streamTimeout,
-    ): self {
-        if (self::$instance === null) {
-            self::$instance = new self($host, $port, $timeout, $streamTimeout);
-        }
-
-        if (! self::$instance->isConnectionAlive()) {
-            self::$instance->connect();
-        }
-
-        return self::$instance;
-    }
-
     public function authenticate(string $username, string $password, string $hostType): void
     {
         if ($this->isAuthenticated) {
@@ -97,7 +78,10 @@ class TL1 extends Telnet
                 $this->socket = null;
             }
 
-            self::$instance = null;
+            $instanceKey = static::class.":{$this->host}:{$this->port}";
+            if (isset(self::$instances[$instanceKey])) {
+                unset(self::$instances[$instanceKey]);
+            }
 
             throw new \Exception('Login failed: '.$e->getMessage());
         }

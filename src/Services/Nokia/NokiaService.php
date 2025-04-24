@@ -35,9 +35,9 @@ class NokiaService
 
     protected static ?string $operator;
 
-    protected int $connTimeout = 5;
+    protected int $connTimeout = 10;
 
-    protected int $streamTimeout = 4;
+    protected int $streamTimeout = 10;
 
     protected static string $ipOlt = '';
 
@@ -51,6 +51,11 @@ class NokiaService
 
     public function connectTelnet(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'FX16'): object
     {
+        if (self::$tl1Conn !== null) {
+            self::$tl1Conn->destroy();
+            self::$tl1Conn = null;
+        }
+
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
         $this->validateIPs($ipOlt, $ipServer);
@@ -71,6 +76,11 @@ class NokiaService
 
     public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'FX16'): object
     {
+        if (self::$telnetConn !== null) {
+            self::$telnetConn->destroy();
+            self::$telnetConn = null;
+        }
+
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
         if (! $this->isValidIP($ipOlt) || ! $this->isValidIP($ipServer)) {
