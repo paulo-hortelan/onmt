@@ -279,15 +279,24 @@ class Telnet
     }
 
     /**
-     * Closes IP socket
+     * Closes the socket connection and cleans up the instance
      */
     public function disconnect(): void
     {
         if ($this->socket) {
-            fclose($this->socket);
+            if (! fclose($this->socket)) {
+                throw new \Exception('Error while closing telnet socket');
+            }
             $this->socket = null;
-            $this->isAuthenticated = false;
         }
+
+        $instanceKey = static::class.":{$this->host}:{$this->port}";
+        if (isset(self::$instances[$instanceKey])) {
+            unset(self::$instances[$instanceKey]);
+        }
+
+        $this->buffer = '';
+        $this->isAuthenticated = false;
     }
 
     /**
