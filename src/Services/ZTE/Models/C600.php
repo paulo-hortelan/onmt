@@ -51,7 +51,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -62,7 +62,7 @@ class C600 extends C300
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -88,7 +88,7 @@ class C600 extends C300
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'No related information to show.')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -135,7 +135,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -146,7 +146,7 @@ class C600 extends C300
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -175,7 +175,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -187,7 +187,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -217,7 +217,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -229,7 +229,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -263,7 +263,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -275,7 +275,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -305,7 +305,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -317,7 +317,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -384,7 +384,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -395,7 +395,7 @@ class C600 extends C300
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -456,7 +456,7 @@ class C600 extends C300
 
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -468,7 +468,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -498,7 +498,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -510,7 +510,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -540,7 +540,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -552,7 +552,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -586,7 +586,7 @@ class C600 extends C300
                 $ontInterface = trim($match[1]);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -598,7 +598,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -687,7 +687,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -698,7 +698,7 @@ class C600 extends C300
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -727,7 +727,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -739,7 +739,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -769,7 +769,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -781,7 +781,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -811,7 +811,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -823,7 +823,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -853,7 +853,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -865,7 +865,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -895,7 +895,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -907,7 +907,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -937,7 +937,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -949,7 +949,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -979,7 +979,7 @@ class C600 extends C300
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -991,7 +991,7 @@ class C600 extends C300
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,

@@ -31,7 +31,7 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -43,7 +43,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -69,7 +69,7 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -81,7 +81,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -111,7 +111,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -123,7 +123,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -149,7 +149,7 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -161,7 +161,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -187,7 +187,7 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -199,7 +199,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -225,7 +225,7 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -237,7 +237,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -263,7 +263,7 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -275,7 +275,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -305,7 +305,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -317,7 +317,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -347,7 +347,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -359,7 +359,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -389,7 +389,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -401,7 +401,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -468,7 +468,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -479,7 +479,7 @@ class C300 extends ZTEService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -512,7 +512,7 @@ class C300 extends ZTEService
                 $ontInterface = trim($match[1]);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -524,7 +524,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -586,7 +586,7 @@ class C300 extends ZTEService
 
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -598,7 +598,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -625,7 +625,7 @@ class C300 extends ZTEService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'No related information to show.')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -669,7 +669,7 @@ class C300 extends ZTEService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -682,7 +682,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -732,7 +732,7 @@ class C300 extends ZTEService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -744,7 +744,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -799,7 +799,7 @@ class C300 extends ZTEService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -811,7 +811,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -866,7 +866,7 @@ class C300 extends ZTEService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -878,7 +878,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -908,7 +908,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -920,7 +920,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -950,7 +950,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -962,7 +962,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -992,7 +992,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1004,7 +1004,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1034,7 +1034,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1046,7 +1046,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1076,7 +1076,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1088,7 +1088,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1118,7 +1118,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1130,7 +1130,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1160,7 +1160,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1172,7 +1172,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1202,7 +1202,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1214,7 +1214,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1244,7 +1244,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1256,7 +1256,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1286,7 +1286,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1298,7 +1298,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1328,7 +1328,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1340,7 +1340,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1370,7 +1370,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1382,7 +1382,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1412,7 +1412,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1424,7 +1424,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1454,7 +1454,7 @@ class C300 extends ZTEService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1466,7 +1466,7 @@ class C300 extends ZTEService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1500,7 +1500,7 @@ class C300 extends ZTEService
 
             self::$telnetConn->resetPromptRegex();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1513,7 +1513,7 @@ class C300 extends ZTEService
             $finishedAt = Carbon::now();
             self::$telnetConn->resetPromptRegex();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
