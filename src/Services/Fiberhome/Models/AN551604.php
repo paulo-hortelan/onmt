@@ -56,7 +56,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -67,7 +67,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -120,7 +120,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -131,7 +131,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -178,7 +178,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -189,7 +189,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -246,7 +246,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -257,7 +257,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -315,7 +315,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -326,7 +326,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -394,7 +394,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -405,7 +405,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -443,7 +443,7 @@ class AN551604 extends FiberhomeService
                     $numOnts = count($splittedResponse) - $key - 2;
 
                     if ($numOnts === 0) {
-                        return CommandResult::create([
+                        return self::createCommandResult([
                             'success' => true,
                             'command' => $command,
                             'response' => $response,
@@ -476,7 +476,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -487,7 +487,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -519,7 +519,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -530,7 +530,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -562,7 +562,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -573,7 +573,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -607,7 +607,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -618,7 +618,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -652,7 +652,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -663,7 +663,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -697,7 +697,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -708,7 +708,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,
@@ -741,7 +741,7 @@ class AN551604 extends FiberhomeService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -752,7 +752,7 @@ class AN551604 extends FiberhomeService
             ]);
         }
 
-        return CommandResult::create([
+        return self::createCommandResult([
             'success' => true,
             'command' => $command,
             'response' => $response,

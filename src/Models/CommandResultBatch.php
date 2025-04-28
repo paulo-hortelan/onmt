@@ -28,8 +28,39 @@ class CommandResultBatch extends Model
         'finished_at' => 'datetime',
     ];
 
+    /**
+     * Flag to indicate if the batch is in in-memory mode (not persisted to database)
+     */
+    public $inMemoryMode = false;
+
+    /**
+     * In-memory commands collection
+     */
+    private $inMemoryCommands = null;
+
+    /**
+     * When accessing the toArray or toJson output, make sure in-memory commands are included
+     */
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        // If we're in memory mode, manually add the commands to the array output
+        if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
+            $array['commands'] = $this->inMemoryCommands->toArray();
+        }
+
+        return $array;
+    }
+
     public function commands(): HasMany
     {
+        // If we're in memory mode and have in-memory commands,
+        // we should return the in-memory commands instead of using the relationship
+        if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
+            return $this->inMemoryCommands;
+        }
+
         return $this->hasMany(CommandResult::class, 'batch_id');
     }
 
@@ -38,6 +69,10 @@ class CommandResultBatch extends Model
      */
     public function firstError()
     {
+        if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
+            return $this->inMemoryCommands->where('success', false)->first();
+        }
+
         return $this->commands()->where('success', false)->first();
     }
 
@@ -46,6 +81,10 @@ class CommandResultBatch extends Model
      */
     public function allCommandsSuccessful(): bool
     {
+        if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
+            return $this->inMemoryCommands->where('success', false)->isEmpty();
+        }
+
         return $this->commands()->where('success', false)->doesntExist();
     }
 
@@ -54,6 +93,12 @@ class CommandResultBatch extends Model
      */
     public function wasLastCommandSuccessful(): bool
     {
+        if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
+            $lastCommand = $this->inMemoryCommands->sortByDesc('id')->first();
+
+            return $lastCommand ? $lastCommand->success : false;
+        }
+
         $lastCommand = $this->commands()->orderBy('id', 'desc')->first();
 
         return $lastCommand ? $lastCommand->success : false;
@@ -64,8 +109,20 @@ class CommandResultBatch extends Model
      */
     public function associateCommand(CommandResult $commandResult)
     {
-        $commandResult->associateBatch($this);
+        if ($this->inMemoryMode) {
+            $commandResult->batch_id = $this->id ?? 1;
 
+            if ($this->inMemoryCommands === null) {
+                $this->inMemoryCommands = collect([]);
+            }
+
+            $this->inMemoryCommands->push($commandResult);
+            $this->setRelation('commands', $this->inMemoryCommands);
+
+            return;
+        }
+
+        $commandResult->associateBatch($this);
         $this->load('commands');
     }
 
@@ -74,6 +131,21 @@ class CommandResultBatch extends Model
      */
     public function associateCommands(Collection $commandResults)
     {
+        if ($this->inMemoryMode) {
+            if ($this->inMemoryCommands === null) {
+                $this->inMemoryCommands = collect([]);
+            }
+
+            foreach ($commandResults as $commandResult) {
+                $commandResult->batch_id = $this->id ?? 1;
+                $this->inMemoryCommands->push($commandResult);
+            }
+
+            $this->setRelation('commands', $this->inMemoryCommands);
+
+            return;
+        }
+
         foreach ($commandResults as $commandResult) {
             $commandResult->associateBatch($this);
         }

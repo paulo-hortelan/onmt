@@ -36,6 +36,14 @@ class CommandResult extends Model
 
     public function associateBatch(CommandResultBatch $commandResultBatch)
     {
+        if ($commandResultBatch->inMemoryMode) {
+            $this->batch_id = $commandResultBatch->id ?? 1;
+
+            $commandResultBatch->associateCommand($this);
+
+            return;
+        }
+
         $this->batch()->associate($commandResultBatch);
         $this->save();
     }

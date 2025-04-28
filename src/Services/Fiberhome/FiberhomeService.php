@@ -2,14 +2,13 @@
 
 namespace PauloHortelan\Onmt\Services\Fiberhome;
 
-use Closure;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
+use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
@@ -43,7 +42,7 @@ class FiberhomeService
 
     private ?CommandResultBatch $globalCommandBatch = null;
 
-    private bool $useDatabaseTransactions = true;
+    protected bool $useDatabaseTransactions = true;
 
     public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'AN5516-04'): ?object
     {
@@ -146,14 +145,45 @@ class FiberhomeService
     }
 
     /**
-     * Executes a database operation, wrapping it in a transaction if enabled.
+     * Creates a CommandResult using create() or make() based on the useDatabaseTransactions setting
+     *
+     * @param  array  $attributes  The attributes to create the CommandResult with
      */
-    private function executeDbOperation(Closure $callback)
+    protected static function createCommandResult(array $attributes): CommandResult
+    {
+        $callingClass = static::class;
+        $instance = null;
+
+        if ($callingClass !== self::class) {
+            $instance = new $callingClass();
+        }
+
+        if ($instance && ! $instance->useDatabaseTransactions) {
+            return CommandResult::make($attributes);
+        } else {
+            return CommandResult::create($attributes);
+        }
+    }
+
+    /**
+     * Creates a CommandResultBatch using create() or make() based on the useDatabaseTransactions setting
+     *
+     * @param  array  $attributes  The attributes to create the CommandResultBatch with
+     */
+    protected function createCommandResultBatch(array $attributes): CommandResultBatch
     {
         if ($this->useDatabaseTransactions) {
-            return DB::transaction($callback);
+            return CommandResultBatch::create($attributes);
         } else {
-            return $callback();
+            $batch = CommandResultBatch::make($attributes);
+
+            $batch->inMemoryMode = true;
+
+            if (! isset($batch->id)) {
+                $batch->id = rand(1000, 9999);
+            }
+
+            return $batch;
         }
     }
 
@@ -219,17 +249,14 @@ class FiberhomeService
     ): void {
         $this->validateSingleInterfaceSerial();
 
-        $this->executeDbOperation(function () use ($description, $ponInterface, $interface, $serial, $operator) {
-            $this->globalCommandBatch =
-                CommandResultBatch::create([
-                    'ip' => self::$ipOlt,
-                    'description' => $description,
-                    'pon_interface' => $ponInterface,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'operator' => self::$operator ?? $operator,
-                ]);
-        });
+        $this->globalCommandBatch = $this->createCommandResultBatch([
+            'ip' => self::$ipOlt,
+            'description' => $description,
+            'pon_interface' => $ponInterface,
+            'interface' => $interface,
+            'serial' => $serial,
+            'operator' => self::$operator ?? $operator,
+        ]);
     }
 
     public function stopRecordingCommands(): CommandResultBatch
@@ -239,11 +266,11 @@ class FiberhomeService
         }
 
         $globalCommandBatch = $this->globalCommandBatch;
+        $globalCommandBatch->finished_at = Carbon::now();
 
-        $this->executeDbOperation(function () use ($globalCommandBatch) {
-            $globalCommandBatch->finished_at = Carbon::now();
+        if ($this->useDatabaseTransactions) {
             $globalCommandBatch->save();
-        });
+        }
 
         $this->globalCommandBatch = null;
 
@@ -277,7 +304,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -291,17 +318,17 @@ class FiberhomeService
             $response = AN551604::lstOMDDM($ponInterface, $serial);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch); // Saves CommandResult
-                    $commandResultBatch->finished_at = Carbon::now();
-                    $commandResultBatch->save(); // Saves CommandResultBatch
-                });
-                $commandResultBatch->load('commands'); // Reload after transaction
-            } else {
-                // Part of a global batch, just associate the command result
                 $response->associateBatch($commandResultBatch); // Saves CommandResult
-                $commandResultBatch->load('commands'); // Reload relationship
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save(); // Only save if using database transactions
+                }
+            } else {
+                $response->associateBatch($commandResultBatch);
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -329,7 +356,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -343,11 +370,12 @@ class FiberhomeService
             $response = AN551604::lstOnuState($ponInterface, $serial);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -380,7 +408,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -394,11 +422,12 @@ class FiberhomeService
             $response = AN551604::lstPortVlan($ponInterface, $serial);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -429,7 +458,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -443,11 +472,12 @@ class FiberhomeService
             $response = AN551604::lstOnuLanInfo($ponInterface, $serial);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -473,7 +503,7 @@ class FiberhomeService
         $finalResponse = collect();
         $batchCreatedHere = false;
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+        $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
@@ -484,11 +514,12 @@ class FiberhomeService
         $response = AN551604::lstLanPerf($portInterface);
 
         if ($batchCreatedHere) {
-            $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->finished_at = Carbon::now();
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
-            });
+            }
             $commandResultBatch->load('commands');
         } else {
             $response->associateBatch($commandResultBatch);
@@ -514,7 +545,7 @@ class FiberhomeService
         $finalResponse = collect();
         $batchCreatedHere = false;
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+        $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
             'ip' => self::$ipOlt,
             'pon_interface' => $ponInterface,
             'operator' => self::$operator,
@@ -526,11 +557,12 @@ class FiberhomeService
         $response = AN551604::lstUnregOnu($ponInterface);
 
         if ($batchCreatedHere) {
-            $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->finished_at = Carbon::now();
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
-            });
+            }
             $commandResultBatch->load('commands');
         } else {
             $response->associateBatch($commandResultBatch);
@@ -555,7 +587,7 @@ class FiberhomeService
         $finalResponse = collect();
         $batchCreatedHere = false;
 
-        $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+        $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
             'ip' => self::$ipOlt,
             'operator' => self::$operator,
         ]);
@@ -566,11 +598,12 @@ class FiberhomeService
         $response = AN551604::lstOnu();
 
         if ($batchCreatedHere) {
-            $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->finished_at = Carbon::now();
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
-            });
+            }
             $commandResultBatch->load('commands');
         } else {
             $response->associateBatch($commandResultBatch);
@@ -602,7 +635,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -616,11 +649,12 @@ class FiberhomeService
             $response = AN551604::resetOnu($ponInterface, $serial);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -655,7 +689,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -669,11 +703,12 @@ class FiberhomeService
             $response = AN551604::addOnu($ponInterface, $serial, $ontType, $pppoeUsername);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -708,7 +743,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -722,11 +757,12 @@ class FiberhomeService
             $response = AN551604::cfgLanPortVlan($ponInterface, $serial, $portInterface, $config);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -761,7 +797,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -775,11 +811,12 @@ class FiberhomeService
             $response = AN551604::cfgVeipService($ponInterface, $serial, $portInterface, $config);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -813,7 +850,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -827,11 +864,12 @@ class FiberhomeService
             $response = AN551604::setWanService($ponInterface, $serial, $config);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
@@ -864,7 +902,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? CommandResultBatch::create([
+            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
@@ -878,11 +916,12 @@ class FiberhomeService
             $response = AN551604::delOnu($ponInterface, $serial);
 
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $response->associateBatch($commandResultBatch);
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
+                }
                 $commandResultBatch->load('commands');
             } else {
                 $response->associateBatch($commandResultBatch);
