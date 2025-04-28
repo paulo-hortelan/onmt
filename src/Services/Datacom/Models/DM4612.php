@@ -30,7 +30,7 @@ class DM4612 extends DatacomService
             }
 
             if (str_contains($response, 'No entries found')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -60,7 +60,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -72,7 +72,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -120,7 +120,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -132,7 +132,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -182,7 +182,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -194,7 +194,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
@@ -225,7 +225,7 @@ class DM4612 extends DatacomService
             }
 
             if (empty($response)) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -257,7 +257,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -269,7 +269,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -300,7 +300,7 @@ class DM4612 extends DatacomService
             }
 
             if (str_contains($response, 'No entries found')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -333,7 +333,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -345,7 +345,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -372,7 +372,7 @@ class DM4612 extends DatacomService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'No entries found')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -409,7 +409,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -421,7 +421,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
@@ -452,7 +452,7 @@ class DM4612 extends DatacomService
             }
 
             if (str_contains($response, 'No entries found')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -489,7 +489,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -501,7 +501,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
@@ -557,7 +557,7 @@ class DM4612 extends DatacomService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -569,7 +569,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? '',
@@ -599,7 +599,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -611,7 +611,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -641,7 +641,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -653,7 +653,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -683,7 +683,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -695,7 +695,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -725,7 +725,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -737,7 +737,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -767,7 +767,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -779,7 +779,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -809,7 +809,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -821,7 +821,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -851,7 +851,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -863,7 +863,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -893,7 +893,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -905,7 +905,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -935,7 +935,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -947,7 +947,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -977,7 +977,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -989,7 +989,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1019,7 +1019,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1031,7 +1031,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1061,7 +1061,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1073,7 +1073,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1103,7 +1103,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1115,7 +1115,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1145,7 +1145,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1157,7 +1157,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1187,7 +1187,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1199,7 +1199,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1229,7 +1229,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1241,7 +1241,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1271,7 +1271,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1283,7 +1283,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1313,7 +1313,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1325,7 +1325,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1355,7 +1355,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1367,7 +1367,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1401,7 +1401,7 @@ class DM4612 extends DatacomService
 
             self::$telnetConn->resetPromptRegex();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1414,7 +1414,7 @@ class DM4612 extends DatacomService
             $finishedAt = Carbon::now();
             self::$telnetConn->resetPromptRegex();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
@@ -1444,7 +1444,7 @@ class DM4612 extends DatacomService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1456,7 +1456,7 @@ class DM4612 extends DatacomService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response,
