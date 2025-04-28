@@ -2,11 +2,9 @@
 
 namespace PauloHortelan\Onmt\Services\Nokia;
 
-use Closure;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
@@ -192,14 +190,44 @@ class NokiaService
     }
 
     /**
-     * Executes a database operation, wrapping it in a transaction if enabled.
+     * Creates a CommandResult using create() or make() based on the useDatabaseTransactions setting
+     *
+     * @param  array  $attributes  The attributes to create the CommandResult with
      */
-    private function executeDbOperation(Closure $callback)
+    protected static function createCommandResult(array $attributes): CommandResult
+    {
+        $callingClass = static::class;
+        $instance = null;
+
+        if ($callingClass !== self::class) {
+            $instance = new $callingClass();
+        }
+
+        if ($instance && ! $instance->useDatabaseTransactions) {
+            return CommandResult::make($attributes);
+        } else {
+            return CommandResult::create($attributes);
+        }
+    }
+
+    /**
+     * Creates a CommandResultBatch using create() or make() based on the useDatabaseTransactions setting
+     *
+     * @param  array  $attributes  The attributes to create the CommandResultBatch with
+     */
+    protected function createCommandResultBatch(array $attributes): CommandResultBatch
     {
         if ($this->useDatabaseTransactions) {
-            return DB::transaction($callback);
+            return CommandResultBatch::create($attributes);
         } else {
-            return $callback();
+            $batch = CommandResultBatch::make($attributes);
+            $batch->inMemoryMode = true;
+
+            if (! isset($batch->id)) {
+                $batch->id = rand(1000, 9999);
+            }
+
+            return $batch;
         }
     }
 
@@ -300,17 +328,14 @@ class NokiaService
     ): void {
         $this->validateSingleInterfaceSerial();
 
-        $this->executeDbOperation(function () use ($description, $ponInterface, $interface, $serial, $operator) {
-            $this->globalCommandBatch =
-                CommandResultBatch::create([
-                    'ip' => self::$ipOlt,
-                    'description' => $description,
-                    'pon_interface' => $ponInterface,
-                    'interface' => $interface,
-                    'serial' => $serial,
-                    'operator' => self::$operator ?? $operator,
-                ]);
-        });
+        $this->globalCommandBatch = $this->createCommandResultBatch([
+            'ip' => self::$ipOlt,
+            'description' => $description,
+            'pon_interface' => $ponInterface,
+            'interface' => $interface,
+            'serial' => $serial,
+            'operator' => self::$operator ?? $operator,
+        ]);
     }
 
     public function stopRecordingCommands(): CommandResultBatch
@@ -320,11 +345,11 @@ class NokiaService
         }
 
         $globalCommandBatch = $this->globalCommandBatch;
+        $globalCommandBatch->finished_at = Carbon::now();
 
-        $this->executeDbOperation(function () use ($globalCommandBatch) {
-            $globalCommandBatch->finished_at = Carbon::now();
+        if ($this->useDatabaseTransactions) {
             $globalCommandBatch->save();
-        });
+        }
 
         $this->globalCommandBatch = null;
 
@@ -349,12 +374,10 @@ class NokiaService
         $commandResultBatch = $this->globalCommandBatch ?? null;
         if ($commandResultBatch === null) {
             $batchCreatedHere = true;
-            $this->executeDbOperation(function () use (&$commandResultBatch) {
-                $commandResultBatch = CommandResultBatch::create([
-                    'ip' => self::$ipOlt,
-                    'operator' => self::$operator,
-                ]);
-            });
+            $commandResultBatch = $this->createCommandResultBatch([
+                'ip' => self::$ipOlt,
+                'operator' => self::$operator,
+            ]);
         }
 
         if (! empty(self::$telnetConn)) {
@@ -363,16 +386,17 @@ class NokiaService
             $response = FX16::executeCommandTL1($command);
         }
 
+        $response->associateBatch($commandResultBatch);
+
         if ($batchCreatedHere) {
-            $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                $response->associateBatch($commandResultBatch); // Saves CommandResult
-                $commandResultBatch->finished_at = Carbon::now();
-                $commandResultBatch->save(); // Saves CommandResultBatch
-            });
-            $commandResultBatch->load('commands'); // Reload after transaction
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if ($this->useDatabaseTransactions) {
+                $commandResultBatch->save();
+            }
+            $commandResultBatch->load('commands');
         } else {
-            $response->associateBatch($commandResultBatch); // Saves CommandResult
-            $commandResultBatch->load('commands'); // Reload relationship
+            $commandResultBatch->load('commands');
         }
 
         $finalResponse->push($commandResultBatch);
@@ -403,29 +427,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Reboot ONTs',
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Reboot ONTs',
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::adminEquipmentOntInterfaceRebootWithActiveImage($interface);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -454,33 +475,33 @@ class NokiaService
         foreach (self::$serials as $serial) {
             $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? null;
+
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $serial) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Reboot ONTs by serial',
-                        'ip' => self::$ipOlt,
-                        'serial' => $serial,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Reboot ONTs by serial',
+                    'ip' => self::$ipOlt,
+                    'serial' => $serial,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response1 = FX16::showEquipmentOntIndex($serial);
             $interface = $response1->result['interface'] ?? null;
 
             if (empty($interface)) {
+                $response1->associateBatch($commandResultBatch);
+
                 if ($batchCreatedHere) {
-                    $this->executeDbOperation(function () use ($commandResultBatch, $response1) {
-                        $response1->associateBatch($commandResultBatch);
-                        $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->finished_at = Carbon::now();
+
+                    if ($this->useDatabaseTransactions) {
                         $commandResultBatch->save();
-                    });
-                    $commandResultBatch->load('commands');
-                } else {
-                    $response1->associateBatch($commandResultBatch);
-                    $commandResultBatch->load('commands');
+                    }
                 }
+
+                $commandResultBatch->load('commands');
+
                 $finalResponse->push($commandResultBatch);
 
                 continue;
@@ -488,19 +509,18 @@ class NokiaService
 
             $response2 = FX16::adminEquipmentOntInterfaceRebootWithActiveImage($interface);
 
+            $response1->associateBatch($commandResultBatch);
+            $response2->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response1, $response2) {
-                    $response1->associateBatch($commandResultBatch);
-                    $response2->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response1->associateBatch($commandResultBatch);
-                $response2->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -531,29 +551,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Get ONTs detail',
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Get ONTs detail',
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::showEquipmentOntOptics($interface);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -584,29 +602,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Get ONTs alarm',
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Get ONTs alarm',
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::showAlarmQueryOntPloam($interface);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -637,31 +653,29 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $serial) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Get ONTs detail by serials',
-                        'ip' => self::$ipOlt,
-                        'serial' => $serial,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Get ONTs detail by serials',
+                    'ip' => self::$ipOlt,
+                    'serial' => $serial,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response1 = FX16::showEquipmentOntIndex($serial);
             $interface = $response1->result['interface'] ?? null;
 
             if (empty($interface)) {
+                $response1->associateBatch($commandResultBatch);
+
                 if ($batchCreatedHere) {
-                    $this->executeDbOperation(function () use ($commandResultBatch, $response1) {
-                        $response1->associateBatch($commandResultBatch);
-                        $commandResultBatch->finished_at = Carbon::now();
+                    $commandResultBatch->finished_at = Carbon::now();
+
+                    if ($this->useDatabaseTransactions) {
                         $commandResultBatch->save();
-                    });
-                    $commandResultBatch->load('commands');
-                } else {
-                    $response1->associateBatch($commandResultBatch);
-                    $commandResultBatch->load('commands');
+                    }
                 }
+
+                $commandResultBatch->load('commands');
                 $finalResponse->push($commandResultBatch);
 
                 continue;
@@ -669,19 +683,18 @@ class NokiaService
 
             $response2 = FX16::showEquipmentOntOptics($interface);
 
+            $response1->associateBatch($commandResultBatch);
+            $response2->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response1, $response2) {
-                    $response1->associateBatch($commandResultBatch);
-                    $response2->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response1->associateBatch($commandResultBatch);
-                $response2->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -712,29 +725,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $serial) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Get ONTs interface by serial',
-                        'ip' => self::$ipOlt,
-                        'serial' => $serial,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Get ONTs interface by serial',
+                    'ip' => self::$ipOlt,
+                    'serial' => $serial,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::showEquipmentOntIndex($serial);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -765,29 +776,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Gets ONTs interface detail',
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Gets ONTs interface detail',
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::showEquipmentOntInterface($interface);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -818,29 +827,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Gets ONTs software download details',
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Gets ONTs software download details',
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::showEquipmentOntSwDownload($interface);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -871,29 +878,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'description' => 'Gets ONts port detail',
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Gets ONts port detail',
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::showInterfacePortOnt($interface);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -920,28 +925,26 @@ class NokiaService
         $commandResultBatch = $this->globalCommandBatch ?? null;
         if ($commandResultBatch === null) {
             $batchCreatedHere = true;
-            $this->executeDbOperation(function () use (&$commandResultBatch) {
-                $commandResultBatch = CommandResultBatch::create([
-                    'description' => 'List Unregistered ONTs',
-                    'ip' => self::$ipOlt,
-                    'operator' => self::$operator,
-                ]);
-            });
+            $commandResultBatch = $this->createCommandResultBatch([
+                'description' => 'List Unregistered ONTs',
+                'ip' => self::$ipOlt,
+                'operator' => self::$operator,
+            ]);
         }
 
         $response = FX16::showPonUnprovisionOnu();
 
+        $response->associateBatch($commandResultBatch);
+
         if ($batchCreatedHere) {
-            $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
-            });
-            $commandResultBatch->load('commands');
-        } else {
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
+            }
         }
+
+        $commandResultBatch->load('commands');
 
         $finalResponse->push($commandResultBatch);
 
@@ -968,29 +971,27 @@ class NokiaService
         $commandResultBatch = $this->globalCommandBatch ?? null;
         if ($commandResultBatch === null) {
             $batchCreatedHere = true;
-            $this->executeDbOperation(function () use (&$commandResultBatch, $ponInterface) {
-                $commandResultBatch = CommandResultBatch::create([
-                    'description' => 'Gets ONTs detail by PON interface',
-                    'ip' => self::$ipOlt,
-                    'pon_interface' => $ponInterface,
-                    'operator' => self::$operator,
-                ]);
-            });
+            $commandResultBatch = $this->createCommandResultBatch([
+                'description' => 'Gets ONTs detail by PON interface',
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'operator' => self::$operator,
+            ]);
         }
 
         $response = FX16::showEquipmentOntStatusPon($ponInterface);
 
+        $response->associateBatch($commandResultBatch);
+
         if ($batchCreatedHere) {
-            $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->finished_at = Carbon::now();
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
-            });
-            $commandResultBatch->load('commands');
-        } else {
-            $response->associateBatch($commandResultBatch);
-            $commandResultBatch->load('commands');
+            }
         }
+
+        $commandResultBatch->load('commands');
 
         $finalResponse->push($commandResultBatch);
 
@@ -1056,32 +1057,29 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Remove ONTs',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Remove ONTs',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response1 = FX16::configureEquipmentOntInterfaceAdminState($interface, 'down');
             $response2 = FX16::configureEquipmentOntNoInterface($interface);
 
+            $response1->associateBatch($commandResultBatch);
+            $response2->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response1, $response2) {
-                    $response1->associateBatch($commandResultBatch);
-                    $response2->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response1->associateBatch($commandResultBatch);
-                $response2->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1113,28 +1111,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::entOnt($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1166,28 +1162,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::edOnt($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1219,28 +1213,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::entOntsCard($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1272,28 +1264,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::entLogPort($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1325,28 +1315,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::edOntVeip($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1378,28 +1366,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::setQosUsQueue($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1431,28 +1417,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::setVlanPort($interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1486,28 +1470,26 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::vlanEgPort($mode, $interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1548,29 +1530,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1620,31 +1600,29 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $responses = collect($configs)->map(function ($config) use ($mode, $interface) {
                 return FX16::hguTr069Sparam($mode, $interface, $config);
             });
 
+            $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $responses) {
-                    $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1694,31 +1672,29 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $responses = collect($configs)->map(function ($config) use ($mode, $interface) {
                 return FX16::hguTr069Sparam($mode, $interface, $config);
             });
 
+            $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $responses) {
-                    $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1768,31 +1744,29 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $responses = collect($configs)->map(function ($config) use ($mode, $interface) {
                 return FX16::hguTr069Sparam($mode, $interface, $config);
             });
 
+            $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $responses) {
-                    $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1833,29 +1807,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1896,29 +1868,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -1973,31 +1943,29 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $responses = collect($configs)->map(function ($config) use ($mode, $interface) {
                 return FX16::hguTr069Sparam($mode, $interface, $config);
             });
 
+            $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $responses) {
-                    $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $responses->each(fn ($response) => $response->associateBatch($commandResultBatch));
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }
@@ -2037,29 +2005,27 @@ class NokiaService
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($commandResultBatch === null) {
                 $batchCreatedHere = true;
-                $this->executeDbOperation(function () use (&$commandResultBatch, $interface) {
-                    $commandResultBatch = CommandResultBatch::create([
-                        'ip' => self::$ipOlt,
-                        'description' => 'Configure TR069',
-                        'interface' => $interface,
-                        'operator' => self::$operator,
-                    ]);
-                });
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Configure TR069',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
             }
 
             $response = FX16::hguTr069Sparam($mode, $interface, $config);
 
+            $response->associateBatch($commandResultBatch);
+
             if ($batchCreatedHere) {
-                $this->executeDbOperation(function () use ($commandResultBatch, $response) {
-                    $response->associateBatch($commandResultBatch);
-                    $commandResultBatch->finished_at = Carbon::now();
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
-                });
-                $commandResultBatch->load('commands');
-            } else {
-                $response->associateBatch($commandResultBatch);
-                $commandResultBatch->load('commands');
+                }
             }
+
+            $commandResultBatch->load('commands');
 
             $finalResponse->push($commandResultBatch);
         }

@@ -32,7 +32,7 @@ class FX16 extends NokiaService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -44,7 +44,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -69,7 +69,7 @@ class FX16 extends NokiaService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -81,7 +81,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -106,7 +106,7 @@ class FX16 extends NokiaService
             $response = self::$tl1Conn->exec($command);
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -118,7 +118,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -148,7 +148,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -160,7 +160,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -249,7 +249,7 @@ class FX16 extends NokiaService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -261,7 +261,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -298,7 +298,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -310,7 +310,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -340,7 +340,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -352,7 +352,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -407,7 +407,7 @@ class FX16 extends NokiaService
 
             extract($ontDetails);
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -419,7 +419,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -452,7 +452,7 @@ class FX16 extends NokiaService
             }
 
             if (! str_contains($response, 'ont-idx')) {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -471,7 +471,7 @@ class FX16 extends NokiaService
                 'interface' => $interface ?? null,
             ];
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -483,7 +483,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -561,7 +561,7 @@ class FX16 extends NokiaService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -573,7 +573,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -643,7 +643,7 @@ class FX16 extends NokiaService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -655,7 +655,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -725,7 +725,7 @@ class FX16 extends NokiaService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -737,7 +737,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -785,7 +785,7 @@ class FX16 extends NokiaService
                 'lastChgOprStat' => $lastChgOprStat ?? null,
             ];
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -797,7 +797,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -832,7 +832,7 @@ class FX16 extends NokiaService
             if (preg_match('/unprovision-onu table.*?unprovision-onu count/s', $response, $matches)) {
                 $tableSection = $matches[0];
             } else {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -847,7 +847,7 @@ class FX16 extends NokiaService
             if (preg_match('/alarm-idx\|.*?\|sernum/i', $tableSection, $headerMatch)) {
                 $headerLine = $headerMatch[0];
             } else {
-                return CommandResult::create([
+                return self::createCommandResult([
                     'success' => true,
                     'command' => $command,
                     'response' => $response,
@@ -939,7 +939,7 @@ class FX16 extends NokiaService
                 }
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -951,7 +951,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -981,7 +981,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -993,7 +993,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::make([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1026,7 +1026,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1038,7 +1038,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1071,7 +1071,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1083,7 +1083,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1115,7 +1115,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1127,7 +1127,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1158,7 +1158,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1170,7 +1170,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1201,7 +1201,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1213,7 +1213,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1246,7 +1246,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1258,7 +1258,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1291,7 +1291,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1303,7 +1303,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1336,7 +1336,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1348,7 +1348,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
@@ -1381,7 +1381,7 @@ class FX16 extends NokiaService
                 throw new \Exception($response);
             }
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
                 'response' => $response,
@@ -1393,7 +1393,7 @@ class FX16 extends NokiaService
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
-            return CommandResult::create([
+            return self::createCommandResult([
                 'success' => false,
                 'command' => $command,
                 'response' => $response ?? null,
