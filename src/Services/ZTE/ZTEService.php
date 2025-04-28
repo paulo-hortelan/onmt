@@ -79,6 +79,8 @@ class ZTEService
             self::$telnetConn->destroy();
             self::$telnetConn = null;
         }
+
+        $this->disableDatabaseTransactions();
     }
 
     public function disableTerminalLength(): ?CommandResult
@@ -116,6 +118,32 @@ class ZTEService
         }
 
         throw new Exception('No connection established.');
+    }
+
+    /**
+     * Disable database transactions for command results
+     *
+     * @return $this
+     */
+    public function disableDatabaseTransactions(): self
+    {
+        CommandResultBatch::disableDatabaseTransactions();
+        CommandResult::disableDatabaseTransactions();
+
+        return $this;
+    }
+
+    /**
+     * Enable database transactions for command results
+     *
+     * @return $this
+     */
+    public function enableDatabaseTransactions(): self
+    {
+        CommandResultBatch::enableDatabaseTransactions();
+        CommandResult::enableDatabaseTransactions();
+
+        return $this;
     }
 
     /**

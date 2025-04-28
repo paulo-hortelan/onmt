@@ -114,6 +114,8 @@ class NokiaService
             self::$tl1Conn->destroy();
             self::$tl1Conn = null;
         }
+
+        $this->disableDatabaseTransactions();
     }
 
     public function inhibitAlarms(): ?CommandResult
@@ -165,6 +167,32 @@ class NokiaService
         }
 
         throw new Exception('No connection established.');
+    }
+
+    /**
+     * Disable database transactions for command results
+     *
+     * @return $this
+     */
+    public function disableDatabaseTransactions(): self
+    {
+        CommandResultBatch::disableDatabaseTransactions();
+        CommandResult::disableDatabaseTransactions();
+
+        return $this;
+    }
+
+    /**
+     * Enable database transactions for command results
+     *
+     * @return $this
+     */
+    public function enableDatabaseTransactions(): self
+    {
+        CommandResultBatch::enableDatabaseTransactions();
+        CommandResult::enableDatabaseTransactions();
+
+        return $this;
     }
 
     /**

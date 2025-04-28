@@ -28,30 +28,58 @@ class CommandResultBatch extends Model
         'finished_at' => 'datetime',
     ];
 
+    protected static bool $databaseTransactionsEnabled = true;
+
+    public static function disableDatabaseTransactions(): void
+    {
+        self::$databaseTransactionsEnabled = false;
+        CommandResult::disableDatabaseTransactions();
+    }
+
+    public static function enableDatabaseTransactions(): void
+    {
+        self::$databaseTransactionsEnabled = true;
+        CommandResult::enableDatabaseTransactions();
+    }
+
+    public static function areDatabaseTransactionsEnabled(): bool
+    {
+        return self::$databaseTransactionsEnabled;
+    }
+
+    public static function create(array $attributes = [])
+    {
+        if (! self::$databaseTransactionsEnabled) {
+            return new static($attributes);
+        }
+
+        return parent::create($attributes);
+    }
+
+    public function save(array $options = [])
+    {
+        if (! self::$databaseTransactionsEnabled) {
+            return $this;
+        }
+
+        return parent::save($options);
+    }
+
     public function commands(): HasMany
     {
         return $this->hasMany(CommandResult::class, 'batch_id');
     }
 
-    /**
-     * Get the first command with error
-     */
     public function firstError()
     {
         return $this->commands()->where('success', false)->first();
     }
 
-    /**
-     * Check if all commands in the batch were successful.
-     */
     public function allCommandsSuccessful(): bool
     {
         return $this->commands()->where('success', false)->doesntExist();
     }
 
-    /**
-     * Check if the last command in the batch was successful.
-     */
     public function wasLastCommandSuccessful(): bool
     {
         $lastCommand = $this->commands()->orderBy('id', 'desc')->first();
@@ -59,9 +87,6 @@ class CommandResultBatch extends Model
         return $lastCommand ? $lastCommand->success : false;
     }
 
-    /**
-     * Associate commands with this batch.
-     */
     public function associateCommand(CommandResult $commandResult)
     {
         $commandResult->associateBatch($this);
@@ -69,9 +94,6 @@ class CommandResultBatch extends Model
         $this->load('commands');
     }
 
-    /**
-     * Associate commands with this batch.
-     */
     public function associateCommands(Collection $commandResults)
     {
         foreach ($commandResults as $commandResult) {
@@ -81,10 +103,6 @@ class CommandResultBatch extends Model
         $this->load('commands');
     }
 
-    /**
-     * Calculate the execution time in seconds.
-     * Returns null if finished_at is not set.
-     */
     public function executionTimeInSeconds(): ?int
     {
         if ($this->finished_at && $this->created_at) {

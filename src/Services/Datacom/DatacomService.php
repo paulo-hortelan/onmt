@@ -5,6 +5,7 @@ namespace PauloHortelan\Onmt\Services\Datacom;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\DatacomTrait;
@@ -60,15 +61,16 @@ class DatacomService
 
     public function disconnect(): void
     {
-        if (isset(self::$telnetConn)) {
-            self::$telnetConn->destroy();
-            self::$telnetConn = null;
-            self::$terminalMode = '';
-
-            return;
+        if (self::$telnetConn === null) {
+            throw new Exception('No connection established.');
         }
 
-        throw new Exception('No connection established.');
+        if (self::$telnetConn !== null) {
+            self::$telnetConn->destroy();
+            self::$telnetConn = null;
+        }
+
+        $this->disableDatabaseTransactions();
     }
 
     public function enableDebug(): void
@@ -91,6 +93,32 @@ class DatacomService
         }
 
         throw new Exception('No connection established.');
+    }
+
+    /**
+     * Disable database transactions for command results
+     *
+     * @return $this
+     */
+    public function disableDatabaseTransactions(): self
+    {
+        CommandResultBatch::disableDatabaseTransactions();
+        CommandResult::disableDatabaseTransactions();
+
+        return $this;
+    }
+
+    /**
+     * Enable database transactions for command results
+     *
+     * @return $this
+     */
+    public function enableDatabaseTransactions(): self
+    {
+        CommandResultBatch::enableDatabaseTransactions();
+        CommandResult::enableDatabaseTransactions();
+
+        return $this;
     }
 
     /**

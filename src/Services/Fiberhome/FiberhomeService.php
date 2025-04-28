@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
+use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
 use PauloHortelan\Onmt\Services\Concerns\Assertations;
 use PauloHortelan\Onmt\Services\Concerns\ValidationsTrait;
@@ -75,6 +76,8 @@ class FiberhomeService
             self::$tl1Conn->destroy();
             self::$tl1Conn = null;
         }
+
+        $this->disableDatabaseTransactions();
     }
 
     public function timeout(int $connTimeout, int $streamTimeout): object
@@ -119,6 +122,32 @@ class FiberhomeService
         }
 
         throw new Exception('No connection established.');
+    }
+
+    /**
+     * Disable database transactions for command results
+     *
+     * @return $this
+     */
+    public function disableDatabaseTransactions(): self
+    {
+        CommandResultBatch::disableDatabaseTransactions();
+        CommandResult::disableDatabaseTransactions();
+
+        return $this;
+    }
+
+    /**
+     * Enable database transactions for command results
+     *
+     * @return $this
+     */
+    public function enableDatabaseTransactions(): self
+    {
+        CommandResultBatch::enableDatabaseTransactions();
+        CommandResult::enableDatabaseTransactions();
+
+        return $this;
     }
 
     private function validateTelnet(): void

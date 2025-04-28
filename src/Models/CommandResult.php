@@ -29,6 +29,43 @@ class CommandResult extends Model
         'finished_at' => 'datetime',
     ];
 
+    protected static bool $databaseTransactionsEnabled = true;
+
+    public static function disableDatabaseTransactions(): void
+    {
+        self::$databaseTransactionsEnabled = false;
+    }
+
+    public static function enableDatabaseTransactions(): void
+    {
+        self::$databaseTransactionsEnabled = true;
+    }
+
+    public static function areDatabaseTransactionsEnabled(): bool
+    {
+        return self::$databaseTransactionsEnabled;
+    }
+
+    public static function create(array $attributes = [])
+    {
+        if (! self::$databaseTransactionsEnabled) {
+            return new static($attributes);
+        }
+
+        return parent::create($attributes);
+    }
+
+    public static function make(array $attributes = [])
+    {
+        $model = new static($attributes);
+
+        if (self::$databaseTransactionsEnabled) {
+            $model->save();
+        }
+
+        return $model;
+    }
+
     public function batch(): BelongsTo
     {
         return $this->belongsTo(CommandResultBatch::class, 'batch_id');
@@ -37,6 +74,18 @@ class CommandResult extends Model
     public function associateBatch(CommandResultBatch $commandResultBatch)
     {
         $this->batch()->associate($commandResultBatch);
-        $this->save();
+
+        if (self::$databaseTransactionsEnabled) {
+            $this->save();
+        }
+    }
+
+    public function executionTimeInSeconds(): ?int
+    {
+        if ($this->finished_at && $this->created_at) {
+            return $this->finished_at->diffInSeconds($this->created_at);
+        }
+
+        return null;
     }
 }
