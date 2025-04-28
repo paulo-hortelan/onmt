@@ -147,6 +147,7 @@ class DatacomService
             return CommandResultBatch::create($attributes);
         } else {
             $batch = CommandResultBatch::make($attributes);
+
             $batch->inMemoryMode = true;
 
             if (! isset($batch->id)) {
@@ -305,13 +306,12 @@ class DatacomService
 
         $response = DM4612::end();
 
-        $response->associateBatch($commandResultBatch);
-        $commandResultBatch->load('commands');
+        $response->associateBatch($commandResultBatch); // Saves CommandResult
+        $commandResultBatch->load('commands'); // Reload relationship
 
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -324,7 +324,6 @@ class DatacomService
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
-
             if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
             }
@@ -360,7 +359,6 @@ class DatacomService
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -373,7 +371,6 @@ class DatacomService
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
-
             if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
             }
@@ -414,7 +411,6 @@ class DatacomService
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -427,7 +423,6 @@ class DatacomService
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
-
             if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
             }
@@ -472,7 +467,6 @@ class DatacomService
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -485,7 +479,6 @@ class DatacomService
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
-
             if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
             }
@@ -530,7 +523,6 @@ class DatacomService
         if (! $commandResultBatch->wasLastCommandSuccessful()) {
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -543,7 +535,6 @@ class DatacomService
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
-
             if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
             }
@@ -579,7 +570,6 @@ class DatacomService
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
-
             if ($this->useDatabaseTransactions) {
                 $commandResultBatch->save();
             }
@@ -622,7 +612,6 @@ class DatacomService
 
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -669,7 +658,6 @@ class DatacomService
 
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -713,7 +701,6 @@ class DatacomService
 
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -762,7 +749,6 @@ class DatacomService
                 if (! $commandResultBatch->wasLastCommandSuccessful()) {
                     if ($batchCreatedHere) {
                         $commandResultBatch->finished_at = Carbon::now();
-
                         if ($this->useDatabaseTransactions) {
                             $commandResultBatch->save();
                         }
@@ -782,7 +768,6 @@ class DatacomService
             if (! $commandResultBatch->wasLastCommandSuccessful()) {
                 if ($batchCreatedHere) {
                     $commandResultBatch->finished_at = Carbon::now();
-
                     if ($this->useDatabaseTransactions) {
                         $commandResultBatch->save();
                     }
@@ -799,7 +784,6 @@ class DatacomService
 
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
-
                 if ($this->useDatabaseTransactions) {
                     $commandResultBatch->save();
                 }
@@ -810,6 +794,1081 @@ class DatacomService
         return $finalResponse;
     }
 
-    // Continue applying the same pattern to all remaining methods...
-    // Follow the pattern established in FiberhomeService and NokiaService for all methods
+    /**
+     * Gets ONTs service port - Telnet
+     *
+     * @return CommandResultBatch CommandResultBatch
+     */
+    public function ontsServicePort(): ?CommandResultBatch
+    {
+        $this->validateTelnet();
+        $batchCreatedHere = false;
+        $commandResultBatch = $this->globalCommandBatch ?? null;
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+            $commandResultBatch = $this->createCommandResultBatch([
+                'ip' => self::$ipOlt,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        if (! empty(self::$terminalMode)) {
+            $batchResponse = $this->setDefaultTerminalMode();
+
+            if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                $commandResultBatch = $batchResponse;
+            } else {
+                $commandResultBatch->associateCommands($batchResponse->commands);
+            }
+
+            if (! $commandResultBatch->allCommandsSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    if ($this->useDatabaseTransactions) {
+                        $commandResultBatch->save();
+                    }
+                }
+
+                return $commandResultBatch;
+            }
+        }
+
+        $response = DM4612::showRunningConfigServicePort();
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            if ($this->useDatabaseTransactions) {
+                $commandResultBatch->save();
+            }
+        }
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Gets ONTs service port by PON Interface - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return CommandResultBatch CommandResultBatch
+     */
+    public function ontsServicePortByPonInterface(string $ponInterface): ?CommandResultBatch
+    {
+        $this->validateTelnet();
+        $batchCreatedHere = false;
+        $commandResultBatch = $this->globalCommandBatch ?? null;
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+            $commandResultBatch = $this->createCommandResultBatch([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = DM4612::showRunningConfigServicePortSelectGpon($ponInterface);
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            if ($this->useDatabaseTransactions) {
+                $commandResultBatch->save();
+            }
+        }
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Gets ONTs service port by PON Interface and ONT Index - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsServicePortByInterfaces(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::showRunningConfigServicePortSelectGponContextMatch($ponInterface, $ontIndex);
+            $response->associateBatch($commandResultBatch);
+            $commandResultBatch->load('commands');
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Gets ONTs by PON interface - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return CommandResultBatch CommandResultBatch
+     */
+    public function ontsByPonInterface(string $ponInterface): ?CommandResultBatch
+    {
+        $this->validateTelnet();
+        $batchCreatedHere = false;
+        $commandResultBatch = $this->globalCommandBatch ?? null;
+        if ($this->globalCommandBatch === null) {
+            $batchCreatedHere = true;
+            $commandResultBatch = $this->createCommandResultBatch([
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = DM4612::showInterfaceGpon($ponInterface);
+        $response->associateBatch($commandResultBatch);
+        $commandResultBatch->load('commands');
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+            if ($this->useDatabaseTransactions) {
+                $commandResultBatch->save();
+            }
+        }
+
+        return $commandResultBatch;
+    }
+
+    /**
+     * Gets the next free ONT index - Telnet
+     *
+     * @param  string  $ponInterface  PON interface. Example: '1/1/1'
+     * @return int The next ONT index
+     */
+    public function getNextOntIndex(string $ponInterface): ?int
+    {
+        $this->validateTelnet();
+
+        $commandResultBatch = $this->ontsByPonInterface($ponInterface);
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            throw new Exception('Provided PON Interface is not valid.');
+        }
+
+        $onts = $commandResultBatch->commands[0]['result'];
+
+        $indexes = array_map(function ($item) {
+            return $item['onuId'];
+        }, $onts);
+
+        sort($indexes);
+
+        $nextPosition = 1;
+        foreach ($indexes as $index) {
+            if ($index !== $nextPosition) {
+                break;
+            }
+
+            $nextPosition++;
+        }
+
+        return $nextPosition;
+    }
+
+    /**
+     * Commit configurations - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function commitConfigurations(): ?Collection
+    {
+        $this->validateTelnet();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== 'config') {
+                $batchResponse = $this->setConfigTerminalMode();
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::commit();
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs name - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $name  ONT name
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setName(string $name): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $batchResponse = $this->setOnuTerminalMode($interface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::name($name);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs serial number - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $serial  ONT serial number
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setSerialNumber(string $serial): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $batchResponse = $this->setOnuTerminalMode($interface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::serialNumber($serial);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs SNMP profile - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $profile  ONT SNMP Profile
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setSnmpProfile(string $profile): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $batchResponse = $this->setOnuTerminalMode($interface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::snmpProfile($profile);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs SNMP Real Time - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setSnmpRealTime(): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $batchResponse = $this->setOnuTerminalMode($interface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::snmpRealTime();
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs line profile - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $profile  ONT Line Profile (PPPoE-Bridge, PPPoE-Router)
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setLineProfile(string $profile): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $batchResponse = $this->setOnuTerminalMode($interface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::lineProfile($profile);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs VEIP - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $port  VEIP port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setVeip(int $port = 1): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "onu-$ontIndex") {
+                $batchResponse = $this->setOnuTerminalMode($interface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::veip($port);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Service Port - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $port  Service port
+     * @param  int  $vlan  VLAN
+     * @param  int  $description  Description
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setServicePort(int $port, int $vlan, string $description): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== 'config') {
+                $batchResponse = $this->setConfigTerminalMode();
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::servicePort($port, $ponInterface, $ontIndex, $vlan, $description);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Ethernet Negotiation - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $ethernetPort  Ethernet Port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setNegotiation(int $ethernetPort): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== "ethernet-$ethernetPort") {
+                $batchResponse = $this->setEthernetTerminalMode($interface, $ethernetPort);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::negotiation();
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Ethernet No Shutdown - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $ethernetPort  Ethernet Port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setNoShutdown(int $ethernetPort): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== "ethernet-$ethernetPort") {
+                $batchResponse = $this->setEthernetTerminalMode($interface, $ethernetPort);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noShutdown();
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Ethernet Native Vlan - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $ethernetPort  Ethernet Port
+     * @param  int  $vlan  VLAN
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setNativeVlan(int $ethernetPort, int $vlan): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== "ethernet-$ethernetPort") {
+                $batchResponse = $this->setEthernetTerminalMode($interface, $ethernetPort);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::nativeVlanVlanId($vlan);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Remove ONTs - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function removeOnts(): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Remove ONTs',
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            if (self::$terminalMode !== "interface-gpon-$ponInterface") {
+                $batchResponse = $this->setInterfaceGponTerminalMode($ponInterface);
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noOnu($ontIndex);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Remove Service Ports - Telnet
+     *
+     * @param  array  $ports  Service Ports Indexes
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function removeServicePorts(array $ports): ?Collection
+    {
+        $this->validateTelnet();
+
+        if (empty($ports)) {
+            throw new Exception('Service Ports must be provided.');
+        }
+
+        $finalResponse = collect();
+
+        foreach ($ports as $port) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'description' => 'Remove Service Ports',
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== 'config') {
+                $batchResponse = $this->setConfigTerminalMode();
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if ($this->useDatabaseTransactions) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $response = DM4612::noServicePort($port);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if ($this->useDatabaseTransactions) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
 }

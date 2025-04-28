@@ -22,6 +22,10 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static void enableDebug() Enables verbose debug output for the TL1 session for troubleshooting purposes.
  * @method static void disableDebug() Disables debug output for the TL1 session.
  *
+ * == DATABASE TRANSACTION MANAGEMENT ==
+ * @method static self enableDatabaseTransactions() Enables database transactions for batch and command saving (default behavior).
+ * @method static self disableDatabaseTransactions() Disables database transactions for batch and command saving. Results will be created in memory only.
+ *
  * == CONFIGURATION SETUP ==
  * @method static self timeout(int $connTimeout, int $streamTimeout) Configures connection timeout (in seconds) and stream timeout (in seconds) for TL1 operations.
  * @method static self interfaces(array $interfaces) Sets the ONU interfaces to operate on - primarily used for future compatibility.

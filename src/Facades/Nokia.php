@@ -30,6 +30,10 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static void enableDebug() Enables verbose debug output for the Telnet or TL1 session for troubleshooting purposes.
  * @method static void disableDebug() Disables debug output for the Telnet or TL1 session.
  *
+ * == DATABASE TRANSACTION MANAGEMENT ==
+ * @method static self enableDatabaseTransactions() Enables database transactions for batch and command saving (default behavior).
+ * @method static self disableDatabaseTransactions() Disables database transactions for batch and command saving. Results will be created in memory only.
+ *
  * == CONFIGURATION SETUP ==
  * @method static self model(string $model) Sets the OLT model (currently only 'FX16' is supported).
  * @method static self timeout(int $connTimeout, int $streamTimeout) Configures connection timeout (in seconds) and stream timeout (in seconds) for Telnet/TL1 operations.
