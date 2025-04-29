@@ -997,6 +997,41 @@ class DatacomService
     }
 
     /**
+     * Gets the next free Service Port index - Telnet
+     *
+     * @return int The next available Service Port
+     */
+    public function getNextServicePort(): ?int
+    {
+        $this->validateTelnet();
+
+        $commandResultBatch = $this->ontsServicePort();
+
+        if (! $commandResultBatch->allCommandsSuccessful()) {
+            throw new Exception('Provided PON Interface is not valid.');
+        }
+
+        $onts = $commandResultBatch->commands->last()['result'];
+
+        $indexes = array_map(function ($item) {
+            return $item['servicePortId'];
+        }, $onts);
+
+        sort($indexes);
+
+        $nextPosition = 1;
+        foreach ($indexes as $index) {
+            if ($index !== $nextPosition) {
+                break;
+            }
+
+            $nextPosition++;
+        }
+
+        return $nextPosition;
+    }
+
+    /**
      * Commit configurations - Telnet
      *
      * Parameter 'interfaces' must already be provided
