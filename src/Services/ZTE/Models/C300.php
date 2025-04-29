@@ -77,7 +77,7 @@ class C300 extends ZTEService
                 'result' => [],
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
-            ]);
+            ], true);
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 

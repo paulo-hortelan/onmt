@@ -148,8 +148,9 @@ class FiberhomeService
      * Creates a CommandResult using create() or make() based on the useDatabaseTransactions setting
      *
      * @param  array  $attributes  The attributes to create the CommandResult with
+     * @param  array  $skipTransaction  Determine if the transaction should be skipped
      */
-    protected static function createCommandResult(array $attributes): CommandResult
+    protected static function createCommandResult(array $attributes, bool $skipTransaction = false): CommandResult
     {
         $callingClass = static::class;
         $instance = null;
@@ -158,11 +159,11 @@ class FiberhomeService
             $instance = new $callingClass();
         }
 
-        if ($instance && ! $instance->useDatabaseTransactions) {
+        if ($instance && (! $instance->useDatabaseTransactions || $skipTransaction)) {
             return CommandResult::make($attributes);
-        } else {
-            return CommandResult::create($attributes);
         }
+
+        return CommandResult::create($attributes);
     }
 
     /**

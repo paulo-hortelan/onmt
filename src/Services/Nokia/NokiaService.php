@@ -193,7 +193,7 @@ class NokiaService
      * Creates a CommandResult using create() or make() based on the useDatabaseTransactions setting
      *
      * @param  array  $attributes  The attributes to create the CommandResult with
-     * @param  array  $attributes  The attributes to create the CommandResult with
+     * @param  bool  $skipTransaction  Determine if the transaction should be skipped
      */
     protected static function createCommandResult(array $attributes, bool $skipTransaction = false): CommandResult
     {
