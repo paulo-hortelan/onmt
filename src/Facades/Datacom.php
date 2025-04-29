@@ -51,6 +51,7 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null ontsServicePortByInterfaces() Gets ONTs service port information for interfaces specified by interfaces().
  * @method static CommandResultBatch|null ontsByPonInterface(string $ponInterface) Gets all ONTs on a specific PON interface.
  * @method static int|null getNextOntIndex(string $ponInterface) Gets the next available ONT index for a PON interface.
+ * @method static int|null getNextServicePort() Gets the next available Service Port.
  *
  * == ONT MANAGEMENT ==
  * @method static Collection|null ontsReboot() Reboots ONTs specified by interfaces().
