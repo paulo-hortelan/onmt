@@ -40,7 +40,7 @@ class FX16 extends NokiaService
                 'result' => [],
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
-            ]);
+            ], true);
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
@@ -989,7 +989,7 @@ class FX16 extends NokiaService
                 'result' => [],
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
-            ]);
+            ], true);
         } catch (\Exception $e) {
             $finishedAt = Carbon::now();
 
