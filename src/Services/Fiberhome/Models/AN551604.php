@@ -419,11 +419,11 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the registered ONTs
      */
-    public static function lstOnu(): ?CommandResult
+    public static function lstOnu(string $ponInterface): ?CommandResult
     {
         $regOnts = [];
         $ipOlt = self::$ipOlt;
-        $command = "LST-ONU::OLTID=$ipOlt:CTAG::;";
+        $command = "LST-ONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::;";
         $response = null;
         $createdAt = Carbon::now();
         $finishedAt = null;

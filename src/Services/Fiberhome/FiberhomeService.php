@@ -574,9 +574,10 @@ class FiberhomeService
     /**
      * List registered ONTs
      *
+     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
      * @return Collection Info about each registered ONT
      */
-    public function registeredOnts(): ?Collection
+    public function registeredOnts(string $ponInterface): ?Collection
     {
         $this->validateTL1();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
@@ -586,13 +587,14 @@ class FiberhomeService
 
         $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
             'ip' => self::$ipOlt,
+            'pon_interface' => $ponInterface,
             'operator' => self::$operator,
         ]);
         if ($this->globalCommandBatch === null) {
             $batchCreatedHere = true;
         }
 
-        $response = AN551604::lstOnu();
+        $response = AN551604::lstOnu($ponInterface);
 
         $response->associateBatch($commandResultBatch);
 
