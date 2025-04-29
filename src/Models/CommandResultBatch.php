@@ -36,7 +36,7 @@ class CommandResultBatch extends Model
     /**
      * In-memory commands collection
      */
-    private $inMemoryCommands = null;
+    protected $inMemoryCommands = null;
 
     /**
      * When accessing the toArray or toJson output, make sure in-memory commands are included
@@ -45,7 +45,6 @@ class CommandResultBatch extends Model
     {
         $array = parent::toArray();
 
-        // If we're in memory mode, manually add the commands to the array output
         if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
             $array['commands'] = $this->inMemoryCommands->toArray();
         }
@@ -53,15 +52,32 @@ class CommandResultBatch extends Model
         return $array;
     }
 
+    /**
+     * Get the in-memory commands
+     */
+    public function getInMemoryCommands(): ?Collection
+    {
+        return $this->inMemoryCommands;
+    }
+
+    /**
+     * Relationship to command results
+     */
     public function commands(): HasMany
     {
-        // If we're in memory mode and have in-memory commands,
-        // we should return the in-memory commands instead of using the relationship
+        return $this->hasMany(CommandResult::class, 'batch_id');
+    }
+
+    /**
+     * Get command results - either from database or in-memory
+     */
+    public function getCommands(): Collection
+    {
         if ($this->inMemoryMode && $this->inMemoryCommands !== null) {
             return $this->inMemoryCommands;
         }
 
-        return $this->hasMany(CommandResult::class, 'batch_id');
+        return $this->commands;
     }
 
     /**

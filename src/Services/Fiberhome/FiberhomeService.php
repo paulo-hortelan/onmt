@@ -42,7 +42,7 @@ class FiberhomeService
 
     private ?CommandResultBatch $globalCommandBatch = null;
 
-    protected bool $useDatabaseTransactions = true;
+    protected static bool $databaseTransactionsDisabled = false;
 
     public function connectTL1(string $ipOlt, string $username, string $password, int $port, ?string $ipServer = null, ?string $model = 'AN5516-04'): ?object
     {
@@ -129,7 +129,7 @@ class FiberhomeService
      */
     public function enableDatabaseTransactions(): self
     {
-        $this->useDatabaseTransactions = true;
+        self::$databaseTransactionsDisabled = false;
 
         return $this;
     }
@@ -139,7 +139,7 @@ class FiberhomeService
      */
     public function disableDatabaseTransactions(): self
     {
-        $this->useDatabaseTransactions = false;
+        self::$databaseTransactionsDisabled = true;
 
         return $this;
     }
@@ -152,14 +152,11 @@ class FiberhomeService
      */
     protected static function createCommandResult(array $attributes, bool $skipTransaction = false): CommandResult
     {
-        $callingClass = static::class;
-        $instance = null;
-
-        if ($callingClass !== self::class) {
-            $instance = new $callingClass();
+        if (self::$databaseTransactionsDisabled) {
+            $skipTransaction = true;
         }
 
-        if ($instance && (! $instance->useDatabaseTransactions || $skipTransaction)) {
+        if ($skipTransaction) {
             return CommandResult::make($attributes);
         }
 
@@ -170,22 +167,27 @@ class FiberhomeService
      * Creates a CommandResultBatch using create() or make() based on the useDatabaseTransactions setting
      *
      * @param  array  $attributes  The attributes to create the CommandResultBatch with
+     * @param  array  $skipTransaction  Determine if the transaction should be skipped
      */
-    protected function createCommandResultBatch(array $attributes): CommandResultBatch
+    protected function createCommandResultBatch(array $attributes, bool $skipTransaction = false): CommandResultBatch
     {
-        if ($this->useDatabaseTransactions) {
-            return CommandResultBatch::create($attributes);
-        } else {
-            $batch = CommandResultBatch::make($attributes);
-
-            $batch->inMemoryMode = true;
-
-            if (! isset($batch->id)) {
-                $batch->id = rand(1000, 9999);
-            }
-
-            return $batch;
+        if (self::$databaseTransactionsDisabled) {
+            $skipTransaction = true;
         }
+
+        if (! $skipTransaction) {
+            return CommandResultBatch::create($attributes);
+        }
+
+        $batch = CommandResultBatch::make($attributes);
+
+        $batch->inMemoryMode = true;
+
+        if (! isset($batch->id)) {
+            $batch->id = rand(1000, 9999);
+        }
+
+        return $batch;
     }
 
     private function validateTelnet(): void
@@ -269,7 +271,7 @@ class FiberhomeService
         $globalCommandBatch = $this->globalCommandBatch;
         $globalCommandBatch->finished_at = Carbon::now();
 
-        if ($this->useDatabaseTransactions) {
+        if (! self::$databaseTransactionsDisabled) {
             $globalCommandBatch->save();
         }
 
@@ -323,7 +325,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -374,7 +376,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -425,7 +427,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -474,7 +476,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -515,7 +517,7 @@ class FiberhomeService
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
 
-            if ($this->useDatabaseTransactions) {
+            if (! self::$databaseTransactionsDisabled) {
                 $commandResultBatch->save();
             }
         }
@@ -557,7 +559,7 @@ class FiberhomeService
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
 
-            if ($this->useDatabaseTransactions) {
+            if (! self::$databaseTransactionsDisabled) {
                 $commandResultBatch->save();
             }
         }
@@ -597,7 +599,7 @@ class FiberhomeService
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
 
-            if ($this->useDatabaseTransactions) {
+            if (! self::$databaseTransactionsDisabled) {
                 $commandResultBatch->save();
             }
         }
@@ -647,7 +649,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -700,7 +702,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -753,7 +755,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -806,7 +808,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -858,7 +860,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
@@ -909,7 +911,7 @@ class FiberhomeService
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
 
-                if ($this->useDatabaseTransactions) {
+                if (! self::$databaseTransactionsDisabled) {
                     $commandResultBatch->save();
                 }
             }
