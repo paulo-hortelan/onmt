@@ -136,10 +136,10 @@ class NokiaService
         }
 
         if (isset(self::$tl1Conn)) {
-            return FX16::inhMsgAll();
+            return null;
         }
 
-        throw new Exception('No connection established.');
+        throw new Exception('No suitable connection established for inhibiting alarms.');
     }
 
     public function enableDebug(): void

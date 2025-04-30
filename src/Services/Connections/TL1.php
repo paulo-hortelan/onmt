@@ -56,6 +56,10 @@ class TL1 extends Telnet
                     $this->setPrompt('M  0 COMPLD');
                     $this->waitPrompt();
 
+                    $this->write('INH-MSG-ALL::ALL:::;', false);
+                    $this->setPrompt('M  0 COMPLD');
+                    $this->waitPrompt();
+
                     $this->setRegexPrompt('(\\n< )');
                     $this->waitPrompt();
 
