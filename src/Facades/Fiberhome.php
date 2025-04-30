@@ -43,7 +43,7 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null ontsLanInfo(string $ponInterface) Gets LAN port details for ONTs specified by serials() on the given PON interface.
  * @method static Collection|null oltUplinksLanPerf(string $portInterface) Retrieves performance statistics for an OLT uplink port (e.g., 'NA-NA-1-1').
  * @method static Collection|null unregisteredOnts(string $ponInterface) Lists all discovered but not yet provisioned ONTs on the specified PON interface.
- * @method static Collection|null registeredOnts() Lists all registered/provisioned ONTs on the entire OLT.
+ * @method static Collection|null registeredOnts(string $ponInterface) Lists all registered/provisioned ONTs on the entire OLT.
  *
  * == ONT MANAGEMENT ==
  * @method static Collection|null rebootOnts(string $ponInterface) Reboots ONTs specified by serials() on the given PON interface. Useful after configuration changes.

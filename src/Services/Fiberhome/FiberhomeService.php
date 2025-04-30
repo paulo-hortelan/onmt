@@ -78,6 +78,13 @@ class FiberhomeService
             self::$tl1Conn->destroy();
             self::$tl1Conn = null;
         }
+
+        self::$model = '';
+        self::$operator = null;
+        self::$ipOlt = '';
+        self::$serials = [];
+        self::$interfaces = [];
+        self::$databaseTransactionsDisabled = false;
     }
 
     public function timeout(int $connTimeout, int $streamTimeout): object

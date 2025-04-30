@@ -81,6 +81,14 @@ class ZTEService
             self::$telnetConn->destroy();
             self::$telnetConn = null;
         }
+
+        self::$model = '';
+        self::$operator = null;
+        self::$terminalMode = '';
+        self::$ipOlt = '';
+        self::$serials = [];
+        self::$interfaces = [];
+        self::$databaseTransactionsDisabled = false;
     }
 
     public function disableTerminalLength(): ?CommandResult

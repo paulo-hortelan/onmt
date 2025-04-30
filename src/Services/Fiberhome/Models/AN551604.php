@@ -463,12 +463,13 @@ class AN551604 extends FiberhomeService
                             'ONUNO' => $splitted[2] ?? null,
                             'NAME' => $splitted[3] ?? null,
                             'DESC' => $splitted[4] ?? null,
-                            'ONUTYPEIP' => $splitted[5] ?? null,
-                            'AUTHTYPE' => $splitted[6] ?? null,
-                            'MAC' => $splitted[7] ?? null,
-                            'LOID' => $splitted[8] ?? null,
-                            'PWD' => $splitted[9] ?? null,
-                            'SWVER' => $splitted[10] ?? null,
+                            'ONUTYPE' => $splitted[5] ?? null,
+                            'IP' => $splitted[6] ?? null,
+                            'AUTHTYPE' => $splitted[7] ?? null,
+                            'MAC' => $splitted[8] ?? null,
+                            'LOID' => $splitted[9] ?? null,
+                            'PWD' => $splitted[10] ?? null,
+                            'SWVER' => $splitted[11] ?? null,
                         ];
                     }
                 }
