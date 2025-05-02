@@ -1082,6 +1082,7 @@ class NokiaService
             }
 
             $response = FX16::configureEquipmentOntInterface($interface, $config);
+            FX16::exitAll();
 
             $response->associateBatch($commandResultBatch);
 
@@ -1102,7 +1103,7 @@ class NokiaService
     }
 
     /**
-     * Configure ONTs interface Admin State - Telnet
+     * Configure ONTs interface admin state - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
@@ -1133,6 +1134,7 @@ class NokiaService
             }
 
             $response = FX16::configureEquipmentOntInterfaceAdminState($interface, $adminState);
+            FX16::exitAll();
 
             $response->associateBatch($commandResultBatch);
 
@@ -1184,6 +1186,7 @@ class NokiaService
             }
 
             $response = FX16::configureEquipmentOntSlot($interface, $config);
+            FX16::exitAll();
 
             $response->associateBatch($commandResultBatch);
 
@@ -1235,6 +1238,7 @@ class NokiaService
             }
 
             $response = FX16::configureQosInterface($interface, $config);
+            FX16::exitAll();
 
             $response->associateBatch($commandResultBatch);
 
@@ -1286,6 +1290,7 @@ class NokiaService
             }
 
             $response = FX16::configureInterfacePort($interface, $config);
+            FX16::exitAll();
 
             $response->associateBatch($commandResultBatch);
 
@@ -1337,6 +1342,7 @@ class NokiaService
             }
 
             $response = FX16::configureBridgePort($interface, $config);
+            FX16::exitAll();
 
             $response->associateBatch($commandResultBatch);
 

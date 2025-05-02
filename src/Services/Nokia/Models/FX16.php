@@ -62,6 +62,44 @@ class FX16 extends NokiaService
     }
 
     /**
+     * Exit all - Telnet
+     */
+    public static function exitAll(): ?CommandResult
+    {
+        $command = 'exit all';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ], true);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
      * Executes the given command - Telnet
      */
     public static function executeCommandTelnet(string $command): ?CommandResult
