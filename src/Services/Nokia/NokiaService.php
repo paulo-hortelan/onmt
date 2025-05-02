@@ -5,6 +5,11 @@ namespace PauloHortelan\Onmt\Services\Nokia;
 use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureBridgePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntInterface;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntSlot;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureInterfacePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureQosInterface;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
@@ -1043,6 +1048,312 @@ class NokiaService
         }
 
         return $nextPosition;
+    }
+
+    /**
+     * Configure ONTs interface - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  ConfigureEquipmentOntInterface  $config  Equipment configuration parameters
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureInterfaceOnts(ConfigureEquipmentOntInterface $config): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($commandResultBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $response = FX16::configureEquipmentOntInterface($interface, $config);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configure ONTs interface Admin State - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  string  $adminState  Admin state. Example: 'up' or 'down'
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureInterfaceAdminStateOnts(string $adminState): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($commandResultBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $response = FX16::configureEquipmentOntInterfaceAdminState($interface, $adminState);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configure ONTs slot interface - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  ConfigureEquipmentOntSlot  $config  Equipment configuration parameters
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureSlotOnts(ConfigureEquipmentOntSlot $config): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($commandResultBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $response = FX16::configureEquipmentOntSlot($interface, $config);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configure QOS interface - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  ConfigureQosInterface  $config  Equipment configuration parameters
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureQosInterfaces(ConfigureQosInterface $config): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($commandResultBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $response = FX16::configureQosInterface($interface, $config);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configure interface ports - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  ConfigureInterfacePort  $config  Equipment configuration parameters
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureInterfacesPorts(ConfigureInterfacePort $config): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($commandResultBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $response = FX16::configureInterfacePort($interface, $config);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Configure bridge ports - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  ConfigureBridgePort  $config  Equipment configuration parameters
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function configureBridgePorts(ConfigureBridgePort $config): ?Collection
+    {
+        $this->validateInterfaces();
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($commandResultBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            $response = FX16::configureBridgePort($interface, $config);
+
+            $response->associateBatch($commandResultBatch);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $commandResultBatch->load('commands');
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
     }
 
     /**

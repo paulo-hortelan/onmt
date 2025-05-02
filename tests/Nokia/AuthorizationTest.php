@@ -1,6 +1,11 @@
 <?php
 
 use Illuminate\Support\Collection;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureBridgePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntInterface;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntSlot;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureInterfacePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureQosInterface;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
@@ -33,7 +38,7 @@ beforeEach(function () {
     $this->ponInterface = env('NOKIA_PON_INTERFACE');
 });
 
-describe('Nokia Authorize ONTs - Router Nokia', function () {
+describe('Nokia Authorize ONTs - TL1 - Router', function () {
     it('can get next ont index', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
@@ -249,13 +254,37 @@ describe('Nokia Authorize ONTs - Router Nokia', function () {
     });
 });
 
-describe('Nokia Configure PPPOE and VLAN on ONTs - Router Nokia', function () {
-    it('can configure vlan', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
+describe('Nokia Authorize ONTs - Telnet - Router', function () {
+    it('can get next ont index', function () {
+        $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
-        $this->nokiaTL1->interfaces(['1/1/1/1/15']);
+        $ontIndex = $this->nokiaTelnet->getNextOntIndex($this->ponInterface);
 
-        $result = $this->nokiaTL1->configureTr069Vlan(110, 1);
+        expect($ontIndex)->toBeInt();
+        expect($ontIndex)->toBeGreaterThan(0);
+
+        $newInterface = $this->ponInterface.'/'.$ontIndex;
+
+        expect($newInterface)->toBeString();
+    });
+
+    it('can configure equipment ont interface', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureEquipmentOntInterface(
+            swVerPlnd: 'auto',
+            swDnloadVersion: 'auto',
+            sernum: 'ALCLB407BB8D',
+            plandCfgfile1: 'auto',
+            dnloadCfgfile1: 'auto',
+            desc1: 'teste_onu_mk'
+        );
+
+        $result = $this->nokia->configureInterfaceOnts($config);
+
+        dump($result->toArray());
 
         expect($result)->toBeInstanceOf(Collection::class);
 
@@ -269,16 +298,191 @@ describe('Nokia Configure PPPOE and VLAN on ONTs - Router Nokia', function () {
         });
     });
 
-    it('can configure pppoe username and password', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
+    it('can configure equipment ont interface admin-state up', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
+        $this->nokia->interfaces(['1/1/1/1/6']);
 
-        $configuredOnts = $this->nokiaTL1->configureTr069Pppoe('teste_onu_mk2', '1234', 2, 3);
+        $result = $this->nokia->configureInterfaceAdminStateOnts('up');
 
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
+        dump($result->toArray());
 
-        $configuredOnts->each(function ($batch) {
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure equipment ont slot', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureEquipmentOntSlot(
+            ontSlot: 14,
+            plannedCardType: 'veip',
+            plndnumdataports: 1,
+            plndnumvoiceports: 0,
+            adminState: 'up',
+        );
+
+        $result = $this->nokia->configureSlotOnts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure qos interface', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureQosInterface(
+            qosInterface: '14/1',
+            upstreamQueue: 0,
+            bandwidthProfile: 'name:HSI_1G_UP',
+            queue: null,
+            shaperProfile: null,
+        );
+
+        $result = $this->nokia->configureQosInterfaces($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
+        $config = new ConfigureQosInterface(
+            qosInterface: '14/1',
+            upstreamQueue: null,
+            bandwidthProfile: null,
+            queue: 0,
+            shaperProfile: 'name:HSI_1G_DOWN',
+        );
+
+        $result = $this->nokia->configureQosInterfaces($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure interface port', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureInterfacePort(
+            interfacePort: '14/1',
+            adminStatus: 'admin-up',
+        );
+
+        $result = $this->nokia->configureInterfacesPorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure bridge port', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureBridgePort(
+            bridgePort: '14/1',
+            maxUnicastMac: 4,
+        );
+
+        $result = $this->nokia->configureBridgePorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
+        $config = new ConfigureBridgePort(
+            bridgePort: '14/1',
+            vlanId: 110,
+        );
+
+        $result = $this->nokia->configureBridgePorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
+        $config = new ConfigureBridgePort(
+            bridgePort: '14/1',
+            pvid: 110,
+        );
+
+        $result = $this->nokia->configureBridgePorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 
@@ -289,118 +493,231 @@ describe('Nokia Configure PPPOE and VLAN on ONTs - Router Nokia', function () {
     });
 });
 
-describe('Nokia Configure WIFI on ONTs - Router Nokia', function () {
-    it('can configure 2.4Ghz', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
-
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
-
-        $configuredOnts = $this->nokiaTL1->configureTr069Wifi2_4Ghz('Wifi-Nokia-2.4Ghz', '12345678', 4, 5);
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure 5Ghz', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
-
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
-
-        $configuredOnts = $this->nokiaTL1->configureTr069Wifi5Ghz('Wifi-Nokia-5Ghz', '12345678', 6, 7);
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-});
-
-describe('Nokia Configure Account on ONTs - Router Nokia', function () {
-    it('can configure webaccount password', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
-
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
-
-        $configuredOnts = $this->nokiaTL1->configureTr069WebAccountPassword('ALC#FGU', 8);
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-
-    it('can configure account password', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
-
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
-
-        $configuredOnts = $this->nokiaTL1->configureTr069AccountPassword('nokia123', 9);
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-});
-
-describe('Nokia Configure DNS on ONTs - Router Nokia', function () {
-    it('can configure all dns\'s password', function () {
-        $this->nokiaTL1 = Nokia::connectTL1($this->ipOlt, $this->usernameTL1, $this->passwordTL1, 1023);
-
-        $this->nokiaTL1->interfaces(['1/1/1/1/3']);
-
-        $configuredOnts = $this->nokiaTL1->configureTr069DNS('186.224.0.18\,186.224.0.20', 12, 13, 14);
-
-        expect($configuredOnts)->toBeInstanceOf(Collection::class);
-
-        $configuredOnts->each(function ($batch) {
-            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
-            expect($batch->commands)->toBeInstanceOf(Collection::class);
-
-            collect($batch->commands)->each(function ($commandResult) {
-                expect($commandResult->success)->toBeTrue();
-            });
-        });
-    });
-});
-
-describe('Nokia Remove ONTs', function () {
-    it('can remove onts', function () {
+describe('Nokia Authorize ONTs - Telnet - Bridge', function () {
+    it('can get next ont index', function () {
         $this->nokiaTelnet = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
 
-        $this->nokiaTelnet->interfaces(['1/1/1/1/3']);
+        $ontIndex = $this->nokiaTelnet->getNextOntIndex($this->ponInterface);
 
-        $removedOnts = $this->nokiaTelnet->removeOnts();
+        expect($ontIndex)->toBeInt();
+        expect($ontIndex)->toBeGreaterThan(0);
 
-        expect($removedOnts)->toBeInstanceOf(Collection::class);
+        $newInterface = $this->ponInterface.'/'.$ontIndex;
 
-        $removedOnts->each(function ($batch) {
+        expect($newInterface)->toBeString();
+    });
+
+    it('can configure equipment ont interface', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/7']);
+
+        $config = new ConfigureEquipmentOntInterface(
+            swVerPlnd: 'disabled',
+            swDnloadVersion: ConfigureEquipmentOntInterface::NO,
+            sernum: 'CMSZ3BC079CE',
+            plandCfgfile1: 'auto',
+            dnloadCfgfile1: ConfigureEquipmentOntInterface::NO,
+            desc1: 'teste_onu_mk'
+        );
+
+        $result = $this->nokia->configureInterfaceOnts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure equipment ont interface admin-state up', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/7']);
+
+        $result = $this->nokia->configureInterfaceAdminStateOnts('up');
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure equipment ont slot', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/7']);
+
+        $config = new ConfigureEquipmentOntSlot(
+            ontSlot: 1,
+            plannedCardType: 'ethernet',
+            plndnumdataports: 1,
+            plndnumvoiceports: 0,
+            adminState: 'up',
+        );
+
+        $result = $this->nokia->configureSlotOnts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure qos interface', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureQosInterface(
+            qosInterface: '1/1',
+            upstreamQueue: 0,
+            bandwidthProfile: 'name:HSI_1G_UP',
+        );
+
+        $result = $this->nokia->configureQosInterfaces($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
+        $config = new ConfigureQosInterface(
+            qosInterface: '1/1',
+            queue: 0,
+            shaperProfile: 'name:HSI_1G_DOWN',
+        );
+
+        $result = $this->nokia->configureQosInterfaces($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    })->only();
+
+    it('can configure interface port', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureInterfacePort(
+            interfacePort: '1/1',
+            adminStatus: 'admin-up',
+        );
+
+        $result = $this->nokia->configureInterfacesPorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+
+    it('can configure bridge port', function () {
+        $this->nokia = Nokia::connectTelnet($this->ipOlt, $this->usernameTelnet, $this->passwordTelnet, 23);
+
+        $this->nokia->interfaces(['1/1/1/1/6']);
+
+        $config = new ConfigureBridgePort(
+            bridgePort: '1/1',
+            maxUnicastMac: 4,
+        );
+
+        $result = $this->nokia->configureBridgePorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
+        $config = new ConfigureBridgePort(
+            bridgePort: '1/1',
+            vlanId: 110,
+        );
+
+        $result = $this->nokia->configureBridgePorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+
+        $config = new ConfigureBridgePort(
+            bridgePort: '1/1',
+            pvid: 110,
+        );
+
+        $result = $this->nokia->configureBridgePorts($config);
+
+        dump($result->toArray());
+
+        expect($result)->toBeInstanceOf(Collection::class);
+
+        $result->each(function ($batch) {
             expect($batch)->toBeInstanceOf(CommandResultBatch::class);
             expect($batch->commands)->toBeInstanceOf(Collection::class);
 

@@ -4,6 +4,11 @@ namespace PauloHortelan\Onmt\Services\Nokia\Models;
 
 use Exception;
 use Illuminate\Support\Carbon;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureBridgePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntInterface;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntSlot;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureInterfacePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureQosInterface;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
@@ -949,6 +954,233 @@ class FX16 extends NokiaService
                 'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
+     * Configure ONTs interface - Telnet
+     */
+    public static function configureEquipmentOntInterface(string $interface, ConfigureEquipmentOntInterface $config): ?CommandResult
+    {
+        $command = "configure equipment ont interface $interface {$config->buildCommand()}";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            self::$telnetConn->changePromptRegex('[$]');
+
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
+            self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+            self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
+     * Configure ONTs slot - Telnet
+     */
+    public static function configureEquipmentOntSlot(string $interface, ConfigureEquipmentOntSlot $config): ?CommandResult
+    {
+        $command = "configure equipment ont slot $interface/{$config->ontSlot} {$config->buildCommand()}";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            self::$telnetConn->changePromptRegex('[$]');
+
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
+            self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+            self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
+     * Configure ONTs qos interface - Telnet
+     */
+    public static function configureQosInterface(string $interface, ConfigureQosInterface $config): ?CommandResult
+    {
+        $command = "configure qos interface $interface/{$config->qosInterface} {$config->buildCommand()}";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
+     * Configure interface port - Telnet
+     */
+    public static function configureInterfacePort(string $interface, ConfigureInterfacePort $config): ?CommandResult
+    {
+        $command = "configure interface port uni:$interface/{$config->interfacePort} {$config->buildCommand()}";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
+     * Configure bridge port - Telnet
+     */
+    public static function configureBridgePort(string $interface, ConfigureBridgePort $config): ?CommandResult
+    {
+        $command = "configure bridge port $interface/{$config->bridgePort} {$config->buildCommand()}";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            if ($config->vlanId) {
+                // self::$telnetConn->changePromptRegex('[$]');
+            }
+
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (str_contains($response, 'invalid token')) {
+                throw new \Exception($response);
+            }
+
+            // self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            // self::$telnetConn->resetPromptRegex();
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([

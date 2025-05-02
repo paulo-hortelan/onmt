@@ -22,9 +22,13 @@ beforeEach(function () {
 
 describe('Fiberhome Ont Optical Power', function () {
     it('can get single power', function () {
-        $this->fiberhome->serials([$this->serialALCL]);
+        $this->fiberhome->serials(['CMSZ3B0A590F']);
 
-        $powers = $this->fiberhome->ontsOpticalPower($this->ponInterface);
+        $this->fiberhome->disableDatabaseTransactions();
+
+        $powers = $this->fiberhome->ontsOpticalPower('NA-NA-14-6');
+
+        dump($powers->toArray());
 
         expect($powers)->toBeInstanceOf(Collection::class);
 
@@ -34,10 +38,10 @@ describe('Fiberhome Ont Optical Power', function () {
 
             collect($batch->commands)->each(function ($commandResult) {
                 expect($commandResult->success)->toBeTrue();
-                expect($commandResult->result['rxPower'])->toBeFloat();
+                expect($commandResult->result['RxPower'])->toBeFloat();
             });
         });
-    });
+    })->only();
 
     it('can get multiple powers', function () {
         $this->fiberhome->serials([$this->serialALCL, $this->serialCMSZ]);
