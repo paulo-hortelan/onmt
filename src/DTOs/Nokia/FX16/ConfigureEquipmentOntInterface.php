@@ -12,6 +12,8 @@ class ConfigureEquipmentOntInterface
 
     public ?string $sernum;
 
+    public ?string $opticsHist;
+
     public ?string $plandCfgfile1;
 
     public ?string $dnloadCfgfile1;
@@ -22,13 +24,15 @@ class ConfigureEquipmentOntInterface
         ?string $swVerPlnd = null,
         ?string $swDnloadVersion = null,
         ?string $sernum = null,
+        ?string $opticsHist = null,
         ?string $plandCfgfile1 = null,
         ?string $dnloadCfgfile1 = null,
-        ?string $desc1 = null
+        ?string $desc1 = null,
     ) {
         $this->swVerPlnd = $swVerPlnd;
         $this->swDnloadVersion = $swDnloadVersion;
         $this->sernum = $sernum;
+        $this->opticsHist = $opticsHist;
         $this->plandCfgfile1 = $plandCfgfile1;
         $this->dnloadCfgfile1 = $dnloadCfgfile1;
         $this->desc1 = $desc1;
@@ -52,6 +56,10 @@ class ConfigureEquipmentOntInterface
 
         if (isset($formattedSerial)) {
             $commandParts[] = "sernum {$formattedSerial}";
+        }
+
+        if (isset($this->opticsHist)) {
+            $commandParts[] = "optics-hist {$this->opticsHist}";
         }
 
         if (isset($this->plandCfgfile1)) {

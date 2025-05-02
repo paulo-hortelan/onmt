@@ -8,20 +8,24 @@ class ConfigureBridgePort
 
     public ?int $maxUnicastMac;
 
+    public ?int $maxCommittedMac;
+
     public ?int $vlanId;
 
-    public ?int $pvid;
+    public ?string $tag;
 
     public function __construct(
         string $bridgePort,
         ?int $maxUnicastMac = null,
+        ?int $maxCommittedMac = null,
         ?int $vlanId = null,
-        ?int $pvid = null,
+        ?string $tag = null
     ) {
         $this->bridgePort = $bridgePort;
         $this->maxUnicastMac = $maxUnicastMac;
+        $this->maxCommittedMac = $maxCommittedMac;
         $this->vlanId = $vlanId;
-        $this->pvid = $pvid;
+        $this->tag = $tag;
     }
 
     public function buildCommand(): string
@@ -30,8 +34,9 @@ class ConfigureBridgePort
 
         $parameters = [
             'max-unicast-mac' => $this->maxUnicastMac ?? null,
+            'max-committed-mac' => $this->maxCommittedMac ?? null,
             'vlan-id' => $this->vlanId ?? null,
-            'pvid' => $this->pvid ?? null,
+            'tag' => $this->tag ?? null,
         ];
 
         foreach ($parameters as $key => $value) {
