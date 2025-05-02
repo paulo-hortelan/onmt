@@ -1064,7 +1064,7 @@ class FX16 extends NokiaService
         $finishedAt = null;
 
         try {
-            self::$telnetConn->changePromptRegex('[$]');
+            self::$telnetConn->changePromptRegex('[#$]');
 
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
@@ -1195,7 +1195,7 @@ class FX16 extends NokiaService
         $finishedAt = null;
 
         try {
-            self::$telnetConn->changePromptRegex('[$]');
+            self::$telnetConn->changePromptRegex('[#$]');
 
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
