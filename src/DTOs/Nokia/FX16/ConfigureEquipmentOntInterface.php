@@ -6,6 +6,12 @@ class ConfigureEquipmentOntInterface
 {
     public const NO = '__NO__';
 
+    public ?string $plannedUsRate;
+
+    public ?string $subslocid;
+
+    public ?string $fecUp;
+
     public ?string $swVerPlnd;
 
     public ?string $swDnloadVersion;
@@ -21,6 +27,9 @@ class ConfigureEquipmentOntInterface
     public ?string $desc1;
 
     public function __construct(
+        ?string $plannedUsRate = null,
+        ?string $subslocid = null,
+        ?string $fecUp = null,
         ?string $swVerPlnd = null,
         ?string $swDnloadVersion = null,
         ?string $sernum = null,
@@ -29,6 +38,9 @@ class ConfigureEquipmentOntInterface
         ?string $dnloadCfgfile1 = null,
         ?string $desc1 = null,
     ) {
+        $this->plannedUsRate = $plannedUsRate;
+        $this->subslocid = $subslocid;
+        $this->fecUp = $fecUp;
         $this->swVerPlnd = $swVerPlnd;
         $this->swDnloadVersion = $swDnloadVersion;
         $this->sernum = $sernum;
@@ -51,7 +63,7 @@ class ConfigureEquipmentOntInterface
         if ($this->swDnloadVersion === self::NO) {
             $commandParts[] = 'no sw-dnload-version';
         } elseif (isset($this->swDnloadVersion)) {
-            $commandParts[] = "sw-dnload-version {$this->swVerPlnd}";
+            $commandParts[] = "sw-dnload-version {$this->swDnloadVersion}";
         }
 
         if (isset($formattedSerial)) {

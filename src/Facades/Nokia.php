@@ -4,6 +4,11 @@ namespace PauloHortelan\Onmt\Facades;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureBridgePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntInterface;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureEquipmentOntSlot;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureInterfacePort;
+use PauloHortelan\Onmt\DTOs\Nokia\FX16\ConfigureQosInterface;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EdOntVeipConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\EntLogPortConfig;
@@ -62,6 +67,14 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null removeOnts() Removes/deletes ONTs from the OLT configuration. Parameter 'interfaces' must already be provided.
  * @method static Collection|null rebootOnts() Reboots ONTs and applies their current configuration. Parameter 'interfaces' must already be provided.
  * @method static Collection|null rebootOntsBySerials() Reboots ONTs identified by their serial numbers. Parameter 'serials' must already be provided.
+ *
+ * == ONT CONFIGURATION (TELNET REQUIRED) ==
+ * @method static Collection|null configureInterfaceOnts(ConfigureEquipmentOntInterface $config) Configures ONT interface parameters like description, admin state, etc. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null configureInterfaceAdminStateOnts(string $adminState) Sets the administrative state ('up' or 'down') for ONT interfaces. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null configureSlotOnts(ConfigureEquipmentOntSlot $config) Configures ONT slot parameters like card type and planned port types. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null configureQosInterfaces(ConfigureQosInterface $config) Configures Quality of Service (QoS) parameters for ONT interfaces. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null configureInterfacesPorts(ConfigureInterfacePort $config) Configures ONT port parameters like admin state and speed/duplex settings. Parameter 'interfaces' must already be provided.
+ * @method static Collection|null configureBridgePorts(ConfigureBridgePort $config) Configures bridge port parameters like VLAN tagging and port associations. Parameter 'interfaces' must already be provided.
  *
  * == ONT PROVISIONING (TL1 REQUIRED) ==
  * @method static Collection|null provisionOnts(EntOntConfig $config) Creates new ONT entries on the OLT with the specified configuration settings. Parameter 'interfaces' must already be provided.
