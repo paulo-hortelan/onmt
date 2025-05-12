@@ -79,12 +79,21 @@ class FiberhomeService
             self::$tl1Conn = null;
         }
 
+        if ($this->globalCommandBatch) {
+            $this->globalCommandBatch->finished_at = Carbon::now();
+
+            if (! self::$databaseTransactionsDisabled) {
+                $this->globalCommandBatch->save();
+            }
+        }
+
         self::$model = '';
         self::$operator = null;
         self::$ipOlt = '';
         self::$serials = [];
         self::$interfaces = [];
         self::$databaseTransactionsDisabled = false;
+        $this->globalCommandBatch = null;
     }
 
     public function timeout(int $connTimeout, float $streamTimeout): object

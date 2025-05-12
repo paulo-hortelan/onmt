@@ -72,6 +72,14 @@ class DatacomService
             self::$telnetConn = null;
         }
 
+        if ($this->globalCommandBatch) {
+            $this->globalCommandBatch->finished_at = Carbon::now();
+
+            if (! self::$databaseTransactionsDisabled) {
+                $this->globalCommandBatch->save();
+            }
+        }
+
         self::$model = '';
         self::$operator = null;
         self::$terminalMode = '';
@@ -79,6 +87,7 @@ class DatacomService
         self::$serials = [];
         self::$interfaces = [];
         self::$databaseTransactionsDisabled = false;
+        $this->globalCommandBatch = null;
     }
 
     public function enableDebug(): void
