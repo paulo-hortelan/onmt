@@ -28,9 +28,9 @@ class FiberhomeService
 
     protected static ?string $operator;
 
-    protected int $connTimeout = 5;
+    protected int $connTimeout = 10;
 
-    protected int $streamTimeout = 4;
+    protected float $streamTimeout = 10;
 
     protected static string $ipOlt = '';
 
@@ -87,7 +87,7 @@ class FiberhomeService
         self::$databaseTransactionsDisabled = false;
     }
 
-    public function timeout(int $connTimeout, int $streamTimeout): object
+    public function timeout(int $connTimeout, float $streamTimeout): object
     {
         $this->connTimeout = $connTimeout;
         $this->streamTimeout = $streamTimeout;

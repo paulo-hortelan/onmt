@@ -507,11 +507,11 @@ class Telnet
 
         $this->clearBuffer();
 
-        $until_t = time() + $this->timeout;
+        $until_t = time() + $this->streamTimeoutSec;
         do {
             // time's up (loop can be exited at end or through continue!)
             if (time() > $until_t) {
-                throw new \Exception("Couldn't find the requested : '$prompt' within {$this->timeout} seconds");
+                throw new \Exception("Couldn't find the requested : '$prompt' within {$this->streamTimeoutSec} seconds");
             }
 
             $c = $this->getc();

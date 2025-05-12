@@ -42,7 +42,7 @@ class NokiaService
 
     protected int $connTimeout = 10;
 
-    protected int $streamTimeout = 10;
+    protected float $streamTimeout = 10;
 
     protected static string $ipOlt = '';
 
@@ -260,7 +260,7 @@ class NokiaService
     /**
      * Set the timeout
      */
-    public function timeout(int $connTimeout, int $streamTimeout): object
+    public function timeout(int $connTimeout, float $streamTimeout): object
     {
         $this->connTimeout = $connTimeout;
         $this->streamTimeout = $streamTimeout;

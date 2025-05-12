@@ -25,9 +25,9 @@ class DatacomService
 
     protected static $terminalMode;
 
-    protected static int $connTimeout = 5;
+    protected static int $connTimeout = 10;
 
-    protected static int $streamTimeout = 4;
+    protected static float $streamTimeout = 10;
 
     protected static string $ipOlt = '';
 
@@ -182,7 +182,7 @@ class DatacomService
     /**
      * Set the timeout
      */
-    public function timeout(int $connTimeout, int $streamTimeout): self
+    public function timeout(int $connTimeout, float $streamTimeout): self
     {
         self::$connTimeout = $connTimeout;
         self::$streamTimeout = $streamTimeout;
