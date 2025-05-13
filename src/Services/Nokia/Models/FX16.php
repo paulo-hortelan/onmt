@@ -184,12 +184,16 @@ class FX16 extends NokiaService
         $finishedAt = null;
 
         try {
+            self::$telnetConn->changePromptRegex('[#$]');
+
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
                 throw new \Exception($response);
             }
+
+            self::$telnetConn->resetPromptRegex();
 
             return self::createCommandResult([
                 'success' => true,
@@ -201,6 +205,7 @@ class FX16 extends NokiaService
                 'finished_at' => $finishedAt,
             ]);
         } catch (\Exception $e) {
+            self::$telnetConn->resetPromptRegex();
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
