@@ -1382,10 +1382,10 @@ class DM4612 extends DatacomService
     /**
      * Resets an ONU
      */
-    public static function interfaceGponOnuResetOnu(string $ponInterface, string $ontIndex): ?CommandResult
+    public static function onuResetOnu(string $ontIndex): ?CommandResult
     {
         $response = null;
-        $command = "interface gpon $ponInterface onu-reset onu $ontIndex";
+        $command = "onu-reset onu $ontIndex";
         $createdAt = Carbon::now();
         $finishedAt = null;
 

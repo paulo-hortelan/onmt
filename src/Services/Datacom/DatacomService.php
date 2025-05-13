@@ -732,13 +732,13 @@ class DatacomService
     }
 
     /**
-     * Gets ONTs alarm - Telnet
+     * Reboot ONTs - Telnet
      *
      * Parameter 'interfaces' must already be provided
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function ontsReboot(): ?Collection
+    public function rebootOnts(): ?Collection
     {
         $this->validateTelnet();
         $this->validateInterfaces();
@@ -746,43 +746,42 @@ class DatacomService
         $finalResponse = collect();
 
         foreach (self::$interfaces as $interface) {
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+
             $batchCreatedHere = false;
             $commandResultBatch = $this->globalCommandBatch ?? null;
             if ($this->globalCommandBatch === null) {
                 $batchCreatedHere = true;
                 $commandResultBatch = $this->createCommandResultBatch([
+                    'description' => 'Reboot ONTs',
                     'ip' => self::$ipOlt,
                     'interface' => $interface,
                     'operator' => self::$operator,
                 ]);
             }
 
-            if (self::$terminalMode !== 'config') {
-                $batchResponse = $this->setConfigTerminalMode();
-
-                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
-                    $commandResultBatch = $batchResponse;
-                } else {
-                    $commandResultBatch->associateCommands($batchResponse->commands);
+            if (self::$terminalMode !== "interface-gpon-$ponInterface") {
+                $batchResponse = $this->setInterfaceGponTerminalMode($ponInterface);
+                $commandResultBatch = $this->globalCommandBatch ?? $batchResponse;
+                if ($this->globalCommandBatch === null) {
+                    $batchCreatedHere = true;
                 }
-
-                if (! $commandResultBatch->wasLastCommandSuccessful()) {
-                    if ($batchCreatedHere) {
-                        $commandResultBatch->finished_at = Carbon::now();
-                        if (! self::$databaseTransactionsDisabled) {
-                            $commandResultBatch->save();
-                        }
-                    }
-                    $finalResponse->push($commandResultBatch);
-
-                    continue;
+            } else {
+                $commandResultBatch = $this->globalCommandBatch ?? null;
+                if ($this->globalCommandBatch === null) {
+                    $batchCreatedHere = true;
+                    $commandResultBatch = $this->createCommandResultBatch([
+                        'ip' => self::$ipOlt,
+                        'pon_interface' => $ponInterface,
+                        'interface' => $interface,
+                        'operator' => self::$operator,
+                    ]);
                 }
             }
 
-            $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
-            $response = DM4612::interfaceGponOnuResetOnu($ponInterface, $ontIndex);
+            $response = DM4612::onuResetOnu($ontIndex);
             $response->associateBatch($commandResultBatch);
 
             if (! $commandResultBatch->wasLastCommandSuccessful()) {

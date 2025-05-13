@@ -54,7 +54,7 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static int|null getNextServicePort() Gets the next available Service Port.
  *
  * == ONT MANAGEMENT ==
- * @method static Collection|null ontsReboot() Reboots ONTs specified by interfaces().
+ * @method static Collection|null rebootOnts() Reboots ONTs specified by interfaces().
  * @method static Collection|null commitConfigurations() Commits OLT configuration changes.
  * @method static Collection|null setName(string $name) Sets names for ONTs specified by interfaces().
  * @method static Collection|null setSerialNumber(string $serial) Sets serial numbers for ONTs specified by interfaces().

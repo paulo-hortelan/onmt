@@ -18,7 +18,7 @@ describe('Datacom - Onts Reboot', function () {
         $datacom = Datacom::connectTelnet($this->ipServer, $this->usernameTelnet, $this->passwordTelnet, 23);
         $datacom->interfaces(['1/1/3/1']);
 
-        $result = $datacom->ontsReboot();
+        $result = $datacom->rebootOnts();
 
         dump($result->toArray());
 
