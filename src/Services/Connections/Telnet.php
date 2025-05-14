@@ -274,7 +274,7 @@ class Telnet
             $instanceKey = static::class.":{$this->host}:{$this->port}";
             unset(self::$instances[$instanceKey]);
 
-            throw new \Exception('Login failed: '.$e->getMessage());
+            throw new \Exception('Login failed: '.$e->getMessage(), 0, $e);
         }
     }
 

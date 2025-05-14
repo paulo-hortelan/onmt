@@ -87,7 +87,7 @@ class TL1 extends Telnet
                 unset(self::$instances[$instanceKey]);
             }
 
-            throw new \Exception('Login failed: '.$e->getMessage());
+            throw new \Exception('Login failed: '.$e->getMessage(), 0, $e);
         }
     }
 }
