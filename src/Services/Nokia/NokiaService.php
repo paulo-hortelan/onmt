@@ -63,6 +63,11 @@ class NokiaService
             self::$tl1Conn = null;
         }
 
+        if (self::$telnetConn !== null) {
+            self::$telnetConn->destroy();
+            self::$telnetConn = null;
+        }
+
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;
 
         $this->validateIPs($ipOlt, $ipServer);
@@ -86,6 +91,11 @@ class NokiaService
         if (self::$telnetConn !== null) {
             self::$telnetConn->destroy();
             self::$telnetConn = null;
+        }
+
+        if (self::$tl1Conn !== null) {
+            self::$tl1Conn->destroy();
+            self::$tl1Conn = null;
         }
 
         $ipServer = empty($ipServer) ? $ipOlt : $ipServer;

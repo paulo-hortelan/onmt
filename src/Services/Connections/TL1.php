@@ -12,18 +12,32 @@ namespace PauloHortelan\Onmt\Services\Connections;
  */
 class TL1 extends Telnet
 {
+    /**
+     * Ensures that we establish a fresh connection before authenticating
+     */
     public function authenticate(string $username, string $password, string $hostType): void
     {
         if ($this->isAuthenticated) {
             return;
         }
 
-        if (! $this->socket) {
-            $this->connect();
-        }
+        $this->forceReconnect();
 
         $this->login($username, $password, $hostType);
         $this->isAuthenticated = true;
+    }
+
+    /**
+     * Forces a reconnection by closing any existing connection and opening a new one
+     */
+    protected function forceReconnect(): void
+    {
+        if ($this->socket) {
+            @fclose($this->socket);
+            $this->socket = null;
+        }
+
+        $this->connect();
     }
 
     /**
