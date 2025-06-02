@@ -340,11 +340,17 @@ class AN551604 extends FiberhomeService
     /**
      * Returns the unregistered ONTs
      */
-    public static function lstUnregOnu(string $ponInterface): ?CommandResult
+    public static function lstUnregOnu(?string $ponInterface = null): ?CommandResult
     {
         $unRegData = [];
         $ipOlt = self::$ipOlt;
-        $command = "LST-UNREGONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::;";
+
+        if ($ponInterface === null) {
+            $command = "LST-UNREGONU::OLTID=$ipOlt:CTAG::;";
+        } else {
+            $command = "LST-UNREGONU::OLTID=$ipOlt,PONID=$ponInterface:CTAG::;";
+        }
+
         $response = null;
         $createdAt = Carbon::now();
         $finishedAt = null;
@@ -377,15 +383,30 @@ class AN551604 extends FiberhomeService
                     if (! empty($line)) {
                         $splitted = preg_split('/\t/', $line);
 
-                        if (count($splitted) >= 6) {
-                            $unRegData[] = [
-                                'MAC' => $splitted[0] ?? null,
-                                'LOID' => $splitted[1] ?? null,
-                                'PWD' => $splitted[2] ?? null,
-                                'ERROR' => $splitted[3] ?? null,
-                                'AUTHTIME' => $splitted[4] ?? null,
-                                'DT' => $splitted[5] ?? null,
-                            ];
+                        if ($ponInterface === null) {
+                            if (count($splitted) >= 8) {
+                                $unRegData[] = [
+                                    'SLOTNO' => $splitted[0] ?? null,
+                                    'PONNO' => $splitted[1] ?? null,
+                                    'MAC' => $splitted[2] ?? null,
+                                    'LOID' => $splitted[3] ?? null,
+                                    'PWD' => $splitted[4] ?? null,
+                                    'ERROR' => $splitted[5] ?? null,
+                                    'AUTHTIME' => $splitted[6] ?? null,
+                                    'DT' => $splitted[7] ?? null,
+                                ];
+                            }
+                        } else {
+                            if (count($splitted) >= 6) {
+                                $unRegData[] = [
+                                    'MAC' => $splitted[0] ?? null,
+                                    'LOID' => $splitted[1] ?? null,
+                                    'PWD' => $splitted[2] ?? null,
+                                    'ERROR' => $splitted[3] ?? null,
+                                    'AUTHTIME' => $splitted[4] ?? null,
+                                    'DT' => $splitted[5] ?? null,
+                                ];
+                            }
                         }
                     }
                     $dataIndex++;

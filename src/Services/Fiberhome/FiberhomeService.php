@@ -548,10 +548,10 @@ class FiberhomeService
     /**
      * List unregistered ONTs
      *
-     * @param  string  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'
+     * @param  string|null  $ponInterface  ONT pon interface. Example: 'NA-NA-1-1'. If null, lists all unregistered ONTs.
      * @return Collection Info about each unregistered ONT
      */
-    public function unregisteredOnts(string $ponInterface): ?Collection
+    public function unregisteredOnts(?string $ponInterface = null): ?Collection
     {
         $this->validateTL1();
         $this->validateModels(['AN5516-04', 'AN5516-06', 'AN5516-06B']);
@@ -911,7 +911,7 @@ class FiberhomeService
             $serial = self::$serials[$i];
             $batchCreatedHere = false;
 
-            $commandResultBatch = $this->globalCommandBatch ?? $this->createCommandResultBatch([
+            $commandResultBatch = $this->globalCommandResultBatch ?? $this->createCommandResultBatch([
                 'ip' => self::$ipOlt,
                 'pon_interface' => $ponInterface,
                 'interface' => null,
