@@ -19,7 +19,7 @@ class VeipConfig
         int $cVlanId,
         string $serviceModelProfile,
         string $serviceType,
-        int $tvId,
+        ?int $tvId = null,
     ) {
         $this->serviceId = $serviceId;
         $this->cVlanId = $cVlanId;
