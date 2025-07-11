@@ -12,7 +12,7 @@ class VeipConfig
 
     public string $serviceType;
 
-    public ?int $tvId;
+    public ?int $tvId = null;
 
     public function __construct(
         int $serviceId,
