@@ -12,20 +12,20 @@ class VeipConfig
 
     public string $serviceType;
 
-    public ?int $tvId = null;
+    public ?int $tvLanId = null;
 
     public function __construct(
         int $serviceId,
         int $cVlanId,
         string $serviceModelProfile,
         string $serviceType,
-        ?int $tvId = null,
+        ?int $tvLanId = null,
     ) {
         $this->serviceId = $serviceId;
         $this->cVlanId = $cVlanId;
         $this->serviceModelProfile = $serviceModelProfile;
         $this->serviceType = $serviceType;
-        $this->tvId = $tvId;
+        $this->tvLanId = $tvLanId;
     }
 
     public function buildCommand(): string
@@ -35,7 +35,7 @@ class VeipConfig
             'CVLANID' => $this->cVlanId ?? null,
             'ServiceModelProfile' => $this->serviceModelProfile ?? null,
             'ServiceType' => $this->serviceType ?? null,
-            'TVID' => $this->tvId ?? null,
+            'TVLANID' => $this->tvLanId ?? null,
         ];
 
         $command = '';
