@@ -1100,6 +1100,11 @@ class DatacomService
 
             $commandResultBatch->associateCommand($response);
 
+            if (str_contains($response->response, 'onu-snmp-real-time-warning')) {
+                $yesResponse = DM4612::yes();
+                $commandResultBatch->associateCommand($yesResponse);
+            }
+
             if ($batchCreatedHere) {
                 $commandResultBatch->finished_at = Carbon::now();
                 if (! self::$databaseTransactionsDisabled) {
