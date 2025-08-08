@@ -1020,9 +1020,9 @@ class DM4612 extends DatacomService
             if (str_contains($response, 'Aborted') || str_contains($response, 'Invalid')) {
                 throw new \Exception($response);
             }
-            
+
             self::$telnetConn->resetPromptRegex();
-            
+
             return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
