@@ -1012,16 +1012,16 @@ class DM4612 extends DatacomService
         $finishedAt = null;
 
         try {
+            self::$telnetConn->changePromptRegex('[#]|\[yes,no\]');
+            
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            self::$telnetConn->changePromptRegex('[#]|\[yes,no\]');
+            self::$telnetConn->resetPromptRegex();
 
             if (str_contains($response, 'Aborted') || str_contains($response, 'Invalid')) {
                 throw new \Exception($response);
-            }
-
-            self::$telnetConn->resetPromptRegex();
+            }            
 
             return self::createCommandResult([
                 'success' => true,
@@ -1399,12 +1399,12 @@ class DM4612 extends DatacomService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
+            self::$telnetConn->resetPromptRegex();
+
             if (str_contains($response, 'syntax error')) {
                 throw new \Exception($response);
             }
-
-            self::$telnetConn->resetPromptRegex();
-
+           
             return self::createCommandResult([
                 'success' => true,
                 'command' => $command,
