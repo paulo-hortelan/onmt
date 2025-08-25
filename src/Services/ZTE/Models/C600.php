@@ -1002,4 +1002,51 @@ class C600 extends C300
             ]);
         }
     }
+
+    /**
+     * Reboot (needs to be confirm [yes/no]) - Telnet
+     */
+    public static function reboot(): ?CommandResult
+    {
+        $command = 'reboot';
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            self::$telnetConn->changePromptRegex(':');
+
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (empty($response)) {
+                throw new \Exception($response);
+            }
+
+            self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+            self::$telnetConn->resetPromptRegex();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
 }
