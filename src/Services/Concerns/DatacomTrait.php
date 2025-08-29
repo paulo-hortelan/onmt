@@ -39,4 +39,22 @@ trait DatacomTrait
 
         return $matches[1];
     }
+
+    /**
+     * Converts a serial string to a case-insensitive regex pattern.
+     * For example, "ABC123" becomes "[Aa][Bb][Cc]123"
+     *
+     * Only alphabetic characters are transformed, digits and special characters remain unchanged.
+     *
+     * @param  string  $serial  The serial number to convert
+     * @return string The case-insensitive regex pattern
+     */
+    public function applyIgnoreCase(string $serial): string
+    {
+        return preg_replace_callback('/[a-zA-Z]/', function ($matches) {
+            $char = $matches[0];
+
+            return '['.strtoupper($char).strtolower($char).']';
+        }, $serial);
+    }
 }

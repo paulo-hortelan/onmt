@@ -321,14 +321,14 @@ class DM4612 extends DatacomService
                     continue;
                 }
 
-                if (preg_match('/^\s*(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+(?:\s+\S+)*)\s+(\S+(?:\s+\S+)*)\s*$/', $line, $matches)) {
+                if (preg_match('/^\s*(\S+)\s+(\d+)\s+(\S+)\s+(\S+)\s+(\S+(?:\s+\S+)*)\s*(.*)?\s*$/', $line, $matches)) {
                     $onuInfo[] = [
                         'interface' => $matches[1],
                         'onuId' => (int) $matches[2],
                         'serialNumber' => $matches[3],
                         'operState' => $matches[4],
                         'softwareDownloadState' => trim($matches[5]),
-                        'name' => trim($matches[6]),
+                        'name' => isset($matches[6]) ? trim($matches[6]) : '',
                     ];
                 }
             }
