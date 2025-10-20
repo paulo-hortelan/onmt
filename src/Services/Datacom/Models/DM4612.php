@@ -16,7 +16,7 @@ class DM4612 extends DatacomService
      */
     public static function showInterfaceGponDiscoveredOnus(): ?CommandResult
     {
-        $command = 'show interface gpon discovered-onus';
+        $command = 'show interface gpon discovered-onus | nomore';
         $response = null;
         $createdAt = Carbon::now();
         $finishedAt = null;
@@ -89,7 +89,7 @@ class DM4612 extends DatacomService
      */
     public static function showInterfaceGponOnu(string $ponInterface, string $ontIndex): ?CommandResult
     {
-        $command = "show interface gpon $ponInterface onu $ontIndex";
+        $command = "show interface gpon $ponInterface onu $ontIndex | nomore";
         $response = null;
         $createdAt = Carbon::now();
         $finishedAt = null;
@@ -149,7 +149,7 @@ class DM4612 extends DatacomService
      */
     public static function showInterfaceGponOnuInclude(string $serial): ?CommandResult
     {
-        $command = "show interface gpon onu | include $serial";
+        $command = "show interface gpon onu | include $serial | nomore";
         $response = null;
         $createdAt = Carbon::now();
         $finishedAt = null;
