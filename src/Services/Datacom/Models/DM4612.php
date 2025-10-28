@@ -147,9 +147,14 @@ class DM4612 extends DatacomService
     /**
      * Shows information about ONUs matching a specific serial number
      */
-    public static function showInterfaceGponOnuInclude(string $serial): ?CommandResult
+    public static function showInterfaceGponOnuInclude(string $serial, ?string $pon = null): ?CommandResult
     {
-        $command = "show interface gpon onu | include $serial | nomore";
+        $command = 'show interface gpon';
+        if (! empty($pon)) {
+            $command .= " $pon";
+        }
+        $command .= " onu | include $serial | nomore";
+
         $response = null;
         $createdAt = Carbon::now();
         $finishedAt = null;

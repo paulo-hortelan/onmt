@@ -606,7 +606,7 @@ class DatacomService
      *
      * @return Collection A collection of CommandResultBatch
      */
-    public function interfaceOnts(?bool $ignoreCase = true): ?Collection
+    public function interfaceOnts(?bool $ignoreCase = true, ?string $pon = null): ?Collection
     {
         $this->validateTelnet();
         $this->validateSerials();
@@ -629,7 +629,7 @@ class DatacomService
                 $serial = $this->applyIgnoreCase($serial);
             }
 
-            $response = DM4612::showInterfaceGponOnuInclude($serial);
+            $response = DM4612::showInterfaceGponOnuInclude($serial, $pon);
 
             $response->associateBatch($commandResultBatch);
             $commandResultBatch->load('commands');
