@@ -1002,17 +1002,18 @@ class DatacomService
         $onts = $commandResultBatch->commands[0]['result'];
 
         $indexes = array_map(function ($item) {
-            return $item['onuId'];
+            return (int) $item['onuId'];
         }, $onts);
 
-        sort($indexes);
+        $indexes = array_unique($indexes);
+        $indexes = array_filter($indexes, fn ($i) => $i !== 0);
+        sort($indexes, SORT_NUMERIC);
 
         $nextPosition = 1;
         foreach ($indexes as $index) {
             if ($index !== $nextPosition) {
                 break;
             }
-
             $nextPosition++;
         }
 
