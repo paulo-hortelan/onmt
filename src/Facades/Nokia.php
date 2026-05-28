@@ -19,6 +19,7 @@ use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanEgPortConfig;
 use PauloHortelan\Onmt\DTOs\Nokia\FX16\VlanPortConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
+use PauloHortelan\Onmt\Services\Nokia\NokiaService;
 
 /**
  * Nokia OLT Management Facade
@@ -98,12 +99,12 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null configureTr069DNS(string $dns, int $sParamIdLan = 12, int $sParamIdWan = 13, int $sParamIdWan2 = 14, string $mode = 'ENT') Configures DNS server addresses on the ONT via TR-069. Format: '0.0.0.0\,1.1.1.1'. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('ENT', 'ED' or 'DLT').
  * @method static Collection|null deleteTr069(int $sParamId, string $mode = 'DLT') Deletes TR-069 parameter on the ONTs. Parameter 'interfaces' must already be provided. The $mode parameter determines operation type ('DLT').
  *
- * @see \PauloHortelan\Onmt\Services\Nokia\NokiaService
+ * @see NokiaService
  */
 class Nokia extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \PauloHortelan\Onmt\Services\Nokia\NokiaService::class;
+        return NokiaService::class;
     }
 }
