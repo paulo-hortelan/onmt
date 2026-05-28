@@ -8,6 +8,7 @@ use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\LanConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\VeipConfig;
 use PauloHortelan\Onmt\DTOs\Fiberhome\AN551604\WanConfig;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
+use PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService;
 
 /**
  * Fiberhome OLT Management Facade
@@ -55,12 +56,12 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null configureVeipOnts(string $ponInterface, string $portInterface, VeipConfig $config) Configures Virtual Ethernet Interface Point (VEIP) service for ONTs specified by serials() on the given PON and port interfaces.
  * @method static Collection|null configureWanOnts(string $ponInterface, WanConfig $config) Configures WAN service settings (Internet connectivity parameters) for ONTs specified by serials() on the given PON interface.
  *
- * @see \PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService
+ * @see FiberhomeService
  */
 class Fiberhome extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \PauloHortelan\Onmt\Services\Fiberhome\FiberhomeService::class;
+        return FiberhomeService::class;
     }
 }

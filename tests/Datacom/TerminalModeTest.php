@@ -1,6 +1,7 @@
 <?php
 
 use PauloHortelan\Onmt\Facades\Datacom;
+use PauloHortelan\Onmt\Services\Datacom\DatacomService;
 
 uses()->group('Datacom');
 
@@ -95,7 +96,7 @@ describe('Datacom Terminal Mode', function () {
         $property->setValue($this->datacom, '');
 
         $fullInterface = $this->interfaceALCL;
-        $ontIndex = (new \PauloHortelan\Onmt\Services\Datacom\DatacomService())->getOntIndexFromInterface($fullInterface);
+        $ontIndex = (new DatacomService())->getOntIndexFromInterface($fullInterface);
 
         $result = $this->datacom->setOnuTerminalMode($fullInterface);
 
@@ -114,7 +115,7 @@ describe('Datacom Terminal Mode', function () {
 
     it('directly enters onu mode when already in interface gpon mode', function () {
         $fullInterface = $this->interfaceALCL;
-        $datacomService = new \PauloHortelan\Onmt\Services\Datacom\DatacomService();
+        $datacomService = new DatacomService();
         $ponInterface = $datacomService->getPonInterfaceFromInterface($fullInterface);
         $ontIndex = $datacomService->getOntIndexFromInterface($fullInterface);
 

@@ -46,7 +46,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ], true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -84,7 +84,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ], true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -121,7 +121,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -158,7 +158,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -190,7 +190,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             self::$telnetConn->resetPromptRegex();
@@ -204,7 +204,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             self::$telnetConn->resetPromptRegex();
             $finishedAt = Carbon::now();
 
@@ -235,7 +235,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'pon table')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             $ontsData = [];
@@ -306,7 +306,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -343,7 +343,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -355,7 +355,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -385,7 +385,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -397,7 +397,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -427,7 +427,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'tx-signal-level')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             $ontDetails = [
@@ -464,7 +464,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -496,7 +496,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'index table')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             if (! str_contains($response, 'ont-idx')) {
@@ -528,7 +528,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -558,7 +558,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'ont-idx')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             $interfaceDetails = [
@@ -618,7 +618,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -648,7 +648,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'ont-idx')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             $swDownloadDetails = [
@@ -700,7 +700,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -782,7 +782,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -812,7 +812,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'opr-status')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             if (preg_match('/opr-status.*?:(.*?[^\s]+)/m', $response, $match)) {
@@ -842,7 +842,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -873,7 +873,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'unprovision-onu table')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             $tableSection = '';
@@ -996,7 +996,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1028,7 +1028,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             self::$telnetConn->resetPromptRegex();
@@ -1042,7 +1042,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
             self::$telnetConn->resetPromptRegex();
 
@@ -1075,7 +1075,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             self::$telnetConn->resetPromptRegex();
@@ -1089,7 +1089,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
             self::$telnetConn->resetPromptRegex();
 
@@ -1120,7 +1120,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1132,7 +1132,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1162,7 +1162,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1174,7 +1174,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1206,7 +1206,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (str_contains($response, 'invalid token')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             self::$telnetConn->resetPromptRegex();
@@ -1220,7 +1220,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             self::$telnetConn->resetPromptRegex();
             $finishedAt = Carbon::now();
 
@@ -1251,7 +1251,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1263,7 +1263,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ], true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1296,7 +1296,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1308,7 +1308,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1341,7 +1341,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1353,7 +1353,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1385,7 +1385,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1397,7 +1397,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1428,7 +1428,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1440,7 +1440,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1471,7 +1471,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1483,7 +1483,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1516,7 +1516,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1528,7 +1528,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1561,7 +1561,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1573,7 +1573,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1606,7 +1606,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1618,7 +1618,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([
@@ -1651,7 +1651,7 @@ class FX16 extends NokiaService
             $finishedAt = Carbon::now();
 
             if (! str_contains($response, 'M  0 COMPLD')) {
-                throw new \Exception($response);
+                throw new Exception($response);
             }
 
             return self::createCommandResult([
@@ -1663,7 +1663,7 @@ class FX16 extends NokiaService
                 'created_at' => $createdAt,
                 'finished_at' => $finishedAt,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $finishedAt = Carbon::now();
 
             return self::createCommandResult([

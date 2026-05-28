@@ -15,6 +15,7 @@ use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanFilterModeConfig;
 use PauloHortelan\Onmt\DTOs\ZTE\C300\VlanPortConfig;
 use PauloHortelan\Onmt\Models\CommandResult;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
+use PauloHortelan\Onmt\Services\ZTE\ZTEService;
 
 /**
  * ZTE OLT Management Facade
@@ -84,12 +85,12 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null configureVlanFilterMode(VlanFilterModeConfig $vlanFilterModeConfig) Sets VLAN filtering mode for ONT interfaces (C300 model only).
  * @method static Collection|null configureVlanFilter(VlanFilterConfig $vlanFilterConfig) Configures VLAN filtering rules for traffic control (C300 model only).
  *
- * @see \PauloHortelan\Onmt\Services\ZTE\ZTEService
+ * @see ZTEService
  */
 class ZTE extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \PauloHortelan\Onmt\Services\ZTE\ZTEService::class;
+        return ZTEService::class;
     }
 }

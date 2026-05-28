@@ -5,6 +5,7 @@ namespace PauloHortelan\Onmt\Facades;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Facade;
 use PauloHortelan\Onmt\Models\CommandResultBatch;
+use PauloHortelan\Onmt\Services\Datacom\DatacomService;
 
 /**
  * Datacom OLT Management Facade
@@ -72,12 +73,12 @@ use PauloHortelan\Onmt\Models\CommandResultBatch;
  * @method static Collection|null removeServicePorts(array $ports) Removes service ports with specified indexes.
  * @method static Collection|null removeOntsServicePorts(array $ports) Removes ONTs and their service ports specified by interfaces() and port indexes.
  *
- * @see \PauloHortelan\Onmt\Services\Datacom\DatacomService
+ * @see DatacomService
  */
 class Datacom extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return \PauloHortelan\Onmt\Services\Datacom\DatacomService::class;
+        return DatacomService::class;
     }
 }
