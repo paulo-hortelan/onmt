@@ -1066,6 +1066,10 @@ class NokiaService
             $nextPosition++;
         }
 
+        if($nextPosition > 128) {
+            throw new Exception('No available ONT positions on this PON interface.');
+        }
+
         return $nextPosition;
     }
 
