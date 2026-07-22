@@ -1,0 +1,10 @@
+interface 1/1/1/1/6 sw-ver-pland disabled
+  desc1 teste_onu_mk
+  sernum CMSZ:3BC079CE
+  subslocid WILDCARD
+  fec-up disable
+  sw-dnload-version disabled
+  log-auth-pwd plain:******
+  planned-us-rate nominal-line-rate
+  admin-state up
+exit

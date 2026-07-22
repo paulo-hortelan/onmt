@@ -595,13 +595,15 @@ class FX16 extends NokiaService
                 $line = trim($line);
 
                 foreach ($interfaceDetails as $key => $value) {
-                    if (preg_match('/'.preg_quote($key, '/').'\s*:\s*([^\s:]+)/i', $line, $matches)) {
-                        $value = trim($matches[1]);
+                    if (preg_match('/'.preg_quote($key, '/').'\s*:\s*(?:"([^"]*)"|([^\s:]+))/i', $line, $matches)) {
+                        $value = trim((isset($matches[1]) && $matches[1] !== '') ? $matches[1] : ($matches[2] ?? ''));
 
-                        if (empty($value)) {
+                        if ($value === '') {
                             $interfaceDetails[$key] = null;
                         } elseif (in_array($key, ['num-tconts', 'num-prio-queues', 'actual-num-slots', 'num-trf-sched'])) {
                             $interfaceDetails[$key] = (int) $value;
+                        } elseif ($key === 'equip-id') {
+                            $interfaceDetails[$key] = trim($value, " \t\n\r\0\x0B,");
                         } else {
                             $interfaceDetails[$key] = $value;
                         }
