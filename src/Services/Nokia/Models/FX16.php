@@ -933,6 +933,10 @@ class FX16 extends NokiaService
                 }
 
                 if ($dataStarted) {
+                    $alarmIdx = null;
+                    $interface = null;
+                    $serial = null;
+                    $actualUsRate = null;
                     $cleanLine = preg_replace('/^[-\\\\|\s]+/', '', $trimmedLine);
 
                     // 1. First approach: Use column positions if we have them
@@ -958,7 +962,17 @@ class FX16 extends NokiaService
                         }
                     }
 
-                    // 3. Third approach: Parse by spaces with specific validation
+                    // 3. Third approach: Parse by fixed-width whitespace groups, keeping the last token as us-rate
+                    if (empty($alarmIdx) || empty($interface) || empty($serial)) {
+                        $parts = preg_split('/\s{2,}/', $cleanLine, -1, PREG_SPLIT_NO_EMPTY);
+                        if (count($parts) >= 3 && is_numeric($parts[0])) {
+                            $alarmIdx = $parts[0];
+                            $interface = $parts[1];
+                            $serial = $parts[2];
+                        }
+                    }
+
+                    // 4. Final fallback: Parse by generic spaces with specific validation
                     if (empty($alarmIdx) || empty($interface) || empty($serial)) {
                         $parts = preg_split('/\s+/', $cleanLine, -1, PREG_SPLIT_NO_EMPTY);
                         if (count($parts) >= 3) {
@@ -974,6 +988,15 @@ class FX16 extends NokiaService
                         }
                     }
 
+                    if (! empty($cleanLine)) {
+                        $rateParts = preg_split('/\s{2,}/', $cleanLine, -1, PREG_SPLIT_NO_EMPTY);
+                        $lastPart = ! empty($rateParts) ? end($rateParts) : null;
+
+                        if (is_string($lastPart) && preg_match('/^\d+(?:\.\d+)?g$/i', $lastPart)) {
+                            $actualUsRate = $lastPart;
+                        }
+                    }
+
                     // Add to results if we have valid data
                     if (! empty($alarmIdx) && ! empty($interface) && ! empty($serial)) {
                         $alarmIdx = (int) $alarmIdx;
@@ -983,6 +1006,7 @@ class FX16 extends NokiaService
                                 'alarm-idx' => $alarmIdx,
                                 'interface' => $interface,
                                 'serial' => $serial,
+                                'actual-us-rate' => $actualUsRate,
                             ];
                         }
                     }
