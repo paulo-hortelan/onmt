@@ -59,7 +59,7 @@ OUT);
         ]);
         expect($result->result[1])->toMatchArray([
             'alarm-idx' => 23,
-            'interface' => 'x-pon:1/1/1/1',
+            'interface' => '1/1/1/1',
             'serial' => 'ALCLFD638BD2',
             'actual-us-rate' => '10g',
         ]);

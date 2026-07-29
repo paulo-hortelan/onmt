@@ -1000,6 +1000,7 @@ class FX16 extends NokiaService
                     // Add to results if we have valid data
                     if (! empty($alarmIdx) && ! empty($interface) && ! empty($serial)) {
                         $alarmIdx = (int) $alarmIdx;
+                        $interface = preg_replace('/^x-pon:/i', '', trim($interface));
 
                         if ($alarmIdx > 0 && strlen($interface) > 0 && strlen($serial) > 0) {
                             $unregData[] = [
