@@ -216,6 +216,7 @@ class Telnet
 
         $userPrompt = '';
         $passPrompt = '';
+        $useRegexPrompts = false;
 
         try {
 
@@ -232,8 +233,9 @@ class Telnet
                     break;
 
                 case 'Nokia-FX16':
-                    $userPrompt = 'login: ';
-                    $passPrompt = 'password: ';
+                    $userPrompt = '(?:[Ll]ogin|[Uu]sername):\s*';
+                    $passPrompt = '[Pp]assword:\s*';
+                    $useRegexPrompts = true;
                     break;
 
                 case 'ios': // Cisco IOS, IOS-XE, IOS-XR
@@ -259,9 +261,9 @@ class Telnet
             $promptRegex = $this->getPromptRegexForHostType($hostType);
             $this->promptRegex = $promptRegex;
 
-            $this->writeCommand($userPrompt, $username);
+            $this->writeCommand($userPrompt, $username, $useRegexPrompts);
 
-            $this->writeCommand($passPrompt, $password);
+            $this->writeCommand($passPrompt, $password, $useRegexPrompts);
 
             $this->setRegexPrompt($promptRegex);
             $this->waitPrompt();
@@ -405,9 +407,14 @@ class Telnet
         return $this;
     }
 
-    protected function writeCommand(string $prompt, string $input): void
+    protected function writeCommand(string $prompt, string $input, bool $promptIsRegex = false): void
     {
-        $this->setPrompt($prompt);
+        if ($promptIsRegex) {
+            $this->setRegexPrompt($prompt);
+        } else {
+            $this->setPrompt($prompt);
+        }
+
         $this->waitPrompt();
         $this->write($input);
     }
