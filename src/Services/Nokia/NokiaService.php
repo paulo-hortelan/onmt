@@ -1034,6 +1034,53 @@ class NokiaService
     }
 
     /**
+     * Gets ONTs detail by X-PON interface - Telnet
+     *
+     * @param  string  $ponInterface  X-PON interface. Example: '1/1/1/1'
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function ontsByXPonInterface(string $ponInterface): ?Collection
+    {
+        $this->validateTelnet();
+
+        if (self::$model !== 'FX16') {
+            throw new Exception('Model '.self::$model.' is not supported.');
+        }
+
+        $finalResponse = collect();
+        $batchCreatedHere = false;
+
+        $commandResultBatch = $this->globalCommandBatch ?? null;
+        if ($commandResultBatch === null) {
+            $batchCreatedHere = true;
+            $commandResultBatch = $this->createCommandResultBatch([
+                'description' => 'Gets ONTs detail by X-PON interface',
+                'ip' => self::$ipOlt,
+                'pon_interface' => $ponInterface,
+                'operator' => self::$operator,
+            ]);
+        }
+
+        $response = FX16::showEquipmentOntStatusXPon($ponInterface);
+
+        $response->associateBatch($commandResultBatch);
+
+        if ($batchCreatedHere) {
+            $commandResultBatch->finished_at = Carbon::now();
+
+            if (! self::$databaseTransactionsDisabled) {
+                $commandResultBatch->save();
+            }
+        }
+
+        $commandResultBatch->load('commands');
+
+        $finalResponse->push($commandResultBatch);
+
+        return $finalResponse;
+    }
+
+    /**
      * Gets the next free ONT index - Telnet
      *
      * @param  string  $ponInterface  PON interface. Example: '1/1/1/1'

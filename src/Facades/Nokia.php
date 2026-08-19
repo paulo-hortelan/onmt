@@ -62,6 +62,7 @@ use PauloHortelan\Onmt\Services\Nokia\NokiaService;
  * @method static Collection|null portDetailOnts() Gets detailed information about ONT physical ports including their operational status. Parameter 'interfaces' must already be provided.
  * @method static Collection|null unregisteredOnts() Gets a list of all discovered but not yet provisioned ONTs on the OLT.
  * @method static Collection|null ontsByPonInterface(string $ponInterface) Gets a list of all ONTs on the specified PON interface (e.g., '1/1/1/1') with their status.
+ * @method static Collection|null ontsByXPonInterface(string $ponInterface) Gets a list of all ONTs on the specified X-PON interface (e.g., '1/1/1/1') with their status.
  *
  * == ONT MANAGEMENT ==
  * @method static int|null getNextOntIndex(string $ponInterface) Finds the next available ONT index for provisioning on the specified PON interface (e.g., '1/1/1/1').
