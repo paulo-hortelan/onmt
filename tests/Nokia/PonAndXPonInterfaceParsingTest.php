@@ -64,7 +64,7 @@ OUT;
         $telnetProperty->setAccessible(true);
         $telnetProperty->setValue(null, $mockTelnet);
 
-        $this->nokia = (new NokiaService)->disableDatabaseTransactions()->model('FX16');
+        $this->nokia = (new NokiaService())->disableDatabaseTransactions()->model('FX16');
     });
 
     afterEach(function () {
