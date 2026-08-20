@@ -239,7 +239,7 @@ class FX16 extends NokiaService
             }
 
             $ontsData = [];
-            $ontsBlocks = explode("\n--------------------------------------------------------------------------------\n", $response);
+            $ontsBlocks = preg_split('/\r?\n-{20,}\r?\n/', $response);
 
             foreach ($ontsBlocks as $ontBlock) {
 

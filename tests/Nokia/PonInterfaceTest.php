@@ -55,3 +55,21 @@ describe('Nokia Onts by X-PON Interface - Success', function () {
         });
     });
 });
+
+describe('Nokia Onts by PON and X-PON Interface - Success', function () {
+    it('can get onts', function () {
+        $onts = $this->nokia->ontsByPonAndXPonInterface($this->ponInterface);
+
+        expect($onts)->toBeInstanceOf(Collection::class);
+
+        $onts->each(function ($batch) {
+            expect($batch)->toBeInstanceOf(CommandResultBatch::class);
+            expect($batch->commands)->toBeInstanceOf(Collection::class);
+            expect($batch->commands)->toHaveCount(2);
+
+            collect($batch->commands)->each(function ($commandResult) {
+                expect($commandResult->success)->toBeTrue();
+            });
+        });
+    });
+});
