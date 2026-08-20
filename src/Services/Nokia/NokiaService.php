@@ -1112,7 +1112,10 @@ class NokiaService
         $ponResponse->associateBatch($commandResultBatch);
 
         $xPonResponse = FX16::showEquipmentOntStatusXPon($ponInterface);
-        $xPonResponse->associateBatch($commandResultBatch);
+        $xPonError = strtolower((string) $xPonResponse->error);
+        if (! str_contains($xPonError, 'the specified instance does not exist')) {
+            $xPonResponse->associateBatch($commandResultBatch);
+        }
 
         if ($batchCreatedHere) {
             $commandResultBatch->finished_at = Carbon::now();
