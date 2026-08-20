@@ -89,6 +89,33 @@ OUT;
         expect($batch->getCommands()[1]->result[0]['interface'])->toBe('1/1/1/1/3');
     });
 
+    it('keeps the pon result when the x-pon instance does not exist', function () {
+        $reflection = new ReflectionClass(NokiaService::class);
+        $ponOutput = <<<'OUT'
+typ:isadmin># show equipment ont status pon 1/1/1/1 detail
+pon table (detailed)
+pon : 1/1/1/1 ont : 1/1/1/1/1 sernum : ALCL:FE12FC43 admin-status : up oper-status : up
+OUT;
+        $mockTelnet = $this->createMock(Telnet::class);
+        $mockTelnet->method('exec')->willReturnCallback(function (string $command) use ($ponOutput) {
+            if (str_contains($command, 'x-pon')) {
+                return "Error : The specified instance does not exist\n";
+            }
+
+            return $ponOutput;
+        });
+
+        $telnetProperty = $reflection->getProperty('telnetConn');
+        $telnetProperty->setAccessible(true);
+        $telnetProperty->setValue(null, $mockTelnet);
+
+        $batch = $this->nokia->ontsByPonAndXPonInterface('1/1/1/16')->first();
+
+        expect($batch->getCommands())->toHaveCount(1);
+        expect($batch->getCommands()[0]->success)->toBeTrue();
+        expect($batch->getCommands()[0]->result[0]['interface'])->toBe('1/1/1/1/1');
+    });
+
     it('uses combined pon and x-pon indexes to find the next ont index', function () {
         expect($this->nokia->getNextOntIndex('1/1/1/1'))->toBe(2);
     });
