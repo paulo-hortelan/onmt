@@ -239,7 +239,7 @@ class FX16 extends NokiaService
             }
 
             $ontsData = [];
-            $ontsBlocks = explode("\n--------------------------------------------------------------------------------\n", $response);
+            $ontsBlocks = preg_split('/\r?\n-{20,}\r?\n/', $response);
 
             foreach ($ontsBlocks as $ontBlock) {
 
@@ -320,6 +320,106 @@ class FX16 extends NokiaService
             ]);
         }
 
+    }
+
+    /**
+     * Get ONTs info by X-PON interface - Telnet
+     */
+    public static function showEquipmentOntStatusXPon(string $ponInterface): ?CommandResult
+    {
+        $command = "show equipment ont status x-pon $ponInterface detail";
+        $response = null;
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (! str_contains($response, 'x-pon table')) {
+                throw new Exception($response);
+            }
+
+            $ontsData = [];
+            $ontsBlocks = preg_split('/\r?\n-{20,}\r?\n/', $response);
+
+            foreach ($ontsBlocks as $ontBlock) {
+                if (empty(trim($ontBlock))) {
+                    continue;
+                }
+
+                $ontAttributes = [
+                    'pon-interface' => null,
+                    'interface' => null,
+                    'sernum' => null,
+                    'admin-status' => null,
+                    'oper-status' => null,
+                    'olt-rx-sig-level' => null,
+                    'ont-olt-distance' => null,
+                    'desc1' => null,
+                    'desc2' => null,
+                    'hostname' => null,
+                ];
+
+                $lines = preg_split('/\r?\n/', $ontBlock);
+                foreach ($lines as $line) {
+                    $line = trim($line);
+
+                    $patterns = [
+                        'pon-interface' => '/x-pon\s*:\s*(\S+)/',
+                        'interface' => '/ont\s*:\s*(\S+)/',
+                        'sernum' => '/sernum\s*:\s*(\S+)/',
+                        'admin-status' => '/admin-status\s*:\s*(\S+)/',
+                        'oper-status' => '/oper-status\s*:\s*(\S+)/',
+                        'olt-rx-sig-level' => '/olt-rx-sig-level\(dbm\)\s*:\s*([\S-]+)/',
+                        'ont-olt-distance' => '/ont-olt-distance\(km\)\s*:\s*([\S-]+)/',
+                        'desc1' => '/desc1\s*:\s*(.+)/',
+                        'desc2' => '/desc2\s*:\s*(.+)/',
+                        'hostname' => '/hostname\s*:\s*(\S+)/',
+                    ];
+
+                    foreach ($patterns as $key => $pattern) {
+                        if (preg_match($pattern, $line, $matches)) {
+                            $value = trim($matches[1]);
+
+                            if ($value === '') {
+                                $ontAttributes[$key] = null;
+                            } elseif (in_array($key, ['olt-rx-sig-level', 'ont-olt-distance'])) {
+                                $ontAttributes[$key] = (float) $value;
+                            } else {
+                                $ontAttributes[$key] = $value;
+                            }
+                        }
+                    }
+                }
+
+                if (! empty($ontAttributes['pon-interface'])) {
+                    $ontsData[] = $ontAttributes;
+                }
+            }
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => $ontsData,
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (Exception $e) {
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response ?? null,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
     }
 
     /**

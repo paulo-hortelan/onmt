@@ -62,9 +62,11 @@ use PauloHortelan\Onmt\Services\Nokia\NokiaService;
  * @method static Collection|null portDetailOnts() Gets detailed information about ONT physical ports including their operational status. Parameter 'interfaces' must already be provided.
  * @method static Collection|null unregisteredOnts() Gets a list of all discovered but not yet provisioned ONTs on the OLT.
  * @method static Collection|null ontsByPonInterface(string $ponInterface) Gets a list of all ONTs on the specified PON interface (e.g., '1/1/1/1') with their status.
+ * @method static Collection|null ontsByXPonInterface(string $ponInterface) Gets a list of all ONTs on the specified X-PON interface (e.g., '1/1/1/1') with their status.
+ * @method static Collection|null ontsByPonAndXPonInterface(string $ponInterface) Gets ONTs from both PON and X-PON on the specified interface (e.g., '1/1/1/1') in a single batch.
  *
  * == ONT MANAGEMENT ==
- * @method static int|null getNextOntIndex(string $ponInterface) Finds the next available ONT index for provisioning on the specified PON interface (e.g., '1/1/1/1').
+ * @method static int|null getNextOntIndex(string $ponInterface) Finds the next available ONT index for provisioning on the specified PON/X-PON interface (e.g., '1/1/1/1'), considering ONTs from both technologies.
  * @method static Collection|null removeOnts() Removes/deletes ONTs from the OLT configuration. Parameter 'interfaces' must already be provided.
  * @method static Collection|null rebootOnts() Reboots ONTs and applies their current configuration. Parameter 'interfaces' must already be provided.
  * @method static Collection|null rebootOntsBySerials() Reboots ONTs identified by their serial numbers. Parameter 'serials' must already be provided.
