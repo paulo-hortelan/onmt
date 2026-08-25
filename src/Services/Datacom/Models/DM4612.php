@@ -1097,10 +1097,52 @@ class DM4612 extends DatacomService
     /**
      * Sets a service port
      */
-    public static function servicePort(int $port, string $ponInterface, int $ontIndex, int $vlan, string $description): ?CommandResult
+    public static function servicePort(int $port, string $ponInterface, int $ontIndex, int $vlan, string $description, int $gem = 1): ?CommandResult
     {
         $response = null;
-        $command = "service-port $port gpon $ponInterface onu $ontIndex gem 1 match vlan vlan-id $vlan action vlan replace vlan-id $vlan description $description";
+        $command = "service-port $port gpon $ponInterface onu $ontIndex gem $gem match vlan vlan-id $vlan action vlan replace vlan-id $vlan description $description";
+        $createdAt = Carbon::now();
+        $finishedAt = null;
+
+        try {
+            $response = self::$telnetConn->exec($command);
+            $finishedAt = Carbon::now();
+
+            if (! str_contains($response, $command) || str_contains($response, 'syntax error')) {
+                throw new \Exception($response);
+            }
+
+            return self::createCommandResult([
+                'success' => true,
+                'command' => $command,
+                'response' => $response,
+                'error' => null,
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        } catch (\Exception $e) {
+            $finishedAt = Carbon::now();
+
+            return self::createCommandResult([
+                'success' => false,
+                'command' => $command,
+                'response' => $response,
+                'error' => $e->getMessage(),
+                'result' => [],
+                'created_at' => $createdAt,
+                'finished_at' => $finishedAt,
+            ]);
+        }
+    }
+
+    /**
+     * Sets a service port using the next available service port index
+     */
+    public static function servicePortNew(string $ponInterface, int $ontIndex, int $vlan, string $description, int $gem = 1): ?CommandResult
+    {
+        $response = null;
+        $command = "service-port new gpon $ponInterface onu $ontIndex gem $gem match vlan vlan-id $vlan action vlan replace vlan-id $vlan description $description";
         $createdAt = Carbon::now();
         $finishedAt = null;
 

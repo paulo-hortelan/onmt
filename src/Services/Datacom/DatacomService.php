@@ -1537,10 +1537,11 @@ class DatacomService
      *
      * @param  int  $port  Service port
      * @param  int  $vlan  VLAN
-     * @param  int  $description  Description
+     * @param  string  $description  Description
+     * @param  int  $gem  GEM port
      * @return Collection A collection of CommandResultBatch
      */
-    public function setServicePort(int $port, int $vlan, string $description): ?Collection
+    public function setServicePort(int $port, int $vlan, string $description, int $gem = 1): ?Collection
     {
         $this->validateTelnet();
         $this->validateInterfaces();
@@ -1584,7 +1585,78 @@ class DatacomService
             $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
-            $response = DM4612::servicePort($port, $ponInterface, $ontIndex, $vlan, $description);
+            $response = DM4612::servicePort($port, $ponInterface, $ontIndex, $vlan, $description, $gem);
+
+            $commandResultBatch->associateCommand($response);
+
+            if ($batchCreatedHere) {
+                $commandResultBatch->finished_at = Carbon::now();
+                if (! self::$databaseTransactionsDisabled) {
+                    $commandResultBatch->save();
+                }
+            }
+
+            $finalResponse->push($commandResultBatch);
+        }
+
+        return $finalResponse;
+    }
+
+    /**
+     * Set ONTs Service Port using the next available index - Telnet
+     *
+     * Parameter 'interfaces' must already be provided
+     *
+     * @param  int  $vlan  VLAN
+     * @param  string  $description  Description
+     * @param  int  $gem  GEM port
+     * @return Collection A collection of CommandResultBatch
+     */
+    public function setServicePortNew(int $vlan, string $description, int $gem = 1): ?Collection
+    {
+        $this->validateTelnet();
+        $this->validateInterfaces();
+
+        $finalResponse = collect();
+
+        foreach (self::$interfaces as $interface) {
+            $batchCreatedHere = false;
+            $commandResultBatch = $this->globalCommandBatch ?? null;
+            if ($this->globalCommandBatch === null) {
+                $batchCreatedHere = true;
+                $commandResultBatch = $this->createCommandResultBatch([
+                    'ip' => self::$ipOlt,
+                    'interface' => $interface,
+                    'operator' => self::$operator,
+                ]);
+            }
+
+            if (self::$terminalMode !== 'config') {
+                $batchResponse = $this->setConfigTerminalMode();
+
+                if ($batchCreatedHere && $batchResponse !== $commandResultBatch) {
+                    $commandResultBatch = $batchResponse;
+                } else {
+                    $commandResultBatch->associateCommands($batchResponse->commands);
+                }
+
+                if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                    if ($batchCreatedHere) {
+                        $commandResultBatch->finished_at = Carbon::now();
+                        if (! self::$databaseTransactionsDisabled) {
+                            $commandResultBatch->save();
+                        }
+                    }
+                    $finalResponse->push($commandResultBatch);
+
+                    continue;
+                }
+            }
+
+            $ponInterface = $this->getPonInterfaceFromInterface($interface);
+            $ontIndex = $this->getOntIndexFromInterface($interface);
+
+            $response = DM4612::servicePortNew($ponInterface, $ontIndex, $vlan, $description, $gem);
 
             $commandResultBatch->associateCommand($response);
 
