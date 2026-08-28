@@ -64,7 +64,7 @@ use PauloHortelan\Onmt\Services\Datacom\DatacomService;
  * @method static Collection|null setLineProfile(string $profile) Sets line profiles for ONTs specified by interfaces().
  * @method static Collection|null setVeip(int $port = 1) Sets VEIP for ONTs specified by interfaces().
  * @method static Collection|null setServicePort(int $port, int $vlan, string $description, int $gem = 1) Sets service ports for ONTs specified by interfaces().
- * @method static Collection|null setServicePortNew(int $vlan, string $description, int $gem = 1) Sets service ports using the next available index for ONTs specified by interfaces().
+ * @method static Collection|null setServicePortNew(int $vlan, string $description, int $gem = 1) Enters `service-port new` mode, applies the GPON mapping, and uses the next available index for ONTs specified by interfaces().
  * @method static Collection|null setNegotiation(int $ethernetPort) Sets Ethernet negotiation for ONTs specified by interfaces().
  * @method static Collection|null setNoShutdown(int $ethernetPort) Enables (no shutdown) Ethernet ports for ONTs specified by interfaces().
  * @method static Collection|null setNativeVlan(int $ethernetPort, int $vlan) Sets native VLANs for Ethernet ports on ONTs specified by interfaces().

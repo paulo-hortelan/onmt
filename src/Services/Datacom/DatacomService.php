@@ -259,7 +259,7 @@ class DatacomService
 
     private function validateTerminalMode(string $terminalMode): void
     {
-        if (! in_array($terminalMode, ['config', 'interface-gpon', 'onu'])) {
+        if (! in_array($terminalMode, ['config', 'interface-gpon', 'onu', 'service-port-new'])) {
             throw new Exception('Terminal mode '.$terminalMode.' is not supported.');
         }
     }
@@ -1653,10 +1653,28 @@ class DatacomService
                 }
             }
 
+            $response = DM4612::servicePortNew();
+
+            $commandResultBatch->associateCommand($response);
+
+            if (! $commandResultBatch->wasLastCommandSuccessful()) {
+                if ($batchCreatedHere) {
+                    $commandResultBatch->finished_at = Carbon::now();
+                    if (! self::$databaseTransactionsDisabled) {
+                        $commandResultBatch->save();
+                    }
+                }
+                $finalResponse->push($commandResultBatch);
+
+                continue;
+            }
+
+            self::$terminalMode = 'service-port-new';
+
             $ponInterface = $this->getPonInterfaceFromInterface($interface);
             $ontIndex = $this->getOntIndexFromInterface($interface);
 
-            $response = DM4612::servicePortNew($ponInterface, $ontIndex, $vlan, $description, $gem);
+            $response = DM4612::servicePortNewGpon($ponInterface, $ontIndex, $vlan, $description, $gem);
 
             $commandResultBatch->associateCommand($response);
 
