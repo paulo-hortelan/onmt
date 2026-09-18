@@ -176,7 +176,7 @@ class CommandResultBatch extends Model
     public function executionTimeInSeconds(): ?int
     {
         if ($this->finished_at && $this->created_at) {
-            return $this->finished_at->diffInSeconds($this->created_at);
+            return (int) $this->finished_at->diffInSeconds($this->created_at, true);
         }
 
         return null;

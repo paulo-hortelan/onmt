@@ -54,7 +54,7 @@ describe('ZTE C300', function () {
 
         expect($result)->toBeInstanceOf(Collection::class);
         expect($result->first())->toBeInstanceOf(CommandResultBatch::class);
-        expect($result->first()->commands->first()->command)->toBe("show gpon onu detail-info gpon-onu_$interface");
+        expect($result->first()->commands->first()->command)->toBe("show pon power attenuation gpon-onu_$interface");
     });
 });
 

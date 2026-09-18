@@ -28,7 +28,8 @@ ONMT is a Laravel package for automating OLT and ONT operations over Telnet and 
 ## Requirements
 
 - PHP `^8.1`
-- Laravel components compatible with `illuminate/contracts ^10.0`
+- Laravel components compatible with `illuminate/contracts ^10.0`, `^11.0`, `^12.0`, or `^13.0`
+- Laravel 13 requires PHP `^8.3`
 
 ## Installation
 
@@ -104,6 +105,8 @@ ONMT_DEFAULT_OPERATOR=network-noc
 ```
 
 ## Development
+
+CI checks Laravel package bootstrapping and mocked Telnet behavior across Laravel 10, 11, 12, and 13, using the matching Orchestra Testbench major version. Hardware-backed tests remain available through `composer test` when the OLT test environment is configured.
 
 ```bash
 composer test
