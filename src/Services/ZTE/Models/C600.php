@@ -765,7 +765,11 @@ class C600 extends C300
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            if ($response !== $command) {
+            // The C600 may echo a description command followed by terminal
+            // control characters and the prompt. The echoed command is the
+            // acknowledgement in that case, so an exact string comparison
+            // incorrectly records it as a failed command.
+            if (! str_contains($response, $command)) {
                 throw new \Exception($response);
             }
 

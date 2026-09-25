@@ -1030,7 +1030,9 @@ class C300 extends ZTEService
             $response = self::$telnetConn->exec($command);
             $finishedAt = Carbon::now();
 
-            if (! empty($response)) {
+            // C300 normally returns an empty response, but some firmware
+            // versions echo the command with terminal control characters.
+            if (! empty($response) && ! str_contains($response, $command)) {
                 throw new \Exception($response);
             }
 
